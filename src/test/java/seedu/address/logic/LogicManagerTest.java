@@ -53,6 +53,26 @@ public class LogicManagerTest {
     }
 
     @Test
+    public void execute_remarkAndEdit_persistsAndPreservesRemark() throws Exception {
+        model.addPerson(AMY);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(temporaryFolder.resolve("addressBook.json"));
+
+        logic.execute("remark 1 r/Likes swimming.");
+        Person expected = new PersonBuilder(AMY).withRemark("Likes swimming.").build();
+        assertEquals(expected, logic.getFilteredPersonList().get(0));
+        assertEquals(expected, storage.readAddressBook().orElseThrow().getPersonList().get(0));
+
+        logic.execute("edit 1 n/Amy Updated");
+        expected = new PersonBuilder(expected).withName("Amy Updated").build();
+        assertEquals(expected, storage.readAddressBook().orElseThrow().getPersonList().get(0));
+
+        logic.execute("remark 1 r/");
+        expected = new PersonBuilder(expected).withRemark("").build();
+        assertEquals(expected, logic.getFilteredPersonList().get(0));
+        assertEquals(expected, storage.readAddressBook().orElseThrow().getPersonList().get(0));
+    }
+
+    @Test
     public void execute_invalidCommandFormat_throwsParseException() {
         String invalidCommand = "uicfhmowqewca";
         assertParseException(invalidCommand, MESSAGE_UNKNOWN_COMMAND);

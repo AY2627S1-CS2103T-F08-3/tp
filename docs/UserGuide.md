@@ -113,6 +113,24 @@ Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 
+### Adding or changing a remark: `remark`
+
+Adds, replaces, or removes a person's optional remark.
+
+Format: `remark INDEX [r/REMARK]`
+
+* The positive integer `INDEX` refers to the person in the currently displayed list, including `find` results.
+* The remark replaces any previous remark; other details and tags are unchanged.
+* An empty `r/`, or omitting `r/REMARK`, removes the remark. Leading and trailing whitespace is trimmed.
+* Only one `r/` prefix is allowed.
+* After a successful change, the full person list is shown. Non-empty remarks appear below the person's email.
+* Remarks are saved automatically and preserved by `edit`. Existing data files without remarks still load normally.
+
+Examples:
+
+* `remark 1 r/Likes to swim.` adds or replaces the first displayed person's remark.
+* `remark 1 r/` clears that person's remark.
+
 ### Locating persons by name: `find`
 
 Finds persons whose names contain any of the given keywords.
@@ -201,4 +219,5 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**Remark** | `remark INDEX [r/REMARK]`<br> e.g., `remark 1 r/Likes to swim.`
 **Help**   | `help`
