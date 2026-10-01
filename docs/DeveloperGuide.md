@@ -438,13 +438,30 @@ These are product priorities, not release commitments. The initial MVP covers st
 
       Use case resumes at step 2.
 
-### Non-Functional Requirements
+## Non-Functional Requirements
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+### Operating Environment & Portability
+1. **Platform Independence**: Should work on any mainstream operating system (Windows 10/11, macOS 12+, Ubuntu 20.04 LTS or later) that has Java `17` or higher installed.
+2. **Portability**: Should run out-of-the-box as a single, standalone executable `.jar` file without requiring an installer or external configuration tools.
+3. **Architecture Constraint**: Must not depend on any remote server, third-party backend API, or cloud infrastructure; all application logic and data processing must execute locally on the user's host machine.
 
-*{More to be added}*
+### Performance & Scalability
+4. **Capacity**: Should be capable of holding up to 1,000 student and parent contact profiles without noticeable degradation in performance.
+5. **Responsiveness**: Any command execution (including searches, filters, and batch updates) should return feedback to the user interface within 1.0 second under normal operating conditions on a standard personal computer.
+6. **Startup Time**: Should launch to a fully responsive, interactive GUI ready to receive commands within 3.0 seconds of invocation.
+
+### Usability & Interaction
+7. **CLI Preference**: A user with an above-average typing speed (greater than 60 words per minute) should be able to accomplish everyday contact and scheduling management tasks faster using CLI commands than through GUI navigation (mouse clicks).
+8. **Learnability**: A novice tutor who has basic keyboard familiarity should be able to execute core commands (add, list, find, delete) within 15 minutes of referring to the User Guide.
+9. **GUI Clarity**: The graphical user interface should display all vital student contact details and tags legibly across standard display resolutions ranging from $1280 \times 720$ to $1920 \times 1080$.
+
+### Reliability & Data Integrity
+10. **Data Persistence & Format**: User data must be stored locally in an unencrypted, human-editable text file (e.g., JSON). If the file is modified externally and becomes corrupted, the application should fail safely, notify the user, and start with an empty or backup state rather than crash unexpectedly.
+11. **Fault Tolerance**: The application should gracefully handle invalid CLI inputs and malformed flags by presenting clear, actionable error messages without crashing or terminating the session.
+12. **No Relational DBMS**: Must not depend on a heavyweight external relational database management system (e.g., PostgreSQL, MySQL); local file I/O must suffice for all data persistence.
+
+### Privacy & Confidentiality
+13. **Data Security**: Because TutorConnect stores sensitive student and parent contact details (e.g., home addresses, mobile numbers, hourly tutoring fees), no tracking telemetry, analytics, or user data should ever be transmitted outside the local machine.
 
 ### Glossary
 
