@@ -13,7 +13,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ### Anton
 
-<img src="images/anton.png" width="200px">
+<img src="images/antz5lyfe.png" width="200px">
 
 [[homepage](https://github.com/Antz5lyfe)]
 [[github](https://github.com/Antz5lyfe)]
