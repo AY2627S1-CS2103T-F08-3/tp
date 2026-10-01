@@ -296,16 +296,39 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `TutorConnect` and the **Actor** is the `user`, unless specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Add a student**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1. User requests to add a student, providing name, phone, parent contact, education level, subject and address.
+2. TutorConnect adds the student.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. A required field is missing or invalid (e.g. malformed phone number).
+
+    * 1a1. TutorConnect shows an error message describing the invalid field.
+
+      Use case resumes at step 1.
+
+* 1b. The student already exists (same name and parent contact).
+
+    * 1b1. TutorConnect shows a duplicate-student error message.
+
+      Use case resumes at step 1.
+
+**Use case: Delete a student**
+
+**MSS**
+
+1.  User requests to list students
+2.  TutorConnect shows a list of students
+3.  User requests to delete a specific student in the list
+4.  TutorConnect deletes the student
 
     Use case ends.
 
@@ -317,11 +340,73 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 3a. The given index is invalid.
 
-    * 3a1. AddressBook shows an error message.
+    * 3a1. TutorConnect shows an error message.
 
       Use case resumes at step 2.
 
-*{More to be added}*
+**Use case: Record a lesson slot**
+
+**MSS**
+
+1. User requests to list students.
+2. TutorConnect shows a list of students.
+3. User requests to record a lesson slot (day, time) for a specific student in the list.
+4. TutorConnect records the lesson slot.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid.
+
+    * 3a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 3b. The given day/time overlaps with an existing lesson slot for another student.
+
+    * 3b1. TutorConnect shows a double-booking error message, naming the conflicting student.
+
+      Use case resumes at step 2.
+
+**Use case: Edit a student's details**
+
+**MSS**
+
+1. User requests to list students.
+2. TutorConnect shows a list of students.
+3. User requests to edit the details of a specific student in the list.
+4. TutorConnect updates the student's details.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid.
+
+    * 3a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 3b. A given field is invalid (e.g. malformed phone number).
+
+    * 3b1. TutorConnect shows an error message describing the invalid field.
+
+      Use case resumes at step 2.
+
+* 3c. The edit would result in a duplicate student (same name and parent contact as an existing student).
+
+    * 3c1. TutorConnect shows a duplicate-student error message.
+
+      Use case resumes at step 2.
 
 ### Non-Functional Requirements
 
