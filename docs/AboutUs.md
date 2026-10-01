@@ -11,6 +11,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ## Project team
 
+### Anton
+
+<img src="images/anton.png" width="200px">
+
+[[homepage](https://github.com/Antz5lyfe)]
+[[github](https://github.com/Antz5lyfe)]
+[[portfolio](https://github.com/Antz5lyfe)]
+
 ### Kiefer Lau
 
 <img src="images/keyfurrr67.png" width="200px">
