@@ -50,7 +50,7 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
 
-### James Doe
+### Aishwarai Pratiksha
 
 <img src="images/ap-was-here.png" width="200px">
 
