@@ -19,7 +19,13 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 [[github](https://github.com/Antz5lyfe)]
 [[portfolio](https://github.com/Antz5lyfe)]
 
-* Role: Project Advisor
+### Kiefer Lau
+
+<img src="images/keyfurrr67.png" width="200px">
+
+[[github](https://github.com/keyfurrr67)]
+
+* Role: Member
 
 ### Jane Doe
 
@@ -31,14 +37,14 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 * Role: Team Lead
 * Responsibilities: UI
 
-### Johnny Doe
+### Jimi Bong
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/jimibong.png" width="200px">
 
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
+[[github](https://github.com/JimiBong)]
 
 * Role: Developer
-* Responsibilities: Data
+* Responsibilities: Testing and code quality
 
 ### Jean Doe
 
@@ -52,10 +58,10 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 ### James Doe
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/ap-was-here.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](http://github.com/ap-was-here)]
+
 
 * Role: Developer
-* Responsibilities: UI
+* Responsibilities: General
