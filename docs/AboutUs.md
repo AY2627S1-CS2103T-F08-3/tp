@@ -19,13 +19,17 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 [[github](https://github.com/Antz5lyfe)]
 [[portfolio](https://github.com/Antz5lyfe)]
 
+* Role: Member
+* Responsibilities: Happy to be here
+
 ### Kiefer Lau
 
 <img src="images/keyfurrr67.png" width="200px">
 
 [[github](https://github.com/keyfurrr67)]
 
-* Role: Member
+* Role: Developer
+* Responsibilities: Dev Ops + Threading
 
 ### Eugene
 
@@ -44,16 +48,6 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Developer
 * Responsibilities: Testing and code quality
-
-### Jean Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Developer
-* Responsibilities: Dev Ops + Threading
 
 ### Aishwarai Pratiksha
 
