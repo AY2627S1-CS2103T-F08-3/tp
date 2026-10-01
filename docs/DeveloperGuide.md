@@ -270,13 +270,18 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+TutorConnect targets freelance private home tutors who:
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+* work independently, without administrative staff, and manage multiple students across Primary, Secondary and Junior College levels;
+* need to keep student and parent contact details organised alongside lesson schedules, subject syllabi and academic notes;
+* regularly look up or update student information when planning lessons or contacting parents;
+* find it slow and error-prone to cross-reference messaging apps, paper planners and spreadsheets between lessons;
+* are comfortable using a laptop and keyboard shortcuts, and prefer fast keyboard commands for frequent tasks; and
+* need access to their tutoring records while travelling between students' homes, without relying on an internet connection or server.
+
+**Value proposition**:
+
+TutorConnect aims to help independent home tutors spend less time on routine administration by bringing student and parent contact details, recurring lesson schedules, subject syllabi and lightweight academic notes into one keyboard-first desktop application. Keeping these records together and available offline reduces the need to cross-reference messaging apps, calendars and spreadsheets, helping tutors find information and prepare for lessons more efficiently.
 
 
 ### User stories
