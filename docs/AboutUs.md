@@ -27,14 +27,15 @@ You can reach us at the email `seer[at]comp.nus.edu.sg`
 
 * Role: Member
 
-### Eugene
+### Jane Doe
 
-<img src="images/yuj1n06.png" width="200px">
+<img src="images/johndoe.png" width="200px">
 
-[[github](https://github.com/YUJ1N06)]
+[[github](http://github.com/johndoe)]
+[[portfolio](team/johndoe.md)]
 
-* Role: CFO
-* Responsibilities: Finances
+* Role: Team Lead
+* Responsibilities: UI
 
 ### Jimi Bong
 
