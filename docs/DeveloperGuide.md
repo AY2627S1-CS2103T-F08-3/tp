@@ -505,3 +505,26 @@ testers are expected to do more *exploratory* testing.
    1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
 
 1. _{ more test cases … }_
+
+--------------------------------------------------------------------------------------------------------------------
+
+## **Glossary**
+
+* **AB3**: The Address Book level 3 starter project that TutorConnect extends.
+* **Brownfield project**: A project that extends an existing codebase rather than starting from scratch.
+* **CLI (Command-Line Interface)**: A text-based interface where users interact with the application by entering commands.
+* **DevOps**: Development and operational activities such as repository management, build setup, and project tooling.
+* **Feature specification**: A description of a feature's purpose, commands, inputs, validation, errors, outputs, and expected behaviour.
+* **Greenfield project**: A project developed from new requirements without relying on an existing product design.
+* **Lesson slot**: A scheduled lesson time associated with a student.
+* **Local storage**: Data stored on the user's own computer rather than on an external server.
+* **Logic component**: The part of the application that processes commands and applies application rules.
+* **Model component**: The part of the application that represents and manages domain data such as students and lesson details.
+* **MVP (Minimum Viable Product)**: The smallest usable version containing the essential features needed by the target user.
+* **Parent contact**: The parent or guardian's contact information associated with a student.
+* **Payment status**: The recorded state of a lesson fee, such as pending or completed.
+* **Persona**: A representative user profile used to guide product and feature decisions.
+* **Recurring lesson slot**: A lesson slot that repeats on a regular schedule, such as every Monday at 4 p.m.
+* **Storage component**: The part of the application that saves and loads data.
+* **UI component**: The part of the application responsible for user interaction and displayed output.
+* **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
