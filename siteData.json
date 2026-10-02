@@ -135,9 +135,9 @@
     },
     {
       "src": "index.md",
-      "title": "",
+      "title": "Home",
       "headings": {
-        "addressbook-level-3": "AddressBook Level-3"
+        "tutorconnect": "TutorConnect"
       },
       "headingKeywords": {}
     },
