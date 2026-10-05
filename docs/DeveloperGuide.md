@@ -270,42 +270,95 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-* has a need to manage a significant number of contacts
-* prefers desktop apps over other types of applications
-* can type fast
-* prefers typing to mouse interactions
-* is reasonably comfortable using CLI apps
+TutorConnect targets freelance private home tutors who:
 
-**Value proposition**: Manage contacts faster than with a typical mouse-driven GUI application.
+* work independently, without administrative staff, and manage multiple students across Primary, Secondary and Junior College levels;
+* need to keep student and parent contact details organised alongside lesson schedules, subject syllabi and academic notes;
+* regularly look up or update student information when planning lessons or contacting parents;
+* find it slow and error-prone to cross-reference messaging apps, paper planners and spreadsheets between lessons;
+* are comfortable using a laptop and keyboard shortcuts, and prefer fast keyboard commands for frequent tasks; and
+* need access to their tutoring records while travelling between students' homes, without relying on an internet connection or server.
+
+**Value proposition**:
+
+TutorConnect aims to help independent home tutors spend less time on routine administration by bringing student and parent contact details, recurring lesson schedules, subject syllabi and lightweight academic notes into one keyboard-first desktop application. Keeping these records together and available offline reduces the need to cross-reference messaging apps, calendars and spreadsheets, helping tutors find information and prepare for lessons more efficiently.
 
 
 ### User stories
 
-Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unlikely to have) - `*`
+The following stories describe TutorConnect's requirements for a freelance tutor, including ideas that may not be implemented in the final product.
+Priorities follow the [team user-story register](https://docs.google.com/spreadsheets/d/1GyZpU64-x8papgY5nPyfu2VwB_hmP-6wA3xbr1CX16M/edit): High (must have) - `* * *`, Medium (nice to have) - `* *`.
+These are product priorities, not release commitments. The initial MVP covers stories 1-8; the remaining stories are retained for future consideration.
 
-| Priority | As a …                                    | I want to …                 | So that I can…                                                        |
-|----------|--------------------------------------------|------------------------------|------------------------------------------------------------------------|
-| `* * *`  | new user                                   | see usage instructions       | refer to instructions when I forget how to use the App                 |
-| `* * *`  | user                                       | add a new person             |                                                                        |
-| `* * *`  | user                                       | delete a person              | remove entries that I no longer need                                   |
-| `* * *`  | user                                       | find a person by name        | locate details of persons without having to go through the entire list |
-| `* *`    | user                                       | hide private contact details | minimize chance of someone else seeing them by accident                |
-| `*`      | user with many persons in the address book | sort persons by name         | locate a person easily                                                 |
-
-*{More to be added}*
+| ID | Priority | As a ... | I can ... | So that I can ... |
+|----|----------|----------|-----------|-------------------|
+| 1 | `* * *` | freelance tutor | add a student contact with their name, phone number, and address | keep their primary logistical details in one location |
+| 2 | `* * *` | freelance tutor | delete a student profile when they stop taking lessons | keep my contact list relevant and clutter-free |
+| 3 | `* * *` | freelance tutor | list all my registered students | get an overview of my current client base |
+| 4 | `* * *` | freelance tutor | associate a parent's contact number with a student | reach out to the bill-payer directly regarding tuition matters |
+| 5 | `* * *` | freelance tutor | tag students by educational level (e.g., Primary, Sec 4, JC 2) | tailor my materials and syllabus planning accurately |
+| 6 | `* * *` | freelance tutor | tag students by subject taught (e.g., H2 Math, O-Level Chem) | group students by preparation requirements |
+| 7 | `* * *` | freelance tutor | record an agreed hourly rate for each student | calculate tuition fees accurately at the end of each billing cycle |
+| 8 | `* * *` | freelance tutor | record weekly recurring lesson slots (day and time) for each student | avoid double-booking lesson times across different students |
+| 9 | `* * *` | freelance tutor | edit an existing student's contact or academic details | keep information up to date without re-creating the profile |
+| 10 | `* * *` | freelance tutor | filter students by subject or level | view subsets of my cohort during syllabus revisions |
+| 11 | `* * *` | freelance tutor | mark a monthly invoice or payment as pending or completed | track which parents owe me fees without manual spreadsheet checking |
+| 12 | `* * *` | freelance tutor | record student exam grades and test scores over time | monitor individual academic progress across terms |
+| 13 | `* * *` | freelance tutor | add freeform notes to a student profile (e.g., weak in calculus, short attention span) | adjust my pedagogy prior to each session |
+| 14 | `* * *` | freelance tutor | view a consolidated daily or weekly teaching schedule | plan my daily commute between home tuition sessions |
+| 15 | `* * *` | freelance tutor | search for a student by partial name match | pull up their file rapidly during an unscheduled parent phone call |
+| 16 | `* *` | freelance tutor | filter or sort students by postal district or neighbourhood | cluster back-to-back home visits within the same area |
+| 17 | `* *` | freelance tutor | track cumulative unpaid lesson balances across multiple weeks | send exact outstanding tallies to parents without manual re-calculation |
+| 18 | `* *` | freelance tutor | export payment reminder summaries or invoice text | copy-paste them straight into WhatsApp or SMS to parents |
+| 19 | `* *` | freelance tutor | log lesson attendance per session (e.g., Present, Cancelled, Student MC) | charge accurately for billable hours and track makeup classes owed |
+| 20 | `* *` | freelance tutor | view an aggregated monthly revenue report | understand my monthly freelance income without external accounting tools |
+| 21 | `* *` | freelance tutor | tag students with upcoming national examination years (e.g., 2026 O-Levels) | prioritise intensive revision slots for graduating cohorts |
+| 22 | `* *` | freelance tutor | assign homework tasks and flag submission statuses per student | hold students accountable for work due before the next lesson |
+| 23 | `* *` | freelance tutor | record whether lessons are conducted Online or In-Person | prepare meeting links or commute routes accordingly |
+| 24 | `* *` | freelance tutor | archive graduated or inactive students instead of hard deleting them | retain historical records and past exam outcomes for referrals |
+| 25 | `* *` | freelance tutor | view students who have not had a lesson logged in over two weeks | follow up on prolonged unexplained absences or paused arrangements |
+| 26 | `* *` | freelance tutor | record school syllabus streams (e.g., IP, IB, Express, Normal Academic) | align lesson pace with school-specific examination formats |
+| 27 | `* *` | freelance tutor | store emergency secondary contact details | reach an alternative guardian if the primary contact is unreachable |
+| 28 | `* *` | freelance tutor | set lesson duration in minutes per student (e.g., 90 mins vs 120 mins) | calculate fees precisely when lesson lengths vary |
+| 29 | `* *` | freelance tutor | export the student contact and progress list into CSV/JSON format | maintain independent backups or prepare tax records |
+| 30 | `* *` | freelance tutor | record textbook editions and curriculum materials lent out to a student | retrieve loaned resources before the student concludes their tuition |
+| 31 | `* *` | freelance tutor | record attendance or cancelled lessons and the reason for cancelling | avoid charging students for lessons they did not attend |
 
 ### Use cases
 
-(For all use cases below, the **System** is the `AddressBook` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `TutorConnect` and the **Actor** is the `user`, unless specified otherwise)
 
-**Use case: Delete a person**
+**Use case: Add a student**
 
 **MSS**
 
-1.  User requests to list persons
-2.  AddressBook shows a list of persons
-3.  User requests to delete a specific person in the list
-4.  AddressBook deletes the person
+1. User requests to add a student, providing name, phone, parent contact, education level, subject and address.
+2. TutorConnect adds the student.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. A required field is missing or invalid (e.g. malformed phone number).
+
+    * 1a1. TutorConnect shows an error message describing the invalid field.
+
+      Use case resumes at step 1.
+
+* 1b. The student already exists (same name and parent contact).
+
+    * 1b1. TutorConnect shows a duplicate-student error message.
+
+      Use case resumes at step 1.
+
+**Use case: Delete a student**
+
+**MSS**
+
+1.  User requests to list students
+2.  TutorConnect shows a list of students
+3.  User requests to delete a specific student in the list
+4.  TutorConnect deletes the student
 
     Use case ends.
 
@@ -317,19 +370,98 @@ Priorities: High (must have) - `* * *`, Medium (nice to have) - `* *`, Low (unli
 
 * 3a. The given index is invalid.
 
-    * 3a1. AddressBook shows an error message.
+    * 3a1. TutorConnect shows an error message.
 
       Use case resumes at step 2.
 
-*{More to be added}*
+**Use case: Record a lesson slot**
 
-### Non-Functional Requirements
+**MSS**
 
-1.  Should work on any _mainstream OS_ as long as it has Java `25` or above installed.
-2.  Should be able to hold up to 1000 persons without noticeable sluggishness in performance for typical usage.
-3.  A user with above average typing speed for regular English text (i.e. not code, not system admin commands) should be able to accomplish most of the tasks faster using commands than using the mouse.
+1. User requests to list students.
+2. TutorConnect shows a list of students.
+3. User requests to record a lesson slot (day, time) for a specific student in the list.
+4. TutorConnect records the lesson slot.
 
-*{More to be added}*
+   Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid.
+
+    * 3a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 3b. The given day/time overlaps with an existing lesson slot for another student.
+
+    * 3b1. TutorConnect shows a double-booking error message, naming the conflicting student.
+
+      Use case resumes at step 2.
+
+**Use case: Edit a student's details**
+
+**MSS**
+
+1. User requests to list students.
+2. TutorConnect shows a list of students.
+3. User requests to edit the details of a specific student in the list.
+4. TutorConnect updates the student's details.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The list is empty.
+
+  Use case ends.
+
+* 3a. The given index is invalid.
+
+    * 3a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 3b. A given field is invalid (e.g. malformed phone number).
+
+    * 3b1. TutorConnect shows an error message describing the invalid field.
+
+      Use case resumes at step 2.
+
+* 3c. The edit would result in a duplicate student (same name and parent contact as an existing student).
+
+    * 3c1. TutorConnect shows a duplicate-student error message.
+
+      Use case resumes at step 2.
+
+## Non-Functional Requirements
+
+### Operating Environment & Portability
+1. **Platform Independence**: Should work on any mainstream operating system (Windows 10/11, macOS 12+, Ubuntu 20.04 LTS or later) that has Java `17` or higher installed.
+2. **Portability**: Should run out-of-the-box as a single, standalone executable `.jar` file without requiring an installer or external configuration tools.
+3. **Architecture Constraint**: Must not depend on any remote server, third-party backend API, or cloud infrastructure; all application logic and data processing must execute locally on the user's host machine.
+
+### Performance & Scalability
+4. **Capacity**: Should be capable of holding up to 1,000 student and parent contact profiles without noticeable degradation in performance.
+5. **Responsiveness**: Any command execution (including searches, filters, and batch updates) should return feedback to the user interface within 1.0 second under normal operating conditions on a standard personal computer.
+6. **Startup Time**: Should launch to a fully responsive, interactive GUI ready to receive commands within 3.0 seconds of invocation.
+
+### Usability & Interaction
+7. **CLI Preference**: A user with an above-average typing speed (greater than 60 words per minute) should be able to accomplish everyday contact and scheduling management tasks faster using CLI commands than through GUI navigation (mouse clicks).
+8. **Learnability**: A novice tutor who has basic keyboard familiarity should be able to execute core commands (add, list, find, delete) within 15 minutes of referring to the User Guide.
+9. **GUI Clarity**: The graphical user interface should display all vital student contact details and tags legibly across standard display resolutions ranging from $1280 \times 720$ to $1920 \times 1080$.
+
+### Reliability & Data Integrity
+10. **Data Persistence & Format**: User data must be stored locally in an unencrypted, human-editable text file (e.g., JSON). If the file is modified externally and becomes corrupted, the application should fail safely, notify the user, and start with an empty or backup state rather than crash unexpectedly.
+11. **Fault Tolerance**: The application should gracefully handle invalid CLI inputs and malformed flags by presenting clear, actionable error messages without crashing or terminating the session.
+12. **No Relational DBMS**: Must not depend on a heavyweight external relational database management system (e.g., PostgreSQL, MySQL); local file I/O must suffice for all data persistence.
+
+### Privacy & Confidentiality
+13. **Data Security**: Because TutorConnect stores sensitive student and parent contact details (e.g., home addresses, mobile numbers, hourly tutoring fees), no tracking telemetry, analytics, or user data should ever be transmitted outside the local machine.
 
 ### Glossary
 
@@ -390,3 +522,26 @@ testers are expected to do more *exploratory* testing.
    1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
 
 1. _{ more test cases … }_
+
+--------------------------------------------------------------------------------------------------------------------
+
+## **Glossary**
+
+* **AB3**: The Address Book level 3 starter project that TutorConnect extends.
+* **Brownfield project**: A project that extends an existing codebase rather than starting from scratch.
+* **CLI (Command-Line Interface)**: A text-based interface where users interact with the application by entering commands.
+* **DevOps**: Development and operational activities such as repository management, build setup, and project tooling.
+* **Feature specification**: A description of a feature's purpose, commands, inputs, validation, errors, outputs, and expected behaviour.
+* **Greenfield project**: A project developed from new requirements without relying on an existing product design.
+* **Lesson slot**: A scheduled lesson time associated with a student.
+* **Local storage**: Data stored on the user's own computer rather than on an external server.
+* **Logic component**: The part of the application that processes commands and applies application rules.
+* **Model component**: The part of the application that represents and manages domain data such as students and lesson details.
+* **MVP (Minimum Viable Product)**: The smallest usable version containing the essential features needed by the target user.
+* **Parent contact**: The parent or guardian's contact information associated with a student.
+* **Payment status**: The recorded state of a lesson fee, such as pending or completed.
+* **Persona**: A representative user profile used to guide product and feature decisions.
+* **Recurring lesson slot**: A lesson slot that repeats on a regular schedule, such as every Monday at 4 p.m.
+* **Storage component**: The part of the application that saves and loads data.
+* **UI component**: The part of the application responsible for user interaction and displayed output.
+* **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.

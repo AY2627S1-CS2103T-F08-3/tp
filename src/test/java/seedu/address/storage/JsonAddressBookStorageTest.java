@@ -9,6 +9,7 @@ import static seedu.address.testutil.TypicalPersons.IDA;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -18,12 +19,38 @@ import org.junit.jupiter.api.io.TempDir;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.ReadOnlyAddressBook;
+import seedu.address.model.person.Person;
+import seedu.address.testutil.PersonBuilder;
 
 public class JsonAddressBookStorageTest {
     private static final Path TEST_DATA_FOLDER = Paths.get("src", "test", "data", "JsonAddressBookStorageTest");
 
     @TempDir
     public Path testFolder;
+
+    @Test
+    public void readAndSaveAddressBook_remarksAndLegacyData_success() throws Exception {
+        Path filePath = testFolder.resolve("remarks.json");
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(filePath);
+        AddressBook book = new AddressBook();
+        Person person = new PersonBuilder(ALICE).withRemark("Call after 6; likes swimming!").build();
+        book.addPerson(person);
+        storage.saveAddressBook(book);
+        assertEquals(book, new AddressBook(storage.readAddressBook().orElseThrow()));
+
+        // Remove the field from actual serialized JSON to simulate a pre-remark address book.
+        String json = Files.readString(filePath);
+        String legacy = json.lines().filter(line -> !line.contains("remark"))
+                .collect(java.util.stream.Collectors.joining(System.lineSeparator()));
+        assertFalse(json.equals(legacy));
+        Files.writeString(filePath, legacy);
+        Person restored = storage.readAddressBook().orElseThrow().getPersonList().get(0);
+        assertEquals(ALICE, restored);
+
+        book.setPerson(person, new PersonBuilder(person).withRemark("").build());
+        storage.saveAddressBook(book);
+        assertEquals(book, new AddressBook(storage.readAddressBook().orElseThrow()));
+    }
 
     @Test
     public void readAddressBook_nullFilePath_throwsNullPointerException() {
