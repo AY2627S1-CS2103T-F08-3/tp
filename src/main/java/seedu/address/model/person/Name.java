@@ -3,6 +3,8 @@ package seedu.address.model.person;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.AppUtil.checkArgument;
 
+import seedu.address.commons.util.StudentText;
+
 /**
  * Represents a Person's name in the address book.
  * Guarantees: immutable; is valid as declared in {@link #isValidName(String)}
@@ -10,13 +12,10 @@ import static seedu.address.commons.util.AppUtil.checkArgument;
 public class Name {
 
     public static final String MESSAGE_CONSTRAINTS =
-            "Names should only contain alphanumeric characters and spaces, and should not be blank";
+            "Error: Invalid name. Use 1-70 letters with spaces, apostrophes, hyphens, or full stops.";
 
-    /*
-     * The first character of the name must not be a whitespace,
-     * otherwise " " (a blank string) becomes a valid input.
-     */
-    public static final String VALIDATION_REGEX = "[\\p{Alnum}][\\p{Alnum} ]*";
+    // Validation follows NFKC normalization; at least one Unicode letter is required separately.
+    public static final String VALIDATION_REGEX = "[\\p{L}\\p{M} '\u2019.\\-]+";
 
     public final String fullName;
 
@@ -28,14 +27,21 @@ public class Name {
     public Name(String name) {
         requireNonNull(name);
         checkArgument(isValidName(name), MESSAGE_CONSTRAINTS);
-        fullName = name;
+        fullName = StudentText.normalize(name);
     }
 
     /**
      * Returns true if a given string is a valid name.
      */
     public static boolean isValidName(String test) {
-        return test.matches(VALIDATION_REGEX);
+        requireNonNull(test);
+        try {
+            String value = StudentText.normalize(test);
+            return StudentText.length(value) >= 1 && StudentText.length(value) <= 70
+                    && value.matches(VALIDATION_REGEX) && value.codePoints().anyMatch(Character::isLetter);
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
 

@@ -7,48 +7,47 @@
 
 We are a team based in the [School of Computing, National University of Singapore](http://www.comp.nus.edu.sg).
 
-You can reach us at the email `seer[at]comp.nus.edu.sg`
+You can contact the TutorConnect team through our [GitHub issue tracker](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues).
 
 ## Project team
 
-### John Doe
+### Anton
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/antz5lyfe.png" width="200px">
 
-[[homepage](http://www.comp.nus.edu.sg/~damithch)]
-[[github](https://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[homepage](https://github.com/Antz5lyfe)]
+[[github](https://github.com/Antz5lyfe)]
+[[portfolio](https://github.com/Antz5lyfe)]
 
-* Role: Project Advisor
+* Role: Member
+* Responsibilities: Happy to be here
 
-### Jane Doe
+### Kiefer Lau
 
-<img src="images/johndoe.png" width="200px">
+<img src="images/keyfurrr67.png" width="200px">
 
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
-
-* Role: Team Lead
-* Responsibilities: UI
-
-### Johnny Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)] [[portfolio](team/johndoe.md)]
-
-* Role: Developer
-* Responsibilities: Data
-
-### Jean Doe
-
-<img src="images/johndoe.png" width="200px">
-
-[[github](http://github.com/johndoe)]
-[[portfolio](team/johndoe.md)]
+[[github](https://github.com/keyfurrr67)]
 
 * Role: Developer
 * Responsibilities: Dev Ops + Threading
+
+### Eugene
+
+<img src="images/yuj1n06.png" width="200px">
+
+[[github](https://github.com/YUJ1N06)]
+
+* Role: CFO
+* Responsibilities: Finances
+
+### Jimi Bong
+
+<img src="images/jimibong.png" width="200px">
+
+[[github](https://github.com/JimiBong)]
+
+* Role: Developer
+* Responsibilities: Testing and code quality
 
 ### Aishwarai Pratiksha
 

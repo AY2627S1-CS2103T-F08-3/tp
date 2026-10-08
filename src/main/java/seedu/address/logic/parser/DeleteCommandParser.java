@@ -8,6 +8,8 @@ import seedu.address.logic.parser.exceptions.ParseException;
  * Parses input arguments and creates a new DeleteCommand object
  */
 public class DeleteCommandParser implements Parser<DeleteCommand> {
+    public static final String MESSAGE_MISSING = "Error: Missing required parameter: INDEX.";
+    public static final String MESSAGE_MULTIPLE = "Error: Delete accepts exactly one index.";
 
     /**
      * Parses the given {@code String} of arguments in the context of the DeleteCommand
