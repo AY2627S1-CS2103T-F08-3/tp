@@ -10,6 +10,7 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -23,6 +24,7 @@ import seedu.address.storage.Storage;
  * The main LogicManager of the app.
  */
 public class LogicManager implements Logic {
+    public static final String MESSAGE_SAVE_FAILURE = "Error: Changes could not be saved. No changes were made.";
     public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
@@ -49,6 +51,17 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
+        if (command instanceof DeleteCommand deleteCommand) {
+            Person target = deleteCommand.resolveTarget(model);
+            AddressBook proposed = new AddressBook(model.getAddressBook());
+            proposed.removePerson(target);
+            try {
+                storage.saveAddressBook(proposed);
+            } catch (IOException e) {
+                throw new CommandException(MESSAGE_SAVE_FAILURE, e);
+            }
+            return deleteCommand.execute(model);
+        }
         if (command instanceof ListCommand) {
             try {
                 // A new installation can have an in-memory register before its first save.
