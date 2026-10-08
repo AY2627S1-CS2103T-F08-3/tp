@@ -46,6 +46,9 @@ public class PersonListPanel extends UiPart<Region> {
         }
         for (int i = 0; i < personListView.getItems().size(); i++) {
             if (personListView.getItems().get(i).getId().equals(id)) {
+                if (personListView.getSelectionModel().getSelectedItem() == personListView.getItems().get(i)) {
+                    return;
+                }
                 personListView.getSelectionModel().select(i);
                 personListView.scrollTo(i);
                 return;

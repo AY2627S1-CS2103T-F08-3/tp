@@ -30,6 +30,7 @@ import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
+import seedu.address.testutil.JavaFxTestUtil;
 
 /** Real JavaFX smoke test; opt in on a desktop or under a virtual display with F01_UI_TESTS=true. */
 @EnabledIfEnvironmentVariable(named = "F01_UI_TESTS", matches = "true")
@@ -39,7 +40,7 @@ public class AddStudentUiTest {
 
     @BeforeAll
     public static void startToolkit() {
-        Platform.startup(() -> Platform.setImplicitExit(false));
+        JavaFxTestUtil.startToolkit();
     }
 
     @Test

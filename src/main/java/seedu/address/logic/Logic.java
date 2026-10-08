@@ -25,6 +25,9 @@ public interface Logic {
     /** Returns an unmodifiable view of the filtered list of persons */
     ObservableList<Person> getFilteredPersonList();
 
+    /** Returns scheduled students in an independent weekday/time/insertion ordering. */
+    ObservableList<Person> getWeeklySchedule();
+
     /**
      * Returns the user prefs' GUI settings.
      */
