@@ -43,13 +43,15 @@ This project has three types of tests:
 ## F01–F08 acceptance
 
 Coordination is tracked in [acceptance issue #79](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/79).
-Each owner fixes and tests their own feature. The integrated F08 review branch is `f08-04-ui-schedule`;
+Each owner remains responsible for their feature's tests and fixes. The final integrated acceptance snapshot
+is `f08-04-ui-schedule` at `93ad5cf0`, combining master `7b6cc481`, scheduling integration `9f7146e6`
+and persistence integration `324be3a6`. The review PRs are retargeted to master in order;
 temporary dependency branches are review bases and must not be merged as product branches.
 
 Use JDK 25 as configured in `build.gradle`. On a desktop or configured virtual display, run:
 
 ```sh
-env F01_UI_TESTS=true F08_UI_TESTS=true ./gradlew check shadowJar --offline --no-daemon
+env F01_UI_TESTS=true F08_UI_TESTS=true ./gradlew check shadowJar coverage --offline --no-daemon
 sh .github/run-checks.sh
 git diff --check
 ```
@@ -70,7 +72,9 @@ The F08 automated acceptance includes:
   filtered overlaps and removal of attached slots by delete.
 * `WeeklyScheduleTest`/`WeeklyScheduleUiTest`: independent weekday/time ordering, insertion-order ties,
   immediate replacement/deletion refresh, em-dash/full-name formatting, actual command-box status/selection,
-  unchanged details/summary on errors or no-change, and persisted deletion.
+  unchanged details/summary on errors or no-change, and persisted deletion. The real window test also runs
+  guardian, level, subject and rate updates on a scheduled student, checks all details, reloads through `list`,
+  and verifies slot replacement preserves every unrelated optional field.
 
 For an additional manual smoke run in a fresh data directory, add Zoe and Amy using
 `add n/Zoe p/81234567 a/21 Clementi Ave` and `add n/Amy p/81234567 a/22 Clementi Ave`.
@@ -78,27 +82,28 @@ Schedule Zoe on Sunday 23:59 and Amy on Monday 09:00. The register stays Zoe/Amy
 Reschedule both to Tuesday 19:00; the tie becomes Zoe/Amy. Repeat Zoe's slot with `d/tUE`; selection stays on
 Amy and there is no save. Try invalid values, restart, and delete each student to check persistence and removal.
 
-Snapshot dependencies: F01 foundation `37032dbf`, validation `e2b6bfff`, atomic persistence `025b7926`,
-UI `b8b3497b`; F03 `VisibleIndex` `407c526a`; F08 type `759f6ee0`, command `28582e1f`, persistence `40272a08`,
-and UI `9889f57d` in PR #86. On 8 October 2026, the desktop run on JDK 25.0.3 passed **302 tests,
-zero failures, errors or skips**, including both F01 and F08 real JavaFX tests. Main/test Checkstyle,
-the Shadow JAR build, repository text checks and `git diff --check` also passed.
+On 8 October 2026, the combined desktop run on JDK 25.0.3 passed **397 tests, zero failures, errors or skips**,
+including both F01 and F08 real JavaFX tests. Main/test Checkstyle, the Shadow JAR build, coverage generation,
+repository text checks and `git diff --check` also passed. The earlier 302-test F01/F03-helper/F08 snapshot
+is superseded by this combined run, which includes the merged list/delete and all optional field commands.
 
-Feature | Acceptance boundary in this snapshot
+Linux CI runs both desktop test classes under Xvfb with software rendering and uploads their coverage;
+macOS and Windows CI run the remaining checks without desktop opt-in. Local desktop flags are required
+to reproduce the complete no-skip acceptance result.
+
+Feature | Automated acceptance in the integrated snapshot
 --- | ---
-F01 | Add, canonical phones/IDs, duplicates/shared phones, persistence and desktop selection/details are exercised.
-F02 | Ordinary list/delete and attached-slot removal are exercised; final exact conformance from PRs #81/#82 awaits integration with this snapshot.
-F03 | The owner's shared `VisibleIndex` tests and F08 displayed-index use are exercised; final list behavior in #84 awaits integration.
-F04–F07 | Field commands/types are absent from this snapshot. Partial F04 types in #85 are not integrated; generic field preservation does not certify their validation or commands.
-F08 | Complete weekly scheduling, summary/details, reload/deletion and atomic failure behavior are exercised.
+F01 | Add, required-field normalization, canonical phones/IDs, duplicate/shared-phone handling, persistence, atomic rollback and desktop selection/details.
+F02/F03 | Final list/delete and shared index tests, strict messages, arbitrary-size displayed indexes, reload/load failure, insertion order, selection/renumbering, attached-slot removal and atomic delete failure.
+F04/F07 | Guardian/rate parsing and execution, typed canonical storage, unrelated-field preservation, reload, no-change, filtered/oversized indexes and save rollback; real contact details in the window.
+F05/F06 | Level/subject owner tests for aliases/normalization, validation/precedence, single-field replacement, identity/order, reload/no-change/rollback and filtered/oversized indexes; real details/cards alongside weekly scheduling.
+F08 | All weekday/alias and time boundaries, command precedence, complete set/replace/no-change, accepted overlaps, independent summary order, details/selection, reload/deletion and atomic failure preservation.
 
-The competing shared-index PR #64 produced eight stale legacy parser/index expectations in an earlier combined
-run. This snapshot uses F03's #68 interface. Consolidating shared helpers and accepting remaining owner features
-must precede declaring the complete F01–F08 release accepted.
+The earlier list/delete merge conflicts in [issue #89](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/89)
+are reconciled by master repair #92 and the F08 integration commits above. All commands retain F01's staged
+execution and atomic writer, list loads without saving, and selection uses stable UUIDs. Cross-feature fixtures
+now use the complete typed weekly-slot codec rather than placeholder strings. The UI merge retains subject/level
+cards and the latest owner regressions while adding the separately sorted summary and publication guard.
 
-A read-only merge audit of F02/F03's final owner stack (`f9e94e96`, #82) against the tested F08 UI stack
-reported conflicts in `LogicManager`, `AddressBookParser`, `JsonAddressBookStorage`, `MainWindow`,
-`PersonCard` and `PersonListPanel`. The owner must reconcile list/delete with F01's staged execution,
-atomic writer and selected-UUID APIs before the combined release run. These conflicts are tracked in
-[issue #89](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/89), alongside #79;
-the existing 302-test result applies to the explicitly recorded F01/F03-helper/F08 snapshot.
+This records the automated combined acceptance run. Each feature owner retains responsibility for additional
+feature-specific acceptance or product sign-off; the run does not replace their documented requirements.

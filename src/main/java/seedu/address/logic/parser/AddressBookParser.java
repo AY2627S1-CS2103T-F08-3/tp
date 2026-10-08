@@ -15,9 +15,13 @@ import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.EditCommand;
 import seedu.address.logic.commands.ExitCommand;
 import seedu.address.logic.commands.FindCommand;
+import seedu.address.logic.commands.GuardianCommand;
 import seedu.address.logic.commands.HelpCommand;
+import seedu.address.logic.commands.LevelCommand;
 import seedu.address.logic.commands.ListCommand;
+import seedu.address.logic.commands.RateCommand;
 import seedu.address.logic.commands.ScheduleCommand;
+import seedu.address.logic.commands.SubjectCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
 /**
@@ -51,6 +55,13 @@ public class AddressBookParser {
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }
 
+        if ((commandWord.equals(DeleteCommand.COMMAND_WORD) || commandWord.equals(ListCommand.COMMAND_WORD))
+                && userInput.codePoints().anyMatch(c -> Character.isISOControl(c)
+                || Character.getType(c) == Character.FORMAT || c == 0x2028 || c == 0x2029)) {
+            throw new ParseException(commandWord.equals(DeleteCommand.COMMAND_WORD)
+                    ? VisibleIndex.MESSAGE_INVALID : ListCommandParser.MESSAGE_PARAMETERS);
+        }
+
         // Note to developers: Change LOG_LEVEL in LogsCenter to enable lower level (i.e., FINE, FINER and lower)
         // log messages such as the one below.
         // Lower level log messages are used sparingly to minimize noise in the code.
@@ -60,9 +71,13 @@ public class AddressBookParser {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
+            case SubjectCommand.COMMAND_WORD -> new SubjectCommandParser().parse(arguments);
+            case GuardianCommand.COMMAND_WORD -> new GuardianCommandParser().parse(arguments);
+            case RateCommand.COMMAND_WORD -> new RateCommandParser().parse(arguments);
+            case LevelCommand.COMMAND_WORD -> new LevelCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
-            case ListCommand.COMMAND_WORD -> new ListCommand();
+            case ListCommand.COMMAND_WORD -> new ListCommandParser().parse(arguments);
             case ScheduleCommand.COMMAND_WORD -> new ScheduleCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();

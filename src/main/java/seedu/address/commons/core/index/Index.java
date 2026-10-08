@@ -1,5 +1,7 @@
 package seedu.address.commons.core.index;
 
+import java.math.BigInteger;
+
 import seedu.address.commons.util.ToStringBuilder;
 
 /**
@@ -11,14 +13,14 @@ import seedu.address.commons.util.ToStringBuilder;
  * convert it back to an int if the index will not be passed to a different component again.
  */
 public class Index {
-    private int zeroBasedIndex;
+    private final BigInteger zeroBasedIndex;
 
     /**
      * Index can only be created by calling {@link Index#fromZeroBased(int)} or
      * {@link Index#fromOneBased(int)}.
      */
-    private Index(int zeroBasedIndex) {
-        if (zeroBasedIndex < 0) {
+    private Index(BigInteger zeroBasedIndex) {
+        if (zeroBasedIndex.signum() < 0) {
             throw new IndexOutOfBoundsException();
         }
 
@@ -26,25 +28,45 @@ public class Index {
     }
 
     public int getZeroBased() {
-        return zeroBasedIndex;
+        return zeroBasedIndex.intValueExact();
     }
 
     public int getOneBased() {
-        return zeroBasedIndex + 1;
+        return zeroBasedIndex.add(BigInteger.ONE).intValueExact();
+    }
+
+    /** Returns the one-based index as entered, without narrowing it to an integer. */
+    public String getOneBasedString() {
+        return zeroBasedIndex.add(BigInteger.ONE).toString();
+    }
+
+    /** Returns whether this index refers to an item in a list of the given size. */
+    public boolean isWithinSize(int size) {
+        return zeroBasedIndex.compareTo(BigInteger.valueOf(size)) < 0;
+    }
+
+    /** Returns the zero-based value after callers have established that it fits an int. */
+    public int getZeroBasedExact() {
+        return zeroBasedIndex.intValueExact();
     }
 
     /**
      * Creates a new {@code Index} using a zero-based index.
      */
     public static Index fromZeroBased(int zeroBasedIndex) {
-        return new Index(zeroBasedIndex);
+        return new Index(BigInteger.valueOf(zeroBasedIndex));
     }
 
     /**
      * Creates a new {@code Index} using a one-based index.
      */
     public static Index fromOneBased(int oneBasedIndex) {
-        return new Index(oneBasedIndex - 1);
+        return new Index(BigInteger.valueOf(oneBasedIndex).subtract(BigInteger.ONE));
+    }
+
+    /** Creates an index from a positive decimal string of any size. */
+    public static Index fromOneBased(String oneBasedIndex) {
+        return new Index(new BigInteger(oneBasedIndex).subtract(BigInteger.ONE));
     }
 
     @Override
@@ -58,7 +80,7 @@ public class Index {
             return false;
         }
 
-        return zeroBasedIndex == otherIndex.zeroBasedIndex;
+        return zeroBasedIndex.equals(otherIndex.zeroBasedIndex);
     }
 
     @Override
