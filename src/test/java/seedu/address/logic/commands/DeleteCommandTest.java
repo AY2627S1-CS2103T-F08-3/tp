@@ -83,9 +83,9 @@ public class DeleteCommandTest {
     }
 
     @Test
-    public void constructor_overflowingLegacyIndex_rejectedSafely() {
-        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
-                new DeleteCommand(Index.fromZeroBased(Integer.MAX_VALUE)));
+    public void execute_oversizedIndex_rejectedWithoutNarrowing() {
+        DeleteCommand command = new DeleteCommand(Index.fromZeroBased(Integer.MAX_VALUE));
+        assertCommandFailure(command, model, "Error: No student exists at index 2147483648.");
     }
 
     @Test

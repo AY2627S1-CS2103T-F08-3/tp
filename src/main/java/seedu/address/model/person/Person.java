@@ -30,8 +30,6 @@ public class Person {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
-    private final Optional<GuardianPhone> guardianPhone;
-    private final Optional<HourlyRate> hourlyRate;
 
     /**
      * Creates a person without guardian phone or hourly rate details.
@@ -43,8 +41,7 @@ public class Person {
     /** Creates a person with optional guardian phone and hourly rate fields. */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags,
             Optional<GuardianPhone> guardianPhone, Optional<HourlyRate> hourlyRate) {
-        requireAllNonNull(name, phone, email, address, tags, guardianPhone, hourlyRate);
-        this(UUID.randomUUID(), name, phone, email, address, tags, new StudentFields());
+        this(UUID.randomUUID(), name, phone, email, address, tags, contactFields(guardianPhone, hourlyRate));
     }
 
     /** Creates a student with no optional fields or legacy contact metadata. */
@@ -58,14 +55,12 @@ public class Person {
         requireAllNonNull(name, phone, email, address, tags);
         requireAllNonNull(id, studentFields);
         this.id = id;
-        this.studentFields = studentFields;
+        this.studentFields = canonicalizeContactFields(studentFields);
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
-        this.guardianPhone = guardianPhone;
-        this.hourlyRate = hourlyRate;
     }
 
     public UUID getId() {
@@ -110,11 +105,45 @@ public class Person {
     }
 
     public Optional<GuardianPhone> getGuardianPhone() {
-        return guardianPhone;
+        return studentFields.get(GuardianPhone.FIELD);
     }
 
     public Optional<HourlyRate> getHourlyRate() {
-        return hourlyRate;
+        return studentFields.get(HourlyRate.FIELD);
+    }
+
+    /** Updates the guardian contact while retaining identity and every unrelated field. */
+    public Person withGuardianPhone(GuardianPhone value) {
+        return withStudentFields(studentFields.with(GuardianPhone.FIELD, value));
+    }
+
+    /** Updates the hourly rate while retaining identity and every unrelated field. */
+    public Person withHourlyRate(HourlyRate value) {
+        return withStudentFields(studentFields.with(HourlyRate.FIELD, value));
+    }
+
+    private static StudentFields contactFields(Optional<GuardianPhone> guardian, Optional<HourlyRate> rate) {
+        requireAllNonNull(guardian, rate);
+        StudentFields fields = new StudentFields();
+        if (guardian.isPresent()) {
+            fields = fields.with(GuardianPhone.FIELD, guardian.get());
+        }
+        if (rate.isPresent()) {
+            fields = fields.with(HourlyRate.FIELD, rate.get());
+        }
+        return fields;
+    }
+
+    private static StudentFields canonicalizeContactFields(StudentFields fields) {
+        Optional<GuardianPhone> guardian = fields.get(GuardianPhone.FIELD);
+        Optional<HourlyRate> rate = fields.get(HourlyRate.FIELD);
+        if (guardian.isPresent()) {
+            fields = fields.with(GuardianPhone.FIELD, guardian.get());
+        }
+        if (rate.isPresent()) {
+            fields = fields.with(HourlyRate.FIELD, rate.get());
+        }
+        return fields;
     }
 
     /**
@@ -151,15 +180,12 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && tags.equals(otherPerson.tags)
-                && guardianPhone.equals(otherPerson.guardianPhone)
-                && hourlyRate.equals(otherPerson.hourlyRate);
                 && studentFields.equals(otherPerson.studentFields);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags, guardianPhone, hourlyRate);
         return Objects.hash(name, phone, email, address, tags, studentFields);
     }
 
@@ -171,8 +197,8 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("tags", tags)
-                .add("guardianPhone", guardianPhone)
-                .add("hourlyRate", hourlyRate)
+                .add("guardianPhone", getGuardianPhone())
+                .add("hourlyRate", getHourlyRate())
                 .toString();
     }
 

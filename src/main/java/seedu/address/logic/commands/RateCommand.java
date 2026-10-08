@@ -27,6 +27,7 @@ public class RateCommand extends Command implements AtomicCommand {
     private final Index index;
     private final HourlyRate hourlyRate;
 
+    /** Creates a rate update targeting a validated displayed index. */
     public RateCommand(Index index, HourlyRate hourlyRate) {
         requireNonNull(index);
         requireNonNull(hourlyRate);
@@ -43,8 +44,7 @@ public class RateCommand extends Command implements AtomicCommand {
             return new CommandResult(String.format(MESSAGE_NO_CHANGE, name, hourlyRate));
         }
 
-        Person updated = new Person(target.getName(), target.getPhone(), target.getEmail(), target.getAddress(),
-                target.getTags(), target.getGuardianPhone(), Optional.of(hourlyRate));
+        Person updated = target.withHourlyRate(hourlyRate);
         model.setPerson(target, updated);
         String message = previous.isEmpty()
                 ? String.format(MESSAGE_SET_SUCCESS, name, hourlyRate)

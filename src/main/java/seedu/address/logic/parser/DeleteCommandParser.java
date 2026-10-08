@@ -1,8 +1,7 @@
 package seedu.address.logic.parser;
 
 import seedu.address.commons.core.index.Index;
-import java.text.Normalizer;
-
+import seedu.address.commons.util.StudentText;
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
@@ -19,7 +18,19 @@ public class DeleteCommandParser implements Parser<DeleteCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public DeleteCommand parse(String args) throws ParseException {
-        Index index = ParserUtil.parseIndex(args);
+        final String normalized;
+        try {
+            normalized = StudentText.normalize(args);
+        } catch (IllegalArgumentException exception) {
+            throw new ParseException(ParserUtil.MESSAGE_INVALID_INDEX, exception);
+        }
+        if (normalized.isEmpty()) {
+            throw new ParseException(MESSAGE_MISSING);
+        }
+        if (normalized.contains(" ")) {
+            throw new ParseException(MESSAGE_MULTIPLE);
+        }
+        Index index = ParserUtil.parseIndex(normalized);
         return new DeleteCommand(index);
     }
 
