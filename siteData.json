@@ -90,7 +90,8 @@
         "student-model": "Student model",
         "normalization-and-parsing": "Normalization and parsing",
         "atomic-execution-and-view-handoff": "Atomic execution and view handoff",
-        "review-slices-and-owner-handoff": "Review slices and owner handoff"
+        "review-slices-and-owner-handoff": "Review slices and owner handoff",
+        "master-integration-repair-f01-and-f04": "Master integration repair: F01 and F04"
       },
       "headingKeywords": {}
     },
