@@ -37,8 +37,8 @@ public class WeeklySlotTest {
     public void parseDay_invalidNamesAndControls_exactMessage() {
         for (String value : List.of("", " ", "Tues", "Thurs", "M", "Mo", "Weekday", "Funday",
                 "Tuesday Wednesday", "Tuesday\n", "\tTue", "Tue\u0000", "Tue\u2028", "Tue\u200b")) {
-            assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_DAY,
-                    () -> WeeklySlot.parseDay(value));
+            assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_DAY, ()
+                -> WeeklySlot.parseDay(value));
         }
     }
 
@@ -57,8 +57,8 @@ public class WeeklySlotTest {
         for (String value : List.of("", " ", "9:00", "09:0", "6pm", "18.30", "24:00", "12:60",
                 "-1:00", "+9:00", "009:00", "09:000", "09:00:00", "09 :00", "09: 00",
                 "09:00Z", "９:００", "09:00\n", "\t09:00", "09:00\u0000", "09:00\u2029")) {
-            assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME,
-                    () -> WeeklySlot.parseTime(value));
+            assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME, ()
+                -> WeeklySlot.parseTime(value));
         }
     }
 
@@ -66,10 +66,10 @@ public class WeeklySlotTest {
     public void constructor_requiresBothComponentsAndMinutePrecision() {
         assertThrows(NullPointerException.class, () -> new WeeklySlot(null, LocalTime.NOON));
         assertThrows(NullPointerException.class, () -> new WeeklySlot(DayOfWeek.MONDAY, null));
-        assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME,
-                () -> new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(9, 0, 1)));
-        assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME,
-                () -> new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(9, 0, 0, 1)));
+        assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME, ()
+            -> new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(9, 0, 1)));
+        assertThrows(IllegalArgumentException.class, WeeklySlot.MESSAGE_INVALID_TIME, ()
+            -> new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(9, 0, 0, 1)));
     }
 
     @Test
