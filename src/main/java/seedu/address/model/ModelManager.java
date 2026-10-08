@@ -3,6 +3,7 @@ package seedu.address.model;
 import static java.util.Objects.requireNonNull;
 import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 
+import java.util.UUID;
 import java.util.function.Predicate;
 import java.util.logging.Logger;
 
@@ -21,6 +22,8 @@ public class ModelManager implements Model {
     private final AddressBook addressBook;
     private final UserPrefs userPrefs;
     private final FilteredList<Person> filteredPersons;
+    private UUID selectedPersonId;
+    private Predicate<Person> personPredicate = PREDICATE_SHOW_ALL_PERSONS;
 
     /**
      * Initializes a ModelManager with the given addressBook and userPrefs.
@@ -32,7 +35,7 @@ public class ModelManager implements Model {
 
         this.addressBook = new AddressBook(addressBook);
         this.userPrefs = new UserPrefs(userPrefs);
-        filteredPersons = new FilteredList<>(this.addressBook.getPersonList());
+        filteredPersons = new FilteredList<>(this.addressBook.getPersonList(), PREDICATE_SHOW_ALL_PERSONS);
     }
 
     public ModelManager() {
@@ -78,12 +81,16 @@ public class ModelManager implements Model {
     @Override
     public void deletePerson(Person target) {
         addressBook.removePerson(target);
+        if (target.getId().equals(selectedPersonId)) {
+            selectedPersonId = null;
+        }
     }
 
     @Override
     public void addPerson(Person person) {
         addressBook.addPerson(person);
         updateFilteredPersonList(PREDICATE_SHOW_ALL_PERSONS);
+        selectedPersonId = person.getId();
     }
 
     @Override
@@ -91,6 +98,7 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedPerson);
 
         addressBook.setPerson(target, editedPerson);
+        selectedPersonId = editedPerson.getId();
     }
 
     //=========== Filtered Person List Accessors =============================================================
@@ -108,6 +116,26 @@ public class ModelManager implements Model {
     public void updateFilteredPersonList(Predicate<Person> predicate) {
         requireNonNull(predicate);
         filteredPersons.setPredicate(predicate);
+        personPredicate = predicate;
+        selectedPersonId = null;
+    }
+
+    @Override
+    public Predicate<Person> getPersonPredicate() {
+        return personPredicate;
+    }
+
+    @Override
+    public UUID getSelectedPersonId() {
+        return selectedPersonId;
+    }
+
+    @Override
+    public void selectPerson(UUID id) {
+        if (id != null && filteredPersons.stream().noneMatch(person -> person.getId().equals(id))) {
+            throw new IllegalArgumentException("Selection must refer to a displayed student");
+        }
+        selectedPersonId = id;
     }
 
     @Override

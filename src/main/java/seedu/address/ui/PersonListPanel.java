@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
@@ -24,9 +26,31 @@ public class PersonListPanel extends UiPart<Region> {
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
      */
     public PersonListPanel(ObservableList<Person> personList) {
+        this(personList, unused -> {});
+    }
+
+    /** Passes row selection to the shared model/details view without interpreting displayed indices. */
+    public PersonListPanel(ObservableList<Person> personList, Consumer<Person> selectionHandler) {
         super(FXML);
         personListView.setItems(personList);
         personListView.setCellFactory(listView -> new PersonListViewCell());
+        personListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+                selectionHandler.accept(newValue));
+    }
+
+    /** Selects and scrolls to a stable student ID after a successful command publication. */
+    public void selectPerson(UUID id) {
+        if (id == null) {
+            personListView.getSelectionModel().clearSelection();
+            return;
+        }
+        for (int i = 0; i < personListView.getItems().size(); i++) {
+            if (personListView.getItems().get(i).getId().equals(id)) {
+                personListView.getSelectionModel().select(i);
+                personListView.scrollTo(i);
+                return;
+            }
+        }
     }
 
     /**
