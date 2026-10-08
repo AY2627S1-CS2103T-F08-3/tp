@@ -225,7 +225,7 @@ The details/card formatters use full weekday names and HH:mm, with an em dash fo
 Repeated equivalent commands preserve selection, scrolling and existing details nodes.
 
 Verification covers field validation, codec/parser/command behavior, persistence and staged failures,
-summary ordering, and the actual JavaFX command box. See [the acceptance run and commands](Testing.md#f01f08-acceptance).
+summary ordering, and the actual JavaFX command box. See [the acceptance run and commands](Testing.md).
 
 ### \[Proposed\] Undo/redo feature
 

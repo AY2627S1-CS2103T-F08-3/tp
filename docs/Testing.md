@@ -99,5 +99,6 @@ must precede declaring the complete F01–F08 release accepted.
 A read-only merge audit of F02/F03's final owner stack (`f9e94e96`, #82) against the tested F08 UI stack
 reported conflicts in `LogicManager`, `AddressBookParser`, `JsonAddressBookStorage`, `MainWindow`,
 `PersonCard` and `PersonListPanel`. The owner must reconcile list/delete with F01's staged execution,
-atomic writer and selected-UUID APIs before the combined release run. These conflicts are tracked with #79;
+atomic writer and selected-UUID APIs before the combined release run. These conflicts are tracked in
+[issue #89](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/89), alongside #79;
 the existing 302-test result applies to the explicitly recorded F01/F03-helper/F08 snapshot.
