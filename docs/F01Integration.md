@@ -25,8 +25,8 @@ collapsing Unicode spaces. It preserves case. Name/address limits count Unicode 
 `Phone` supplies shared Singapore validation/canonicalization; guardian-phone owners should reuse it.
 Commands/prefixes stay ASCII lowercase and case-sensitive; do not NFKC-normalize command syntax.
 
-The shared named-parameter parser will preserve raw values until validation. A boundary is a token beginning
-with an ASCII letter-only prefix followed by `/`. Thus `a/12/3 Street` is one address, while `x/value` is an
+The shared `StudentParameters` parser preserves raw values until validation. A boundary is a token beginning
+with a single ASCII letter followed by `/`. Thus `a/12/3 Street` is one address, while `x/value` is an
 unknown parameter. Slashes embedded in tokens (e.g. `Math/Science`) remain data. Prefix-like literal tokens
 are reserved syntax and cannot be escaped. Owners should raise any disagreement with this boundary rule.
 Unknown parameter/unexpected preamble checks precede required/duplicate parameter checks, then values are
@@ -35,8 +35,8 @@ The F02/F03 owner supplies index syntax/resolution and list/delete selection pol
 
 ## Atomic execution and view handoff
 
-`LogicManager` will execute commands against `Model.copyForCommand()`, save the complete proposed state only
-when data changed, and call `Model.publish()` only after successful storage. Errors leave the live model,
+`LogicManager` executes commands against `Model.copyForCommand()`, saves the complete proposed state only
+when data changed, and calls `Model.publish()` only after successful storage. Errors leave the live model,
 filter and selected UUID untouched. Read-only/no-change commands must not write storage.
 `AtomicJsonFile` writes and forces a sibling temporary file before atomic replacement. Unsupported atomic
 moves fail safely; there is no truncate-in-place fallback. JSON keeps the existing `persons` array in order.
@@ -48,3 +48,23 @@ and display formatting for equivalent normalized no-change input. All command ef
 
 UI selection is synchronized only after successful execution. Optional values display an em dash when unset.
 Please coordinate changes to Model, LogicManager, Person, JsonAdaptedPerson and selection APIs before merging.
+
+## Review slices and owner handoff
+
+F01 is split into four PRs: foundation (#57), validation/parsing (#62), atomic persistence (#63), and UI/tests/docs.
+Each dependent PR is initially based on the preceding slice, not `master`, to keep its diff focused. Retarget to
+`master` after the prerequisite has landed there; merging into a dependency branch does not itself deliver to
+`master`. No PR in this chain implements another owner's command.
+
+* F02/F03: reuse `getPersonPredicate`, `getSelectedPersonId`, `selectPerson`, `copyForCommand` and `publish`.
+  Shared visible-index work is tracked in #64. Never interpret UUIDs as displayed indices. The existing legacy
+  command behaviour is not the final F02/F03 contract; implement exact index/list/delete messages there.
+* Guardian phone owner: reuse `Phone`; use a `StudentField<Phone>` codec with key `guardianPhone`.
+* Education/subject/rate owners: supply their own validated types and codecs; use `withStudentFields` and keep
+  unrelated values. Canonical levels and two-decimal BigDecimal rates remain those owners' responsibility.
+* F08: the weekly slot value is being introduced in #60. Its owner supplies the `weeklySlot` codec and final
+  display formatting; F01 preserves that JSON but does not impose its internal schema.
+
+Owners of no-change updates must return without changing their staged model or selection. Data equality skips
+saving; it is not a substitute for command-specific no-change messages or display-format preservation.
+The fallback details renderer shows stored values; each optional-field owner should add its final formatter.
