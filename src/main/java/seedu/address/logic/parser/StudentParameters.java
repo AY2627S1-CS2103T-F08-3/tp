@@ -11,19 +11,44 @@ import java.util.regex.Pattern;
 
 import seedu.address.logic.parser.exceptions.ParseException;
 
-/** Shared structural parser for single-letter student parameters; values remain raw until validated. */
+/** Shared structural parser for student parameters; values remain raw until validated. */
 public final class StudentParameters {
     public static final String UNEXPECTED_TEXT = "Error: Unexpected text after command.";
-    private static final Pattern BOUNDARY = Pattern.compile("(?<!\\S)([A-Za-z]/)",
+    private static final Pattern BOUNDARY = Pattern.compile("(?<!\\S)([A-Za-z]+/)",
             Pattern.UNICODE_CHARACTER_CLASS);
 
     private StudentParameters() {}
 
     /**
      * Parses required parameters in documented order, e.g. n/NAME, p/PHONE, a/ADDRESS.
-     * Whitespace-delimited single-letter slash tokens are syntax; embedded slashes remain value text.
+     * Whitespace-delimited letter-only slash tokens are syntax; embedded slashes remain value text.
      */
     public static Map<String, String> parse(String input, String... labels) throws ParseException {
+        return parseRequired(input, false, labels);
+    }
+
+    /**
+     * Parses one positional index followed by required single-token parameters, preserving raw field values.
+     */
+    public static IndexedParameters parseIndexed(String input, String... labels) throws ParseException {
+        String leading = input.replaceFirst("^\\p{Zs}+", "");
+        Matcher firstToken = Pattern.compile("^([^\\s\\p{Zs}]+)", Pattern.UNICODE_CHARACTER_CLASS).matcher(leading);
+        String index = "";
+        String remaining = leading;
+        if (firstToken.find() && !firstToken.group(1).matches("[A-Za-z]+/.*")) {
+            index = firstToken.group(1);
+            remaining = leading.substring(firstToken.end());
+        }
+        return new IndexedParameters(index, parseRequired(remaining, true, labels));
+    }
+
+    /**
+     * Raw positional index and structurally validated named values.
+     */
+    public record IndexedParameters(String index, Map<String, String> values) {}
+
+    private static Map<String, String> parseRequired(String input, boolean singleToken, String... labels)
+            throws ParseException {
         requireNonNull(input);
         Map<String, List<String>> values = new LinkedHashMap<>();
         for (String label : labels) {
@@ -34,7 +59,7 @@ public final class StudentParameters {
         int start = 0;
         while (matcher.find()) {
             String rawValue = input.substring(start, matcher.start());
-            if (previous == null && !rawValue.isBlank()) {
+            if (previous == null && !rawValue.matches("(?U)\\s*")) {
                 throw new ParseException(UNEXPECTED_TEXT);
             }
             if (previous != null) {
@@ -48,11 +73,20 @@ public final class StudentParameters {
             start = matcher.end();
         }
         if (previous == null) {
-            if (!input.isBlank()) {
+            if (!input.matches("(?U)\\s*")) {
                 throw new ParseException(UNEXPECTED_TEXT);
             }
         } else {
             values.get(previous).add(input.substring(start));
+        }
+        if (singleToken) {
+            for (List<String> occurrences : values.values()) {
+                for (String value : occurrences) {
+                    if (value.replaceAll("^\\p{Zs}+|\\p{Zs}+$", "").split("\\p{Zs}+").length > 1) {
+                        throw new ParseException(UNEXPECTED_TEXT);
+                    }
+                }
+            }
         }
         Map<String, String> result = new LinkedHashMap<>();
         for (String label : labels) {

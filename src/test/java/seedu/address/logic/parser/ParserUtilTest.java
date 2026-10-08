@@ -40,9 +40,16 @@ public class ParserUtilTest {
     }
 
     @Test
-    public void parseIndex_outOfRangeInput_throwsParseException() {
-        assertThrows(ParseException.class, MESSAGE_INVALID_INDEX, ()
-            -> ParserUtil.parseIndex(Long.toString(Integer.MAX_VALUE + 1)));
+    public void parseIndex_oversizedInput_preservesExactValue() throws Exception {
+        String oversized = "99999999999999999999999999999999999999";
+        assertEquals(oversized, ParserUtil.parseIndex(oversized).getOneBasedString());
+    }
+
+    @Test
+    public void parseIndex_invalidSyntax_exactMessage() {
+        for (String value : List.of("0", "01", "+1", "-1", "1.0", "1a", "1 2")) {
+            assertThrows(ParseException.class, MESSAGE_INVALID_INDEX, () -> ParserUtil.parseIndex(value));
+        }
     }
 
     @Test
