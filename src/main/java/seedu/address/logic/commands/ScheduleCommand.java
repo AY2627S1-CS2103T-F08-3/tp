@@ -5,8 +5,8 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Objects;
 import java.util.Optional;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.commands.exceptions.CommandException;
+import seedu.address.logic.parser.VisibleIndex;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.WeeklySlot;
@@ -23,13 +23,13 @@ public class ScheduleCommand extends Command {
     public static final String MESSAGE_UPDATED = "Weekly lesson updated for %s: %s -> %s.";
     public static final String MESSAGE_UNCHANGED = "Weekly lesson for %s is already %s.";
 
-    private final Index index;
+    private final VisibleIndex index;
     private final WeeklySlot slot;
 
     /**
      * Creates a complete slot update for a displayed-list index.
      */
-    public ScheduleCommand(Index index, WeeklySlot slot) {
+    public ScheduleCommand(VisibleIndex index, WeeklySlot slot) {
         requireAllNonNull(index, slot);
         this.index = index;
         this.slot = slot;
@@ -38,7 +38,7 @@ public class ScheduleCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         Objects.requireNonNull(model);
-        Person target = VisibleIndexResolver.resolvePerson(index, model);
+        Person target = index.resolve(model.getFilteredPersonList());
         Optional<WeeklySlot> previous = target.getStudentFields().get(WeeklySlotField.INSTANCE);
         if (previous.filter(slot::equals).isPresent()) {
             return new CommandResult(String.format(MESSAGE_UNCHANGED, target.getName(), slot));
@@ -59,6 +59,6 @@ public class ScheduleCommand extends Command {
 
     @Override
     public int hashCode() {
-        return Objects.hash(index.getOneBasedString(), slot);
+        return Objects.hash(index, slot);
     }
 }

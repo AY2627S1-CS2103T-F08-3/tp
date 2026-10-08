@@ -3,7 +3,6 @@ package seedu.address.logic.parser;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.commons.util.StudentText;
 import seedu.address.logic.commands.ScheduleCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -19,7 +18,7 @@ public class ScheduleCommandParser implements Parser<ScheduleCommand> {
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }
         StudentParameters.IndexedParameters parameters = StudentParameters.parseIndexed(args, "d/DAY", "t/TIME");
-        Index index = ParserUtil.parseIndex(StudentText.normalize(parameters.index()));
+        VisibleIndex index = VisibleIndex.parse(StudentText.normalize(parameters.index()));
         try {
             DayOfWeek day = WeeklySlot.parseDay(parameters.values().get("d/"));
             LocalTime time = WeeklySlot.parseTime(parameters.values().get("t/"));

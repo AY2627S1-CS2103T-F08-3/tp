@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import seedu.address.commons.core.index.Index;
 import seedu.address.logic.Messages;
 import seedu.address.logic.commands.ScheduleCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -20,7 +19,7 @@ public class ScheduleCommandParserTest {
 
     @Test
     public void parse_reorderedPrefixesAndWhitespace_sameCommand() throws Exception {
-        ScheduleCommand expected = new ScheduleCommand(Index.fromOneBased(1),
+        ScheduleCommand expected = new ScheduleCommand(VisibleIndex.parse("1"),
                 new WeeklySlot(DayOfWeek.TUESDAY, LocalTime.of(19, 0)));
         for (String args : List.of(" 1 d/Tuesday t/19:00", " 1 t/19:00 d/tUe", "  1   d/ tue   t/ 19:00  ",
                 "\u00a0１ d/Ｔｕｅ t/１９：００  ", " １\u00a0t/\u00a0１９：００ d/\u00a0Ｔｕｅ\u00a0")) {
@@ -32,7 +31,7 @@ public class ScheduleCommandParserTest {
 
     @Test
     public void parse_weekendExample_success() throws Exception {
-        assertEquals(new ScheduleCommand(Index.fromOneBased(2),
+        assertEquals(new ScheduleCommand(VisibleIndex.parse("2"),
                 new WeeklySlot(DayOfWeek.SATURDAY, LocalTime.of(9, 30))), parser.parse(" 2 d/Sat t/09:30"));
     }
 
@@ -61,7 +60,7 @@ public class ScheduleCommandParserTest {
     @Test
     public void parse_invalidIndexSyntax_precedesDayAndTime() {
         for (String index : List.of("", "0", "01", "+1", "-1", "1.0", "x")) {
-            assertFailure(" " + index + " t/24:00 d/Funday", ParserUtil.MESSAGE_INVALID_INDEX);
+            assertFailure(" " + index + " t/24:00 d/Funday", VisibleIndex.MESSAGE_INVALID);
         }
     }
 
@@ -77,7 +76,7 @@ public class ScheduleCommandParserTest {
     @Test
     public void parse_oversizedIndex_isSafeAndRetainsExactIndex() throws Exception {
         String index = "99999999999999999999999999999999999999";
-        assertEquals(new ScheduleCommand(Index.fromOneBased(index),
+        assertEquals(new ScheduleCommand(VisibleIndex.parse(index),
                 new WeeklySlot(DayOfWeek.SUNDAY, LocalTime.of(23, 59))),
                 parser.parse(" " + index + " t/23:59 d/Sun"));
     }
