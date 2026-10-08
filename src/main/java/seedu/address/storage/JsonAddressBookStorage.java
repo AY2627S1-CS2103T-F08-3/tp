@@ -21,9 +21,16 @@ public class JsonAddressBookStorage {
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
     private Path filePath;
+    private final AtomicJsonFile writer;
 
     public JsonAddressBookStorage(Path filePath) {
+        this(filePath, new AtomicJsonFile());
+    }
+
+    /** Allows deterministic failure injection without changing the production save protocol. */
+    public JsonAddressBookStorage(Path filePath, AtomicJsonFile writer) {
         this.filePath = filePath;
+        this.writer = requireNonNull(writer);
     }
 
     public Path getAddressBookFilePath() {
@@ -81,7 +88,8 @@ public class JsonAddressBookStorage {
         requireNonNull(addressBook);
         requireNonNull(filePath);
 
-        new AtomicJsonFile().write(filePath, JsonUtil.toJsonString(new JsonSerializableAddressBook(addressBook)));
+        String json = JsonUtil.toJsonString(new JsonSerializableAddressBook(addressBook));
+        writer.write(filePath, json);
     }
 
 }

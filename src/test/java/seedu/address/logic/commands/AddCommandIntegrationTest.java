@@ -1,5 +1,6 @@
 package seedu.address.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandFailure;
 import static seedu.address.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
@@ -7,7 +8,6 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import seedu.address.logic.Messages;
 import seedu.address.model.Model;
 import seedu.address.model.ModelManager;
 import seedu.address.model.UserPrefs;
@@ -34,7 +34,7 @@ public class AddCommandIntegrationTest {
         expectedModel.addPerson(validPerson);
 
         assertCommandSuccess(new AddCommand(validPerson), model,
-                String.format(AddCommand.MESSAGE_SUCCESS, Messages.format(validPerson)),
+                String.format(AddCommand.MESSAGE_SUCCESS, validPerson.getName()),
                 expectedModel);
     }
 
@@ -43,6 +43,33 @@ public class AddCommandIntegrationTest {
         Person personInList = model.getAddressBook().getPersonList().get(0);
         assertCommandFailure(new AddCommand(personInList), model,
                 AddCommand.MESSAGE_DUPLICATE_PERSON);
+    }
+
+    @Test
+    public void execute_normalizedDuplicate_rejectedEvenWhenHidden() {
+        Person original = model.getAddressBook().getPersonList().getFirst();
+        model.updateFilteredPersonList(student -> false);
+        Person duplicate = new PersonBuilder(original).withName("  ALICE   PAULINE  ")
+                .withPhone("+65-9435-1253").withAddress("Another address").build();
+        assertCommandFailure(new AddCommand(duplicate), model, AddCommand.MESSAGE_DUPLICATE_PERSON);
+    }
+
+    @Test
+    public void execute_sameNameDifferentPhone_accepted() throws Exception {
+        Person original = model.getAddressBook().getPersonList().getFirst();
+        Person added = new PersonBuilder(original).withPhone("61234567").build();
+        assertEquals("Student added: Alice Pauline.", new AddCommand(added).execute(model).getFeedbackToUser());
+        assertEquals(added, model.getAddressBook().getPersonList().getLast());
+    }
+
+    @Test
+    public void execute_sharedPhoneDifferentName_warningAppended() throws Exception {
+        Person original = model.getAddressBook().getPersonList().getFirst();
+        model.updateFilteredPersonList(student -> false);
+        Person added = new PersonBuilder(original).withName("Another Student").build();
+        assertEquals("Student added: Another Student. Warning: Another student uses this phone number.",
+                new AddCommand(added).execute(model).getFeedbackToUser());
+        assertEquals(added, model.getAddressBook().getPersonList().getLast());
     }
 
 }
