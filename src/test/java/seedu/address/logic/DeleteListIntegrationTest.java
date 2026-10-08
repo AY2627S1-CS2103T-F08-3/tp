@@ -2,6 +2,7 @@ package seedu.address.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static seedu.address.testutil.Assert.assertThrows;
 import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
@@ -82,6 +83,7 @@ class DeleteListIntegrationTest {
         AddressBook before = new AddressBook(model.getAddressBook());
         Person visible = model.getFilteredPersonList().get(3);
         model.updateFilteredPersonList(p -> p == visible);
+        model.selectPerson(visible.getId());
         JsonAddressBookStorage failing = new JsonAddressBookStorage(path) {
             @Override
             public void saveAddressBook(ReadOnlyAddressBook proposed) throws IOException {
@@ -94,6 +96,7 @@ class DeleteListIntegrationTest {
                 logic(model, failing).execute("delete 1"));
         assertEquals(before, model.getAddressBook());
         assertEquals(List.of(visible), model.getFilteredPersonList());
+        assertEquals(visible.getId(), model.getSelectedPersonId());
         assertEquals(original, Files.readString(path));
     }
 
@@ -129,6 +132,7 @@ class DeleteListIntegrationTest {
         AddressBook before = new AddressBook(model.getAddressBook());
         Person visible = model.getFilteredPersonList().get(2);
         model.updateFilteredPersonList(p -> p == visible);
+        model.selectPerson(visible.getId());
         Path path = directory.resolve("register.json");
         Files.writeString(path, "invalid json");
         Logic logic = logic(model, new JsonAddressBookStorage(path));
@@ -136,6 +140,7 @@ class DeleteListIntegrationTest {
         assertThrows(CommandException.class, ListCommand.MESSAGE_LOAD_FAILURE, () -> logic.execute("list"));
         assertEquals(before, model.getAddressBook());
         assertEquals(List.of(visible), model.getFilteredPersonList());
+        assertEquals(visible.getId(), model.getSelectedPersonId());
         assertEquals("invalid json", Files.readString(path));
     }
 
@@ -170,6 +175,33 @@ class DeleteListIntegrationTest {
         };
         logic(model, storage).execute("delete 1");
         assertEquals(List.of(survivor), model.getFilteredPersonList());
+    }
+
+
+    @Test
+    void delete_duplicateNames_preservesOtherProfileAndSelectionById() throws Exception {
+        Model model = new ModelManager();
+        StudentFields fields = new StudentFields(Map.of("subject", TextNode.valueOf("Math"),
+                "guardianPhone", TextNode.valueOf("+6591234567"),
+                "educationLevel", TextNode.valueOf("Primary 1"),
+                "hourlyRate", TextNode.valueOf("40.00"),
+                "weeklySlot", TextNode.valueOf("MONDAY 16:00")));
+        Person target = new PersonBuilder().withName("Same Name").withPhone("81234567")
+                .build().withStudentFields(fields);
+        Person survivor = new PersonBuilder().withName("Same Name").withPhone("91234567")
+                .build().withStudentFields(fields);
+        model.addPerson(target);
+        model.addPerson(survivor);
+        JsonAddressBookStorage storage = new JsonAddressBookStorage(directory.resolve("register.json"));
+        Logic logic = logic(model, storage);
+        logic.execute("delete 1");
+        assertEquals(survivor.getId(), model.getSelectedPersonId());
+        Person reloaded = storage.readAddressBook().orElseThrow().getPersonList().get(0);
+        assertEquals(survivor.getId(), reloaded.getId());
+        assertEquals(fields, reloaded.getStudentFields());
+        logic.execute("delete 1");
+        assertNull(model.getSelectedPersonId());
+        assertEquals(List.of(), storage.readAddressBook().orElseThrow().getPersonList());
     }
 
 }
