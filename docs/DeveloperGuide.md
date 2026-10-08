@@ -199,6 +199,34 @@ Verification:
 * `AddStudentEndToEndTest` verifies invalid commands leave state unchanged, exact error precedence, both user
   examples, shared-phone warnings, duplicate rules and insertion order after reload.
 
+### F08: Weekly Lesson Scheduling
+
+`WeeklySlot` is immutable: it requires a `DayOfWeek` and a minute-precision `LocalTime` together.
+`WeeklySlotField` implements F01's `StudentField<WeeklySlot>` with the reserved key `weeklySlot`.
+It encodes one JSON object, for example `{"day":"TUESDAY","time":"19:00"}`. The optional object is either
+unset or complete. `JsonAdaptedPerson` invokes the codec before returning a loaded student, rejecting partial
+objects and invalid values. The shared `StudentFields` envelope retains unrelated owner fields and stable IDs.
+
+`ScheduleCommandParser` uses `StudentParameters.parseIndexed` for structure and `StudentText` for normalization.
+Command/prefix syntax stays case-sensitive. Structural unknown/unexpected errors precede required/repeated
+parameters; values are checked as index syntax, day, then time. F03's `VisibleIndex` keeps arbitrary-length
+decimal indexes and resolves against the displayed list only after value validation.
+
+`ScheduleCommand` compares the typed normalized slot before updating. A real change uses `withStudentFields`
+to replace the complete pair and selects the target UUID; no-change returns without touching the staged model.
+F01's `copyForCommand`/save/`publish` protocol and `AtomicJsonFile` preserve file bytes, live state, predicate,
+selection and both components on failure. Overlaps are accepted; there is no conflict or duration model.
+
+`WeeklySchedule` observes the complete register through a filtered/sorted view, ordering by weekday, time and
+source insertion position. Its unmodifiable entries drive `WeeklySchedulePanel`; it does not change register
+order or follow the displayed-list filter. Removal from the register automatically removes the schedule entry.
+The details/card formatters use full weekday names and HH:mm, with an em dash for an unset slot.
+`MainWindow` ignores transient selection events while publishing, then refreshes the selected immutable record.
+Repeated equivalent commands preserve selection, scrolling and existing details nodes.
+
+Verification covers field validation, codec/parser/command behavior, persistence and staged failures,
+summary ordering, and the actual JavaFX command box. See [the acceptance run and commands](Testing.md#f01f08-acceptance).
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
@@ -339,7 +367,7 @@ These are product priorities, not release commitments. The initial MVP covers st
 | 5 | `* * *` | freelance tutor | tag students by educational level (e.g., Primary, Sec 4, JC 2) | tailor my materials and syllabus planning accurately |
 | 6 | `* * *` | freelance tutor | tag students by subject taught (e.g., H2 Math, O-Level Chem) | group students by preparation requirements |
 | 7 | `* * *` | freelance tutor | record an agreed hourly rate for each student | calculate tuition fees accurately at the end of each billing cycle |
-| 8 | `* * *` | freelance tutor | record weekly recurring lesson slots (day and time) for each student | avoid double-booking lesson times across different students |
+| 8 | `* * *` | freelance tutor | record weekly recurring lesson slots (day and time) for each student | plan the teaching week alongside student details |
 | 9 | `* * *` | freelance tutor | edit an existing student's contact or academic details | keep information up to date without re-creating the profile |
 | 10 | `* * *` | freelance tutor | filter students by subject or level | view subsets of my cohort during syllabus revisions |
 | 11 | `* * *` | freelance tutor | mark a monthly invoice or payment as pending or completed | track which parents owe me fees without manual spreadsheet checking |

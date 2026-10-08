@@ -1,6 +1,7 @@
 # F01 shared integration contract
 
 Status: implementation contract for coordination; owner acknowledgement is pending.
+F08 adopts these interfaces in #58; its F01/F03 integration is verified by the desktop acceptance run in #79.
 F01 implements Add Student only. This document does not allocate or implement other owners' commands.
 
 ## Student model
@@ -26,7 +27,7 @@ collapsing Unicode spaces. It preserves case. Name/address limits count Unicode 
 Commands/prefixes stay ASCII lowercase and case-sensitive; do not NFKC-normalize command syntax.
 
 The shared `StudentParameters` parser preserves raw values until validation. A boundary is a token beginning
-with a single ASCII letter followed by `/`. Thus `a/12/3 Street` is one address, while `x/value` is an
+with ASCII letters followed by `/`. Thus `a/12/3 Street` is one address, while `x/value` is an
 unknown parameter. Slashes embedded in tokens (e.g. `Math/Science`) remain data. Prefix-like literal tokens
 are reserved syntax and cannot be escaped. Owners should raise any disagreement with this boundary rule.
 Unknown parameter/unexpected preamble checks precede required/duplicate parameter checks, then values are
@@ -57,14 +58,18 @@ Each dependent PR is initially based on the preceding slice, not `master`, to ke
 `master`. No PR in this chain implements another owner's command.
 
 * F02/F03: reuse `getPersonPredicate`, `getSelectedPersonId`, `selectPerson`, `copyForCommand` and `publish`.
-  Shared visible-index work is tracked in #64. Never interpret UUIDs as displayed indices. The existing legacy
+  F08 uses the F03 owner's `VisibleIndex` from #68. Never interpret UUIDs as displayed indices. The existing legacy
   command behaviour is not the final F02/F03 contract; implement exact index/list/delete messages there.
 * Guardian phone owner: reuse `Phone`; use a `StudentField<Phone>` codec with key `guardianPhone`.
 * Education/subject/rate owners: supply their own validated types and codecs; use `withStudentFields` and keep
   unrelated values. Canonical levels and two-decimal BigDecimal rates remain those owners' responsibility.
-* F08: the weekly slot value is being introduced in #60. Its owner supplies the `weeklySlot` codec and final
-  display formatting; F01 preserves that JSON but does not impose its internal schema.
+* F08: #60 supplies `WeeklySlot`, #73 the command and `WeeklySlotField` codec, and #80 persisted-value validation.
+  The `weeklySlot` JSON object contains `day` (weekday enum name) and `time` (HH:mm), both required when present.
+  Missing/null objects remain unset. The F08 UI formats full weekday names and observes a separate `WeeklySchedule`.
+  Indexed field commands use `StudentParameters.parseIndexed`; single-token structure is checked before required
+  parameters, then the owner validates normalized index/day/time in documentation order.
 
 Owners of no-change updates must return without changing their staged model or selection. Data equality skips
 saving; it is not a substitute for command-specific no-change messages or display-format preservation.
 The fallback details renderer shows stored values; each optional-field owner should add its final formatter.
+F08's complete pair uses its typed formatter in details/cards and a separately sorted weekly summary.
