@@ -36,6 +36,7 @@ jobs:
         if: runner.os == 'Linux'
         env:
           F01_UI_TESTS: 'true'
+          F08_UI_TESTS: 'true'
           JAVA_TOOL_OPTIONS: '-Dprism.order=sw'
         run: xvfb-run --auto-servernum ./gradlew check coverage
 

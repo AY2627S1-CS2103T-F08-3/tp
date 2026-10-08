@@ -37,6 +37,7 @@ public class MainWindow extends UiPart<Stage> {
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
     private StudentDetailsPanel studentDetailsPanel;
+    private boolean executingCommand;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -49,6 +50,9 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane studentDetailsPlaceholder;
+
+    @FXML
+    private StackPane weeklySchedulePlaceholder;
 
     @FXML
     private StackPane resultDisplayPlaceholder;
@@ -121,10 +125,13 @@ public class MainWindow extends UiPart<Stage> {
         studentDetailsPanel = new StudentDetailsPanel();
         studentDetailsPlaceholder.getChildren().add(studentDetailsPanel);
         personListPanel = new PersonListPanel(logic.getFilteredPersonList(), student -> {
-            logic.selectPerson(student == null ? null : student.getId());
-            studentDetailsPanel.showStudent(student);
+            if (!executingCommand) {
+                logic.selectPerson(student == null ? null : student.getId());
+                studentDetailsPanel.showStudent(student);
+            }
         });
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
+        weeklySchedulePlaceholder.getChildren().add(new WeeklySchedulePanel(logic.getWeeklySchedule()));
 
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
@@ -186,9 +193,12 @@ public class MainWindow extends UiPart<Stage> {
      * @see seedu.address.logic.Logic#execute(String)
      */
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
+        executingCommand = true;
         try {
             CommandResult commandResult = logic.execute(commandText);
             personListPanel.selectPerson(logic.getSelectedPersonId());
+            studentDetailsPanel.showStudent(logic.getFilteredPersonList().stream()
+                    .filter(person -> person.getId().equals(logic.getSelectedPersonId())).findFirst().orElse(null));
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
             commandResult.getSelectedPersonIndex().ifPresent(index -> personListPanel.selectIndex(index - 1));
@@ -206,6 +216,8 @@ public class MainWindow extends UiPart<Stage> {
             logger.info("An error occurred while executing command: " + commandText);
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
+        } finally {
+            executingCommand = false;
         }
     }
 }

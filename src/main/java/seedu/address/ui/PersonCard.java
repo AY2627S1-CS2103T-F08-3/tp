@@ -8,6 +8,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.WeeklySlotField;
 
 /**
  * A UI component that displays information of a {@code Person}.
@@ -41,6 +42,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label email;
     @FXML
+    private Label weeklySlot;
+    @FXML
     private Label educationLevel;
     @FXML
     private FlowPane tags;
@@ -57,6 +60,7 @@ public class PersonCard extends UiPart<Region> {
         address.setText(person.getAddress().value);
         subject.setText("Subject: " + person.getStudentFields().display("subject"));
         email.setText(person.getEmail().value);
+        weeklySlot.setText("Weekly lesson: " + WeeklySlotField.display(person));
         email.setVisible(!person.getEmail().value.isEmpty());
         email.setManaged(email.isVisible());
         educationLevel.setText("Level: " + person.getStudentFields().display("educationLevel"));

@@ -54,9 +54,12 @@
             </padding>
             <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS"/>
           </VBox>
-          <ScrollPane fitToWidth="true" minWidth="250" styleClass="pane-with-border">
-            <StackPane fx:id="studentDetailsPlaceholder" alignment="TOP_LEFT" />
-          </ScrollPane>
+          <VBox spacing="12" minWidth="250" styleClass="pane-with-border">
+            <ScrollPane fitToWidth="true" prefHeight="300" VBox.vgrow="ALWAYS">
+              <StackPane fx:id="studentDetailsPlaceholder" alignment="TOP_LEFT" />
+            </ScrollPane>
+            <StackPane fx:id="weeklySchedulePlaceholder" minHeight="150" prefHeight="240" VBox.vgrow="ALWAYS" />
+          </VBox>
         </SplitPane>
 
         <StackPane fx:id="statusbarPlaceholder" VBox.vgrow="NEVER" />
