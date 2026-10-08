@@ -153,12 +153,14 @@ public class Person {
                 && tags.equals(otherPerson.tags)
                 && guardianPhone.equals(otherPerson.guardianPhone)
                 && hourlyRate.equals(otherPerson.hourlyRate);
+                && studentFields.equals(otherPerson.studentFields);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
         return Objects.hash(name, phone, email, address, tags, guardianPhone, hourlyRate);
+        return Objects.hash(name, phone, email, address, tags, studentFields);
     }
 
     @Override

@@ -1,6 +1,8 @@
 package seedu.address.logic.parser;
 
 import seedu.address.commons.core.index.Index;
+import java.text.Normalizer;
+
 import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.parser.exceptions.ParseException;
 
