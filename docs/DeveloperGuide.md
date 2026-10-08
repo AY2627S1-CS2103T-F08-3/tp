@@ -193,7 +193,9 @@ Verification:
 * `./gradlew check coverage` runs validation, parser, command, persistence and end-to-end tests.
 * `F01_UI_TESTS=true ./gradlew test --rerun-tasks` also runs the real JavaFX command-box/selection/details test.
   It requires a desktop display (or a configured virtual display on Linux) and the project's prescribed JDK+FX.
-  The GUI test is explicitly disabled without that environment variable so headless checks remain usable.
+  The GUI test is explicitly disabled without that environment variable so headless local checks remain usable.
+  Linux CI enables it under `xvfb-run` using software rendering, and uploads that run's coverage to Codecov.
+  The test opt-in is a Gradle task input so enabling it cannot reuse results from a run that skipped the UI test.
 * `AtomicStudentCommandTest` injects write/replacement failures and checks old file bytes, filter and selection,
   as well as save-before-publish ordering. `StudentPersistenceTest` checks old records, stable IDs and owner data.
 * `AddStudentEndToEndTest` verifies invalid commands leave state unchanged, exact error precedence, both user

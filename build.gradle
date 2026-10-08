@@ -26,6 +26,7 @@ checkstyle {
 
 test {
     useJUnitPlatform()
+    inputs.property('f01UiTests', System.getenv('F01_UI_TESTS') ?: 'false')
     finalizedBy jacocoTestReport
 }
 

@@ -1,6 +1,7 @@
 package seedu.address.ui;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -30,6 +31,7 @@ import seedu.address.model.person.Person;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
+import seedu.address.testutil.PersonBuilder;
 
 /** Real JavaFX smoke test; opt in on a desktop or under a virtual display with F01_UI_TESTS=true. */
 @EnabledIfEnvironmentVariable(named = "F01_UI_TESTS", matches = "true")
@@ -70,6 +72,9 @@ public class AddStudentUiTest {
                 @SuppressWarnings("unchecked")
                 ListView<Person> rows = (ListView<Person>) stage.getScene().lookup("#personListView");
                 enter(input, "add n/Alex Tan p/81234567 a/21 Clementi Ave 3 #04-18");
+                // Materialize virtualized list cells before checking card rendering/coverage.
+                stage.getScene().getRoot().applyCss();
+                stage.getScene().getRoot().layout();
                 assertEquals("Student added: Alex Tan.", status.getText());
                 assertEquals(0, rows.getSelectionModel().getSelectedIndex());
                 assertEquals(model.getSelectedPersonId(), rows.getSelectionModel().getSelectedItem().getId());
@@ -78,6 +83,15 @@ public class AddStudentUiTest {
                 assertTrue(text.contains("Phone: +6581234567"));
                 assertEquals(5, text.stream().filter(line -> line.endsWith("—")).count());
                 Person selected = rows.getSelectionModel().getSelectedItem();
+                Label email = (Label) rows.lookup("#email");
+                assertFalse(email.isVisible());
+                assertFalse(email.isManaged());
+                PersonCard legacyCard = new PersonCard(new PersonBuilder().build(), 1);
+                assertTrue(legacyCard.getRoot().lookup("#email").isVisible());
+                assertTrue(legacyCard.getRoot().lookup("#email").isManaged());
+                PersonListPanel compatibilityPanel = new PersonListPanel(rows.getItems());
+                assertEquals(rows.getItems(), ((ListView<?>) compatibilityPanel.getRoot()
+                        .lookup("#personListView")).getItems());
                 enter(input, "add n/123 p/81234567 a/A");
                 assertTrue(status.getText().startsWith("Error: Invalid name."));
                 assertEquals(selected, rows.getSelectionModel().getSelectedItem());
