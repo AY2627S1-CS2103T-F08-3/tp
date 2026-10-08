@@ -5,6 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,7 +14,8 @@ import seedu.address.model.tag.Tag;
 
 /**
  * Represents a Person in the address book.
- * Guarantees: details are present and not null, field values are validated, immutable.
+ * Guarantees: required details are present and validated, optional details are explicitly unset or validated,
+ * and the object is immutable.
  */
 public class Person {
 
@@ -30,10 +32,16 @@ public class Person {
     private final Set<Tag> tags = new HashSet<>();
 
     /**
-     * Every field must be present and not null.
+     * Creates a person without guardian phone or hourly rate details.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
-        this(UUID.randomUUID(), name, phone, email, address, tags, new StudentFields());
+        this(name, phone, email, address, tags, Optional.empty(), Optional.empty());
+    }
+
+    /** Creates a person with optional guardian phone and hourly rate fields. */
+    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags,
+            Optional<GuardianPhone> guardianPhone, Optional<HourlyRate> hourlyRate) {
+        this(UUID.randomUUID(), name, phone, email, address, tags, contactFields(guardianPhone, hourlyRate));
     }
 
     /** Creates a student with no optional fields or legacy contact metadata. */
@@ -47,7 +55,7 @@ public class Person {
         requireAllNonNull(name, phone, email, address, tags);
         requireAllNonNull(id, studentFields);
         this.id = id;
-        this.studentFields = studentFields;
+        this.studentFields = canonicalizeContactFields(studentFields);
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -94,6 +102,48 @@ public class Person {
      */
     public Set<Tag> getTags() {
         return Collections.unmodifiableSet(tags);
+    }
+
+    public Optional<GuardianPhone> getGuardianPhone() {
+        return studentFields.get(GuardianPhone.FIELD);
+    }
+
+    public Optional<HourlyRate> getHourlyRate() {
+        return studentFields.get(HourlyRate.FIELD);
+    }
+
+    /** Updates the guardian contact while retaining identity and every unrelated field. */
+    public Person withGuardianPhone(GuardianPhone value) {
+        return withStudentFields(studentFields.with(GuardianPhone.FIELD, value));
+    }
+
+    /** Updates the hourly rate while retaining identity and every unrelated field. */
+    public Person withHourlyRate(HourlyRate value) {
+        return withStudentFields(studentFields.with(HourlyRate.FIELD, value));
+    }
+
+    private static StudentFields contactFields(Optional<GuardianPhone> guardian, Optional<HourlyRate> rate) {
+        requireAllNonNull(guardian, rate);
+        StudentFields fields = new StudentFields();
+        if (guardian.isPresent()) {
+            fields = fields.with(GuardianPhone.FIELD, guardian.get());
+        }
+        if (rate.isPresent()) {
+            fields = fields.with(HourlyRate.FIELD, rate.get());
+        }
+        return fields;
+    }
+
+    private static StudentFields canonicalizeContactFields(StudentFields fields) {
+        Optional<GuardianPhone> guardian = fields.get(GuardianPhone.FIELD);
+        Optional<HourlyRate> rate = fields.get(HourlyRate.FIELD);
+        if (guardian.isPresent()) {
+            fields = fields.with(GuardianPhone.FIELD, guardian.get());
+        }
+        if (rate.isPresent()) {
+            fields = fields.with(HourlyRate.FIELD, rate.get());
+        }
+        return fields;
     }
 
     /**
@@ -147,6 +197,8 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("tags", tags)
+                .add("guardianPhone", getGuardianPhone())
+                .add("hourlyRate", getHourlyRate())
                 .toString();
     }
 

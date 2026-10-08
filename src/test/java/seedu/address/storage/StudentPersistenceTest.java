@@ -84,4 +84,28 @@ public class StudentPersistenceTest {
                     new StudentFields(Map.of(key, new TextNode("replacement"))));
         }
     }
+
+    @Test
+    public void legacyGuardianRateJson_loadsTypedValuesIntoTheSharedEnvelope() throws Exception {
+        JsonAdaptedPerson adapter = new JsonAdaptedPerson("Alex Tan", "81234567", null, "21 Street", null,
+                "+6591234567", "40");
+        Person loaded = adapter.toModelType();
+        assertEquals("+6591234567", loaded.getGuardianPhone().orElseThrow().value);
+        assertEquals("40.00", loaded.getHourlyRate().orElseThrow().toString());
+        assertEquals("+6591234567", loaded.getStudentFields().display("guardianPhone"));
+        assertEquals("40.00", loaded.getStudentFields().display("hourlyRate"));
+        assertEquals(loaded.getId(), new JsonAdaptedPerson(loaded).toModelType().getId());
+    }
+
+    @Test
+    public void invalidGuardianAndRateJson_reportValidationErrors() {
+        for (String guardian : new String[]{"91234567", "invalid"}) {
+            JsonAdaptedPerson adapter = new JsonAdaptedPerson("Alex", "81234567", null, "A", null, guardian, null);
+            assertThrows(IllegalValueException.class, adapter::toModelType);
+        }
+        for (String rate : new String[]{"invalid", "0.00", "1000.01", "40.001"}) {
+            JsonAdaptedPerson adapter = new JsonAdaptedPerson("Alex", "81234567", null, "A", null, null, rate);
+            assertThrows(IllegalValueException.class, adapter::toModelType);
+        }
+    }
 }
