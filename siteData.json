@@ -52,6 +52,7 @@
         "common-classes": "Common classes",
         "implementation": "Implementation",
         "f01-add-student": "F01: Add Student",
+        "f08-weekly-lesson-scheduling": "F08: Weekly Lesson Scheduling",
         "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
         "proposed-data-archiving": "[Proposed] Data archiving",
         "documentation-logging-testing-dev-ops": "Documentation, logging, testing, dev-ops",
@@ -119,7 +120,8 @@
       "headings": {
         "testing-guide": "Testing guide",
         "running-tests": "Running tests",
-        "types-of-tests": "Types of tests"
+        "types-of-tests": "Types of tests",
+        "f01-f08-acceptance": "F01–F08 acceptance"
       },
       "headingKeywords": {}
     },
@@ -138,6 +140,7 @@
         "locating-persons-by-name-find": "Locating persons by name: find",
         "deleting-a-student-delete": "Deleting a student: delete",
         "setting-a-student-s-subject-f06-subject": "Setting a student's subject (F06): subject",
+        "scheduling-a-weekly-lesson-f08-schedule": "Scheduling a weekly lesson (F08): schedule",
         "clearing-all-entries-clear": "Clearing all entries: clear",
         "exiting-the-program-exit": "Exiting the program: exit",
         "saving-the-data": "Saving the data",
