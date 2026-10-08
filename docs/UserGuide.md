@@ -161,6 +161,52 @@ Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 
+### Setting a student's education level (F05): `level`
+
+Format: `level INDEX l/LEVEL`
+
+Sets the one current education level of the student at the displayed, 1-based `INDEX`. Setting a new level
+replaces the old one; levels never accumulate. Many students may share a level.
+
+Examples:
+* `level 1 l/Secondary 4`
+* `level 2 l/JC2`
+* `level 3 l/Primary 6`
+
+Accepted levels (case-insensitive, and the space between the word and the number is optional):
+
+| Level | Canonical names | Also accepted |
+| --- | --- | --- |
+| Primary | `Primary 1` to `Primary 6` | `P1` to `P6` |
+| Secondary | `Secondary 1` to `Secondary 5` | `Sec1` to `Sec5`, `S1` to `S5` |
+| Junior college | `JC 1`, `JC 2` | `JC1`, `JC2` |
+
+For example, `Sec4`, `sec 4`, `S4` and `Secondary 4` all mean `Secondary 4`. Only these forms are accepted: other
+spellings such as `Sec Four`, and levels outside this table (preschool, polytechnic, ITE, IB, university), are not.
+The canonical name is what is stored and shown, in the student list and in the details panel. A student with no level
+shows an em dash (—).
+
+On success, the student is saved, selected and shown in the details panel. Setting a level equivalent to the current
+one changes nothing: nothing is saved and the selection stays as it was.
+
+| Outcome | Message |
+| --- | --- |
+| First level | `Education level set for NAME: LEVEL.` |
+| Replacement | `Education level updated for NAME: OLD_LEVEL -> NEW_LEVEL.` |
+| Same level | `Education level for NAME is already LEVEL.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Unknown parameter | `Error: Unknown parameter: PREFIX.` |
+| Missing parameter | `Error: Missing required parameter: l/LEVEL.` |
+| Repeated parameter | `Error: Parameter l/ may be specified only once.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid level | `Error: Invalid level. Use Primary 1-6, Secondary 1-5, or JC 1-2.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown above, and the index syntax is checked before the level. The level is
+checked before the row is looked up, so `level 99 l/Sec 6` reports the invalid level. A failed command
+changes nothing: the saved file, the student list, the filter and the selection all stay as they were.
+
 ### Locating persons by name: `find`
 
 Finds persons whose names contain any of the given keywords.
@@ -258,6 +304,7 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **Help**   | `help`
