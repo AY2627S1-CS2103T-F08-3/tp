@@ -1,6 +1,7 @@
 package seedu.address.logic.parser;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static seedu.address.testutil.Assert.assertThrows;
 
 import java.util.List;
@@ -33,5 +34,32 @@ class VisibleIndexTest {
             assertThrows(CommandException.class, "Error: No student exists at index " + value + ".", () ->
                     index.resolve(List.of()));
         }
+    }
+
+    @Test
+    void resolve_decimalLengthBoundary_comparesNumbersCorrectly() throws Exception {
+        List<Integer> displayed = java.util.stream.IntStream.rangeClosed(1, 12).boxed().toList();
+        for (String value : List.of("1", "9", "10", "11", "12")) {
+            assertEquals(Integer.valueOf(value), VisibleIndex.parse(value).resolve(displayed));
+        }
+        for (String value : List.of("13", "99", "100")) {
+            VisibleIndex index = VisibleIndex.parse(value);
+            assertThrows(CommandException.class, "Error: No student exists at index " + value + ".", () ->
+                    index.resolve(displayed));
+        }
+    }
+
+    @Test
+    void valueSemantics_preserveDecimalTextAndEquality() throws Exception {
+        VisibleIndex first = VisibleIndex.parse("1");
+        VisibleIndex same = VisibleIndex.parse("1");
+        assertEquals(first, same);
+        assertEquals(first.hashCode(), same.hashCode());
+        assertNotEquals(first, VisibleIndex.parse("2"));
+        assertNotEquals(first, null);
+        assertNotEquals(first, "1");
+        assertEquals("1", first.toString());
+        String oversized = "9".repeat(1000);
+        assertEquals(oversized, VisibleIndex.parse(oversized).toString());
     }
 }

@@ -1,5 +1,7 @@
 package seedu.address.ui;
 
+import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
@@ -9,7 +11,6 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
-import seedu.address.logic.commands.CommandResult.SelectionAction;
 import seedu.address.model.person.Person;
 
 /**
@@ -26,31 +27,33 @@ public class PersonListPanel extends UiPart<Region> {
      * Creates a {@code PersonListPanel} with the given {@code ObservableList}.
      */
     public PersonListPanel(ObservableList<Person> personList) {
+        this(personList, unused -> {});
+    }
+
+    /** Passes row selection to the shared model/details view without interpreting displayed indices. */
+    public PersonListPanel(ObservableList<Person> personList, Consumer<Person> selectionHandler) {
         super(FXML);
         personListView.setItems(personList);
-        personListView.setCellFactory(listView -> new PersonListViewCell());
         personListView.setPlaceholder(new Label("No students found."));
+        personListView.setCellFactory(listView -> new PersonListViewCell());
+        personListView.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) ->
+                selectionHandler.accept(newValue));
     }
 
-    public Person getSelectedPerson() {
-        return personListView.getSelectionModel().getSelectedItem();
-    }
-
-    /** Restores the same surviving record, never the record now occupying its former row. */
-    public void applySelection(SelectionAction action, Person previousSelection) {
-        if (action == SelectionAction.UNCHANGED) {
+    /** Selects and scrolls to a stable student ID after a successful command publication. */
+    public void selectPerson(UUID id) {
+        personListView.refresh();
+        if (id == null) {
+            personListView.getSelectionModel().clearSelection();
             return;
         }
-        personListView.getSelectionModel().clearSelection();
-        if (action == SelectionAction.PRESERVE && previousSelection != null) {
-            for (int i = 0; i < personListView.getItems().size(); i++) {
-                if (personListView.getItems().get(i).getId().equals(previousSelection.getId())) {
-                    personListView.getSelectionModel().select(i);
-                    break;
-                }
+        for (int i = 0; i < personListView.getItems().size(); i++) {
+            if (personListView.getItems().get(i).getId().equals(id)) {
+                personListView.getSelectionModel().select(i);
+                personListView.scrollTo(i);
+                return;
             }
         }
-        personListView.refresh();
     }
 
     /**

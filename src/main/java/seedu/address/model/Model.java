@@ -1,5 +1,6 @@
 package seedu.address.model;
 
+import java.util.UUID;
 import java.util.function.Predicate;
 
 import javafx.collections.ObservableList;
@@ -68,4 +69,33 @@ public interface Model {
      * @throws NullPointerException if {@code predicate} is null.
      */
     void updateFilteredPersonList(Predicate<Person> predicate);
+
+    /** Snapshot used by LogicManager. Commands must never write storage directly. */
+    default Model copyForCommand() {
+        ModelManager copy = new ModelManager(getAddressBook(), getUserPrefs());
+        copy.updateFilteredPersonList(getPersonPredicate());
+        copy.selectPerson(getSelectedPersonId());
+        return copy;
+    }
+
+    /** Publishes a complete, already-saved state. */
+    default void publish(Model proposed) {
+        if (!getAddressBook().equals(proposed.getAddressBook())) {
+            setAddressBook(proposed.getAddressBook());
+        }
+        updateFilteredPersonList(proposed.getPersonPredicate());
+        selectPerson(proposed.getSelectedPersonId());
+    }
+
+    default Predicate<Person> getPersonPredicate() {
+        return PREDICATE_SHOW_ALL_PERSONS;
+    }
+
+    /** Null denotes no selection. F02/F03 resolves displayed indices to these stable IDs. */
+    default UUID getSelectedPersonId() {
+        return null;
+    }
+
+    /** Optional hook for lightweight test doubles; ModelManager implements selection. */
+    default void selectPerson(UUID id) {}
 }

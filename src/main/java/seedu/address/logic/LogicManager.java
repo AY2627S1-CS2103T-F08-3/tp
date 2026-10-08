@@ -1,7 +1,7 @@
 package seedu.address.logic;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
@@ -10,7 +10,6 @@ import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
-import seedu.address.logic.commands.DeleteCommand;
 import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
@@ -24,8 +23,8 @@ import seedu.address.storage.Storage;
  * The main LogicManager of the app.
  */
 public class LogicManager implements Logic {
-    public static final String MESSAGE_SAVE_FAILURE = "Error: Changes could not be saved. No changes were made.";
     public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
+    public static final String MESSAGE_SAVE_FAILURE = "Error: Changes could not be saved. No changes were made.";
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
             "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
@@ -51,41 +50,42 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        if (command instanceof DeleteCommand deleteCommand) {
-            Person target = deleteCommand.resolveTarget(model);
-            AddressBook proposed = new AddressBook(model.getAddressBook());
-            proposed.removePerson(target);
-            try {
-                storage.saveAddressBook(proposed);
-            } catch (IOException e) {
-                throw new CommandException(MESSAGE_SAVE_FAILURE, e);
-            }
-            return deleteCommand.execute(model);
-        }
+        Model proposed = model.copyForCommand();
         if (command instanceof ListCommand) {
             try {
-                // A new installation can have an in-memory register before its first save.
+                // Before the first save, retain the initial in-memory register.
                 var loaded = storage.readAddressBook();
                 if (loaded.isPresent()) {
-                    AddressBook validated = new AddressBook(loaded.get());
-                    model.setAddressBook(validated);
+                    proposed.setAddressBook(new AddressBook(loaded.get()));
                 }
             } catch (DataLoadingException | IllegalArgumentException e) {
                 throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, e);
             }
-            return command.execute(model);
+            commandResult = command.execute(proposed);
+            model.publish(proposed);
+            return commandResult;
         }
-        commandResult = command.execute(model);
+        commandResult = command.execute(proposed);
 
         try {
-            storage.saveAddressBook(model.getAddressBook());
-        } catch (AccessDeniedException e) {
-            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
+            if (!model.getAddressBook().equals(proposed.getAddressBook())) {
+                storage.saveAddressBook(proposed.getAddressBook());
+            }
         } catch (IOException ioe) {
-            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+            throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
         }
-
+        model.publish(proposed);
         return commandResult;
+    }
+
+    @Override
+    public UUID getSelectedPersonId() {
+        return model.getSelectedPersonId();
+    }
+
+    @Override
+    public void selectPerson(UUID id) {
+        model.selectPerson(id);
     }
 
     @Override

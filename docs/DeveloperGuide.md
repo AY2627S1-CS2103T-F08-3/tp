@@ -159,6 +159,48 @@ Classes used by multiple components are in the `seedu.address.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
+### F01: Add Student
+
+`AddressBookParser` recognizes the case-sensitive command, then `StudentParameters` checks parameter
+boundaries, unknown/unexpected input and required/duplicate parameters. It retains raw values so controls
+cannot disappear during trimming. `AddCommandParser` validates `Name`, `Phone`, `Address` in that order and
+constructs one complete `Person` (the existing aggregate now represents a student). The three-argument
+constructor assigns a UUID and leaves all optional data unset. `StudentText` owns normalization; `Phone`
+owns the reusable Singapore-number contract. `Person.isSamePerson` compares normalized name ignoring case
+plus canonical phone; full content equality remains separate from UUID identity.
+
+`LogicManager` executes on `Model.copyForCommand()`. `AddCommand` checks duplicates and shared phones against
+the complete address book, then stages the append, full-list predicate and new selected UUID. The logic saves
+changed data before `Model.publish()` updates the observable model. `JsonAddressBookStorage` serializes the
+complete state first; `AtomicJsonFile` writes and forces a sibling temporary file and atomically replaces the
+destination. There is no unsafe truncate-in-place fallback. An I/O failure reports the standard save error and
+does not publish. Read-only or identical-data operations do not save.
+
+The JSON `persons` array retains insertion order. Each record now stores `id`; older valid records missing IDs
+receive deterministic migration UUIDs from normalized name and phone, persisted on the next successful save.
+Missing/null optional properties load unset. Existing email/tags and owner-defined JSON properties survive
+round trips. `StudentField<T>` lets each owner provide a validated type/codec; `StudentFields` is immutable and
+defensively copied, and prevents optional keys from overwriting core fields. F01 does not define other owners'
+commands, education/rate/slot types or their final serialization schemas.
+
+After successful execution, `MainWindow` selects the model's UUID through `PersonListPanel`, which scrolls to
+the new row. `StudentDetailsPanel` displays the complete record and em dashes for unset optional fields. Errors
+leave the list and details untouched. The F02/F03 owner remains responsible for final index/list/delete policy;
+see [the shared interface and owner handoff contract](F01Integration.md), whose owner acknowledgement is pending.
+
+Verification:
+
+* `./gradlew check coverage` runs validation, parser, command, persistence and end-to-end tests.
+* `F01_UI_TESTS=true ./gradlew test --rerun-tasks` also runs the real JavaFX command-box/selection/details test.
+  It requires a desktop display (or a configured virtual display on Linux) and the project's prescribed JDK+FX.
+  The GUI test is explicitly disabled without that environment variable so headless local checks remain usable.
+  Linux CI enables it under `xvfb-run` using software rendering, and uploads that run's coverage to Codecov.
+  The test opt-in is a Gradle task input so enabling it cannot reuse results from a run that skipped the UI test.
+* `AtomicStudentCommandTest` injects write/replacement failures and checks old file bytes, filter and selection,
+  as well as save-before-publish ordering. `StudentPersistenceTest` checks old records, stable IDs and owner data.
+* `AddStudentEndToEndTest` verifies invalid commands leave state unchanged, exact error precedence, both user
+  examples, shared-phone warnings, duplicate rules and insertion order after reload.
+
 ### \[Proposed\] Undo/redo feature
 
 #### Proposed Implementation
