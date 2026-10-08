@@ -5,6 +5,7 @@ import static seedu.address.commons.util.CollectionUtil.requireAllNonNull;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 
@@ -13,7 +14,8 @@ import seedu.address.model.tag.Tag;
 
 /**
  * Represents a Person in the address book.
- * Guarantees: details are present and not null, field values are validated, immutable.
+ * Guarantees: required details are present and validated, optional details are explicitly unset or validated,
+ * and the object is immutable.
  */
 public class Person {
 
@@ -28,11 +30,20 @@ public class Person {
     // Data fields
     private final Address address;
     private final Set<Tag> tags = new HashSet<>();
+    private final Optional<GuardianPhone> guardianPhone;
+    private final Optional<HourlyRate> hourlyRate;
 
     /**
-     * Every field must be present and not null.
+     * Creates a person without guardian phone or hourly rate details.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        this(name, phone, email, address, tags, Optional.empty(), Optional.empty());
+    }
+
+    /** Creates a person with optional guardian phone and hourly rate fields. */
+    public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags,
+            Optional<GuardianPhone> guardianPhone, Optional<HourlyRate> hourlyRate) {
+        requireAllNonNull(name, phone, email, address, tags, guardianPhone, hourlyRate);
         this(UUID.randomUUID(), name, phone, email, address, tags, new StudentFields());
     }
 
@@ -53,6 +64,8 @@ public class Person {
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+        this.guardianPhone = guardianPhone;
+        this.hourlyRate = hourlyRate;
     }
 
     public UUID getId() {
@@ -96,6 +109,14 @@ public class Person {
         return Collections.unmodifiableSet(tags);
     }
 
+    public Optional<GuardianPhone> getGuardianPhone() {
+        return guardianPhone;
+    }
+
+    public Optional<HourlyRate> getHourlyRate() {
+        return hourlyRate;
+    }
+
     /**
      * Returns true if both students have equal normalized names (ignoring case) and canonical phones.
      * This defines a weaker notion of equality between two persons.
@@ -130,13 +151,14 @@ public class Person {
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
                 && tags.equals(otherPerson.tags)
-                && studentFields.equals(otherPerson.studentFields);
+                && guardianPhone.equals(otherPerson.guardianPhone)
+                && hourlyRate.equals(otherPerson.hourlyRate);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags, studentFields);
+        return Objects.hash(name, phone, email, address, tags, guardianPhone, hourlyRate);
     }
 
     @Override
@@ -147,6 +169,8 @@ public class Person {
                 .add("email", email)
                 .add("address", address)
                 .add("tags", tags)
+                .add("guardianPhone", guardianPhone)
+                .add("hourlyRate", hourlyRate)
                 .toString();
     }
 

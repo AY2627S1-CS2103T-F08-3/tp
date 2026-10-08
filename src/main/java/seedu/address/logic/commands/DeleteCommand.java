@@ -8,7 +8,6 @@ import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.VisibleIndex;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.Model;
-import seedu.address.model.person.Person;
 
 /**
  * Deletes a person identified using its displayed index from the address book.
@@ -48,7 +47,7 @@ public class DeleteCommand extends Command {
     @Override
     public CommandResult execute(Model model) throws CommandException {
         requireNonNull(model);
-        Person personToDelete = resolveTarget(model);
+        var personToDelete = VisibleIndexResolver.resolvePerson(targetIndex, model);
         model.deletePerson(personToDelete);
         return new CommandResult(String.format(MESSAGE_DELETE_PERSON_SUCCESS, personToDelete.getName()),
                 CommandResult.SelectionAction.PRESERVE);
