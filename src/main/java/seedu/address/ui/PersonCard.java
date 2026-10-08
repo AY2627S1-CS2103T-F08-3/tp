@@ -37,6 +37,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label address;
     @FXML
+    private Label subject;
+    @FXML
     private Label email;
     @FXML
     private Label educationLevel;
@@ -53,6 +55,7 @@ public class PersonCard extends UiPart<Region> {
         name.setText(person.getName().fullName);
         phone.setText(person.getPhone().value);
         address.setText(person.getAddress().value);
+        subject.setText("Subject: " + person.getStudentFields().display("subject"));
         email.setText(person.getEmail().value);
         email.setVisible(!person.getEmail().value.isEmpty());
         email.setManaged(email.isVisible());
