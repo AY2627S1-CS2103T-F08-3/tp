@@ -83,6 +83,12 @@ public class DeleteCommandTest {
     }
 
     @Test
+    public void constructor_overflowingLegacyIndex_rejectedSafely() {
+        org.junit.jupiter.api.Assertions.assertThrows(IllegalArgumentException.class, () ->
+                new DeleteCommand(Index.fromZeroBased(Integer.MAX_VALUE)));
+    }
+
+    @Test
     public void equals() {
         DeleteCommand deleteFirstCommand = new DeleteCommand(INDEX_FIRST_PERSON);
         DeleteCommand deleteSecondCommand = new DeleteCommand(INDEX_SECOND_PERSON);
