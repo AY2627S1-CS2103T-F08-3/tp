@@ -8,6 +8,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -90,8 +91,11 @@ public class AddStudentUiTest {
                 assertTrue(legacyCard.getRoot().lookup("#email").isVisible());
                 assertTrue(legacyCard.getRoot().lookup("#email").isManaged());
                 PersonListPanel compatibilityPanel = new PersonListPanel(rows.getItems());
-                assertEquals(rows.getItems(), ((ListView<?>) compatibilityPanel.getRoot()
-                        .lookup("#personListView")).getItems());
+                ListView<?> compatibilityRows = (ListView<?>) compatibilityPanel.getRoot().lookup("#personListView");
+                assertEquals(rows.getItems(), compatibilityRows.getItems());
+                compatibilityPanel.selectPerson(selected.getId());
+                compatibilityPanel.selectPerson(UUID.randomUUID());
+                assertEquals(selected, compatibilityRows.getSelectionModel().getSelectedItem());
                 enter(input, "add n/123 p/81234567 a/A");
                 assertTrue(status.getText().startsWith("Error: Invalid name."));
                 assertEquals(selected, rows.getSelectionModel().getSelectedItem());
