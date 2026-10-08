@@ -1,5 +1,7 @@
 package seedu.address.logic;
 
+import java.util.UUID;
+
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.commands.CommandResult;
@@ -32,4 +34,8 @@ public interface Logic {
      * Set the user prefs' GUI settings.
      */
     void setGuiSettings(GuiSettings guiSettings);
+
+    UUID getSelectedPersonId();
+
+    void selectPerson(UUID id);
 }
