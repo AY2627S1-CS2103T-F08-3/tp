@@ -587,3 +587,24 @@ testers are expected to do more *exploratory* testing.
 * **Storage component**: The part of the application that saves and loads data.
 * **UI component**: The part of the application responsible for user interaction and displayed output.
 * **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
+
+
+## Delete/list student integration (F02/F03)
+
+* `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
+* Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+  including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
+  Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
+* List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+  It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
+* The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+  `PersonListPanel.selectPerson` refreshes cells so row numbering follows the updated positions.
+  The empty register shows a placeholder; clearing selection resets the details panel.
+* Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+  metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
+
+Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
+first/middle/last and filtered deletion, malformed/oversized indices, failure preservation, and real JavaFX
+selection/details/renumbering. The optional-field envelope fixtures verify preservation without replacing
+field owners' typed validation tests. JavaFX command tests run under `F01_UI_TESTS=true` (Linux CI uses Xvfb).
