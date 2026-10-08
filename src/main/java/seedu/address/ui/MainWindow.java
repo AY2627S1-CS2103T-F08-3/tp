@@ -36,6 +36,7 @@ public class MainWindow extends UiPart<Stage> {
     private PersonListPanel personListPanel;
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
+    private StudentDetailsPanel studentDetailsPanel;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -45,6 +46,9 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private StackPane personListPanelPlaceholder;
+
+    @FXML
+    private StackPane studentDetailsPlaceholder;
 
     @FXML
     private StackPane resultDisplayPlaceholder;
@@ -114,7 +118,12 @@ public class MainWindow extends UiPart<Stage> {
      * Fills up all the placeholders of this window.
      */
     void fillInnerParts() {
-        personListPanel = new PersonListPanel(logic.getFilteredPersonList());
+        studentDetailsPanel = new StudentDetailsPanel();
+        studentDetailsPlaceholder.getChildren().add(studentDetailsPanel);
+        personListPanel = new PersonListPanel(logic.getFilteredPersonList(), student -> {
+            logic.selectPerson(student == null ? null : student.getId());
+            studentDetailsPanel.showStudent(student);
+        });
         personListPanelPlaceholder.getChildren().add(personListPanel.getRoot());
 
         resultDisplay = new ResultDisplay();
@@ -179,6 +188,7 @@ public class MainWindow extends UiPart<Stage> {
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
         try {
             CommandResult commandResult = logic.execute(commandText);
+            personListPanel.selectPerson(logic.getSelectedPersonId());
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
 

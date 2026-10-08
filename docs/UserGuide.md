@@ -31,7 +31,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 
    * `list` : Lists all contacts.
 
-   * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01` : Adds a contact named `John Doe` to the Address Book.
+   * `add n/John Doe p/98765432 a/John street, block 123, #01-01` : Adds a student named `John Doe`.
 
    * `delete 3` : Deletes the 3rd contact shown in the current list.
 
@@ -76,20 +76,58 @@ Shows a message explaining how to access the help page.
 Format: `help`
 
 
-### Adding a person: `add`
+### Adding a student (F01): `add`
 
-Adds a person to the address book.
+Format: `add n/NAME p/PHONE a/ADDRESS`
 
-Format: `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... `
-
-<box type="tip" seamless>
-
-**Tip:** A person can have any number of tags, including zero.
-</box>
+All three parameters are required exactly once, in any order. Commands and prefixes are lowercase and
+case-sensitive. Multiple spaces between parameters and surrounding spaces are accepted. Blank values are
+invalid values, not missing parameters. Email, tags and other optional fields are not accepted by `add`.
 
 Examples:
-* `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
-* `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
+
+* `add n/Alex Tan p/81234567 a/21 Clementi Ave 3 #04-18`
+* `add a/8 Jalan Besar p/+65 9234 5678 n/Nur Aisyah`
+
+Values undergo Unicode NFKC normalization, trimming and repeated-space collapsing. Prohibited controls and
+line breaks are rejected before whitespace processing. Name and address display case is preserved.
+
+* **Name:** 1–70 Unicode characters after normalization, including at least one letter. Letters, combining
+  marks, spaces, apostrophes, hyphens and full stops are accepted. Digits are not accepted in names.
+* **Phone:** eight Singapore digits starting with 6, 8 or 9. An optional `+65` prefix and spaces or hyphens
+  between digit groups are accepted, e.g. `81234567`, `+65 8123 4567`, `+65-8123-4567`.
+  The stored/displayed form is `+6581234567`. International numbers are not supported.
+* **Address:** 1–200 Unicode characters after normalization, including at least one letter or digit.
+  Letters, combining marks, digits, spaces and `# , . - / ' ( ) &` are accepted. For example, `12/3 Street`
+  keeps its slash. A whitespace-delimited single-letter token followed by `/` is reserved as a parameter
+  boundary, not literal address text.
+
+On success, the complete student is saved, appended to the full list, selected and shown in the details panel.
+The message is `Student added: NAME.` Guardian phone, education level, subject, hourly rate and weekly slot
+start unset and are shown as an em dash (`—`). This command does not set those fields.
+
+The same normalized name (ignoring case) **and** phone is a duplicate, even if its address differs or the
+existing student is hidden by a filter. A matching name with a different phone is accepted. A matching phone
+with a different name is accepted with `Warning: Another student uses this phone number.` appended to success.
+
+F01 errors are reported in this order: unknown command; unexpected text/unknown parameter; missing/repeated
+parameter (name, phone, address order); invalid name, phone, address; duplicate; save failure.
+
+| Condition | Message |
+| --- | --- |
+| Unknown command | `Error: Unknown command. Type help to view available commands.` |
+| Unexpected text before parameters | `Error: Unexpected text after command.` |
+| Unknown parameter, e.g. `x/` | `Error: Unknown parameter: x/.` |
+| Missing parameter | `Error: Missing required parameter: n/NAME.` (or `p/PHONE`, `a/ADDRESS`) |
+| Repeated parameter | `Error: Parameter n/ may be specified only once.` (or `p/`, `a/`) |
+| Invalid name | `Error: Invalid name. Use 1-70 letters with spaces, apostrophes, hyphens, or full stops.` |
+| Invalid phone | `Error: Invalid phone. Use an 8-digit Singapore number beginning with 6, 8, or 9, optionally prefixed by +65.` |
+| Invalid address | `Error: Invalid address. Use 1-200 letters, numbers, spaces, or common address punctuation.` |
+| Duplicate | `Error: This student already exists with the same name and phone.` |
+| Save failure | `Error: Changes could not be saved. No changes were made.` |
+
+Every failed add leaves the file, student list, current filter, selected row and details unchanged. No partial
+profile is created. If saving fails, check the data folder's permissions and available disk space before retrying.
 
 ### Listing all persons: `list`
 
@@ -195,7 +233,7 @@ _Details coming soon ..._
 
 Action     | Format, Examples
 -----------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------
-**Add**    | `add n/NAME p/PHONE_NUMBER e/EMAIL a/ADDRESS [t/TAG]... ` <br> e.g., `add n/James Ho p/22224444 e/jamesho@example.com a/123, Clementi Rd, 1234665 t/friend t/colleague`
+**Add student** | `add n/NAME p/PHONE a/ADDRESS` <br> e.g., `add n/James Ho p/81224444 a/123, Clementi Rd, 1234665`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
