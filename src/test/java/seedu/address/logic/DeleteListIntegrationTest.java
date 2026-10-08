@@ -10,6 +10,8 @@ import static seedu.address.testutil.TypicalPersons.getTypicalAddressBook;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,6 +32,8 @@ import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.UserPrefs;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentFields;
+import seedu.address.model.person.WeeklySlot;
+import seedu.address.model.person.WeeklySlotField;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
 import seedu.address.storage.StorageManager;
@@ -184,8 +188,8 @@ class DeleteListIntegrationTest {
         StudentFields fields = new StudentFields(Map.of("subject", TextNode.valueOf("Math"),
                 "guardianPhone", TextNode.valueOf("+6591234567"),
                 "educationLevel", TextNode.valueOf("Primary 1"),
-                "hourlyRate", TextNode.valueOf("40.00"),
-                "weeklySlot", TextNode.valueOf("MONDAY 16:00")));
+                "hourlyRate", TextNode.valueOf("40.00")))
+                .with(WeeklySlotField.INSTANCE, new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(16, 0)));
         Person target = new PersonBuilder().withName("Same Name").withPhone("81234567")
                 .build().withStudentFields(fields);
         Person survivor = new PersonBuilder().withName("Same Name").withPhone("91234567")

@@ -7,6 +7,8 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -21,6 +23,8 @@ import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.StudentFields;
+import seedu.address.model.person.WeeklySlot;
+import seedu.address.model.person.WeeklySlotField;
 import seedu.address.storage.AtomicJsonFile;
 import seedu.address.storage.JsonAddressBookStorage;
 import seedu.address.storage.JsonUserPrefsStorage;
@@ -145,8 +149,8 @@ public class StudentFieldIntegrationTest {
     private ModelManager model() {
         StudentFields fields = new StudentFields(Map.of("guardianPhone", TextNode.valueOf("+6591234567"),
                 "hourlyRate", TextNode.valueOf("40.00"), "educationLevel", TextNode.valueOf("SECONDARY_1"),
-                "subject", TextNode.valueOf("Mathematics"), "weeklySlot", TextNode.valueOf("MONDAY 16:00"),
-                "futureField", TextNode.valueOf("preserve me")));
+                "subject", TextNode.valueOf("Mathematics"), "futureField", TextNode.valueOf("preserve me")))
+                .with(WeeklySlotField.INSTANCE, new WeeklySlot(DayOfWeek.MONDAY, LocalTime.of(16, 0)));
         ModelManager model = new ModelManager();
         model.addPerson(new PersonBuilder().withName("Alex Tan").build().withStudentFields(fields));
         model.addPerson(new PersonBuilder().withName("Other Student").withPhone("91234567").build());

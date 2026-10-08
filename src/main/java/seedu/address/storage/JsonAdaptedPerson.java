@@ -30,6 +30,7 @@ import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
 import seedu.address.model.person.StudentFields;
+import seedu.address.model.person.WeeklySlotField;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -187,6 +188,12 @@ class JsonAdaptedPerson {
         }
         if (modelHourlyRate.isPresent()) {
             fields = fields.with(HourlyRate.FIELD, modelHourlyRate.get());
+        }
+        try {
+            // Validate the owner's complete value before publishing a loaded record.
+            fields.get(WeeklySlotField.INSTANCE);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException(e.getMessage());
         }
         return new Person(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags, fields);
     }
