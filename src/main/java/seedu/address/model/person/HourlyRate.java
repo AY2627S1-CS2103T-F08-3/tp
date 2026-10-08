@@ -5,6 +5,9 @@ import static java.util.Objects.requireNonNull;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.TextNode;
+
 import seedu.address.commons.util.AppUtil;
 
 /** An hourly rate in SGD, stored with exactly two decimal places. */
@@ -13,6 +16,28 @@ public final class HourlyRate {
     public static final String MESSAGE_CONSTRAINTS = "Hourly rate must be from 1.00 to 1000.00 SGD.";
     private static final BigDecimal MINIMUM = new BigDecimal("1.00");
     private static final BigDecimal MAXIMUM = new BigDecimal("1000.00");
+
+    public static final StudentField<HourlyRate> FIELD = new StudentField<>() {
+        @Override
+        public String key() {
+            return "hourlyRate";
+        }
+
+        @Override
+        public HourlyRate decode(JsonNode value) {
+            AppUtil.checkArgument(value.isTextual() || value.isNumber(), MESSAGE_CONSTRAINTS);
+            try {
+                return new HourlyRate(new BigDecimal(value.asText()));
+            } catch (NumberFormatException exception) {
+                throw new IllegalArgumentException(MESSAGE_CONSTRAINTS, exception);
+            }
+        }
+
+        @Override
+        public JsonNode encode(HourlyRate value) {
+            return TextNode.valueOf(value.value.toPlainString());
+        }
+    };
 
     public final BigDecimal value;
 

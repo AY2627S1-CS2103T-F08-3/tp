@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Optional;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -56,7 +56,7 @@ class JsonAdaptedPerson {
      * Constructs a {@code JsonAdaptedPerson} with the given person details.
      */
     public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
-        this(name, phone, email, address, tags, null, null);
+        this(null, name, phone, email, address, tags, null, null);
     }
 
     /** Constructs a {@code JsonAdaptedPerson} with all persisted person details. */
@@ -80,8 +80,9 @@ class JsonAdaptedPerson {
     }
 
     /** Compatibility constructor for old records and existing adapter clients. */
-    public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
-        this(null, name, phone, email, address, tags);
+    public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags,
+            String guardianPhone, String hourlyRate) {
+        this(null, name, phone, email, address, tags, guardianPhone, hourlyRate);
     }
 
     /**
@@ -90,6 +91,9 @@ class JsonAdaptedPerson {
     public JsonAdaptedPerson(Person source) {
         id = source.getId().toString();
         optionalFields.putAll(source.getStudentFields().toStorage());
+        // These two keys use the explicit legacy JSON properties, never duplicate any-getter entries.
+        optionalFields.remove(GuardianPhone.FIELD.key());
+        optionalFields.remove(HourlyRate.FIELD.key());
         name = source.getName().fullName;
         phone = source.getPhone().value;
         email = source.getEmail().value.isEmpty() ? null : source.getEmail().value;
@@ -169,8 +173,6 @@ class JsonAdaptedPerson {
             }
         }
 
-        return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags,
-                modelGuardianPhone, modelHourlyRate);
         final UUID modelId;
         try {
             // Stable migration IDs even when an older file has not yet been saved by this version.
@@ -179,8 +181,14 @@ class JsonAdaptedPerson {
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException("Invalid student ID");
         }
-        return new Person(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags,
-                new StudentFields(optionalFields));
+        StudentFields fields = new StudentFields(optionalFields);
+        if (modelGuardianPhone.isPresent()) {
+            fields = fields.with(GuardianPhone.FIELD, modelGuardianPhone.get());
+        }
+        if (modelHourlyRate.isPresent()) {
+            fields = fields.with(HourlyRate.FIELD, modelHourlyRate.get());
+        }
+        return new Person(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags, fields);
     }
 
 }

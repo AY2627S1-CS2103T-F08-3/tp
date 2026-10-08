@@ -113,7 +113,23 @@ public class AddStudentUiTest {
                 assertEquals(1, rows.getSelectionModel().getSelectedIndex());
                 assertEquals("Name: Nur Aisyah", ((Label) details.getChildren().getFirst()).getText());
                 Person survivor = rows.getSelectionModel().getSelectedItem();
+                enter(input, "guardian 2 g/91234567");
+                enter(input, "rate 2 r/65");
+                assertEquals(survivor.getId(), model.getSelectedPersonId());
+                List<String> contactDetails = details.getChildren().stream()
+                        .map(node -> ((Label) node).getText()).toList();
+                assertTrue(contactDetails.contains("Guardian phone: +6591234567"));
+                assertTrue(contactDetails.contains("Hourly rate: 65.00"));
+                rows.getSelectionModel().select(0);
+                enter(input, "rate 2 r/65.0");
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals(selected.getId(), model.getSelectedPersonId());
+                rows.getSelectionModel().select(1);
                 failSave.set(true);
+                enter(input, "guardian 2 g/92345678");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(contactDetails, details.getChildren().stream()
+                        .map(node -> ((Label) node).getText()).toList());
                 enter(input, "delete 1");
                 assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
                 assertEquals(survivor.getId(), model.getSelectedPersonId());

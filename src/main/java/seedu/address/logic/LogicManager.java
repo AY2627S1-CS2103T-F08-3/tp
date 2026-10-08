@@ -1,15 +1,12 @@
 package seedu.address.logic;
 
 import java.io.IOException;
-import java.nio.file.AccessDeniedException;
-import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
-import seedu.address.logic.commands.AtomicCommand;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
@@ -17,9 +14,7 @@ import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
-import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
-import seedu.address.model.ModelManager;
 import seedu.address.model.person.Person;
 import seedu.address.storage.Storage;
 
@@ -54,15 +49,19 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        if (command instanceof AtomicCommand) {
-            return executeAtomically(command);
+        Model proposed = model.copyForCommand();
+        if (command instanceof ListCommand) {
+            try {
+                storage.readAddressBook().ifPresent(proposed::setAddressBook);
+            } catch (DataLoadingException exception) {
+                throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
+            }
         }
-        commandResult = command.execute(model);
+        CommandResult commandResult = command.execute(proposed);
 
         try {
-            if (!model.getAddressBook().equals(proposed.getAddressBook())) {
+            if (!(command instanceof ListCommand) && !model.getAddressBook().equals(proposed.getAddressBook())) {
                 storage.saveAddressBook(proposed.getAddressBook());
             }
         } catch (IOException ioe) {
@@ -70,29 +69,6 @@ public class LogicManager implements Logic {
         }
         model.publish(proposed);
         return commandResult;
-    }
-
-    /** Executes a state-changing command against a copy, saves it, then publishes it to the live model. */
-    private CommandResult executeAtomically(Command command) throws CommandException {
-        AddressBook proposedAddressBook = new AddressBook(model.getAddressBook());
-        Model proposedModel = new ModelManager(proposedAddressBook, model.getUserPrefs());
-        List<Person> currentlyDisplayed = List.copyOf(model.getFilteredPersonList());
-        proposedModel.updateFilteredPersonList(person -> currentlyDisplayed.stream()
-                .anyMatch(displayedPerson -> displayedPerson.isSamePerson(person)));
-
-        CommandResult result = command.execute(proposedModel);
-        if (model.getAddressBook().equals(proposedModel.getAddressBook())) {
-            return result;
-        }
-
-        try {
-            storage.saveAddressBook(proposedModel.getAddressBook());
-        } catch (IOException exception) {
-            throw new CommandException(MESSAGE_ATOMIC_SAVE_FAILURE, exception);
-        }
-
-        model.setAddressBook(proposedModel.getAddressBook());
-        return result;
     }
 
     @Override

@@ -27,6 +27,7 @@ public class GuardianCommand extends Command implements AtomicCommand {
     private final Index index;
     private final GuardianPhone guardianPhone;
 
+    /** Creates a guardian update targeting a validated displayed index. */
     public GuardianCommand(Index index, GuardianPhone guardianPhone) {
         requireNonNull(index);
         requireNonNull(guardianPhone);
@@ -43,8 +44,7 @@ public class GuardianCommand extends Command implements AtomicCommand {
             return new CommandResult(String.format(MESSAGE_NO_CHANGE, name, guardianPhone));
         }
 
-        Person updated = new Person(target.getName(), target.getPhone(), target.getEmail(), target.getAddress(),
-                target.getTags(), Optional.of(guardianPhone), target.getHourlyRate());
+        Person updated = target.withGuardianPhone(guardianPhone);
         model.setPerson(target, updated);
         String message = previous.isEmpty()
                 ? String.format(MESSAGE_SET_SUCCESS, name, guardianPhone)
