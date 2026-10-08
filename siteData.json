@@ -51,6 +51,7 @@
         "storage-component": "Storage component",
         "common-classes": "Common classes",
         "implementation": "Implementation",
+        "f01-add-student": "F01: Add Student",
         "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
         "proposed-data-archiving": "[Proposed] Data archiving",
         "documentation-logging-testing-dev-ops": "Documentation, logging, testing, dev-ops",
@@ -87,7 +88,8 @@
         "f01-shared-integration-contract": "F01 shared integration contract",
         "student-model": "Student model",
         "normalization-and-parsing": "Normalization and parsing",
-        "atomic-execution-and-view-handoff": "Atomic execution and view handoff"
+        "atomic-execution-and-view-handoff": "Atomic execution and view handoff",
+        "review-slices-and-owner-handoff": "Review slices and owner handoff"
       },
       "headingKeywords": {}
     },
@@ -127,7 +129,7 @@
         "quick-start": "Quick start",
         "features": "Features",
         "viewing-help-help": "Viewing help: help",
-        "adding-a-person-add": "Adding a person: add",
+        "adding-a-student-f01-add": "Adding a student (F01): add",
         "listing-all-persons-list": "Listing all persons: list",
         "editing-a-person-edit": "Editing a person: edit",
         "locating-persons-by-name-find": "Locating persons by name: find",
