@@ -3,14 +3,17 @@ package seedu.address.logic;
 import java.io.IOException;
 import java.nio.file.AccessDeniedException;
 import java.util.List;
+import java.util.UUID;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.logic.commands.AtomicCommand;
+import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -25,6 +28,7 @@ import seedu.address.storage.Storage;
  */
 public class LogicManager implements Logic {
     public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
+    public static final String MESSAGE_SAVE_FAILURE = "Error: Changes could not be saved. No changes were made.";
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
             "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
@@ -58,13 +62,13 @@ public class LogicManager implements Logic {
         commandResult = command.execute(model);
 
         try {
-            storage.saveAddressBook(model.getAddressBook());
-        } catch (AccessDeniedException e) {
-            throw new CommandException(String.format(FILE_OPS_PERMISSION_ERROR_FORMAT, e.getMessage()), e);
+            if (!model.getAddressBook().equals(proposed.getAddressBook())) {
+                storage.saveAddressBook(proposed.getAddressBook());
+            }
         } catch (IOException ioe) {
-            throw new CommandException(String.format(FILE_OPS_ERROR_FORMAT, ioe.getMessage()), ioe);
+            throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
         }
-
+        model.publish(proposed);
         return commandResult;
     }
 
@@ -89,6 +93,16 @@ public class LogicManager implements Logic {
 
         model.setAddressBook(proposedModel.getAddressBook());
         return result;
+    }
+
+    @Override
+    public UUID getSelectedPersonId() {
+        return model.getSelectedPersonId();
+    }
+
+    @Override
+    public void selectPerson(UUID id) {
+        model.selectPerson(id);
     }
 
     @Override

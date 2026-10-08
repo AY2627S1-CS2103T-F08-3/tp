@@ -1,16 +1,25 @@
 package seedu.address.storage;
 
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
+import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import seedu.address.commons.exceptions.IllegalValueException;
 import seedu.address.model.person.Address;
@@ -20,6 +29,7 @@ import seedu.address.model.person.HourlyRate;
 import seedu.address.model.person.Name;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.Phone;
+import seedu.address.model.person.StudentFields;
 import seedu.address.model.tag.Tag;
 
 /**
@@ -30,6 +40,9 @@ class JsonAdaptedPerson {
     public static final String MISSING_FIELD_MESSAGE_FORMAT = "Person's %s field is missing!";
 
     private final String name;
+    private final String id;
+    @JsonIgnore
+    private final Map<String, JsonNode> optionalFields = new LinkedHashMap<>();
     private final String phone;
     private final String email;
     private final String address;
@@ -48,12 +61,14 @@ class JsonAdaptedPerson {
 
     /** Constructs a {@code JsonAdaptedPerson} with all persisted person details. */
     @JsonCreator
-    public JsonAdaptedPerson(@JsonProperty("name") String name, @JsonProperty("phone") String phone,
+    public JsonAdaptedPerson(@JsonProperty("id") String id,
+            @JsonProperty("name") String name, @JsonProperty("phone") String phone,
             @JsonProperty("email") String email, @JsonProperty("address") String address,
             @JsonProperty("tags") List<JsonAdaptedTag> tags,
             @JsonProperty("guardianPhone") String guardianPhone,
             @JsonProperty("hourlyRate") String hourlyRate) {
         this.name = name;
+        this.id = id;
         this.phone = phone;
         this.email = email;
         this.address = address;
@@ -64,19 +79,36 @@ class JsonAdaptedPerson {
         }
     }
 
+    /** Compatibility constructor for old records and existing adapter clients. */
+    public JsonAdaptedPerson(String name, String phone, String email, String address, List<JsonAdaptedTag> tags) {
+        this(null, name, phone, email, address, tags);
+    }
+
     /**
      * Converts a given {@code Person} into this class for Jackson use.
      */
     public JsonAdaptedPerson(Person source) {
+        id = source.getId().toString();
+        optionalFields.putAll(source.getStudentFields().toStorage());
         name = source.getName().fullName;
         phone = source.getPhone().value;
-        email = source.getEmail().value;
+        email = source.getEmail().value.isEmpty() ? null : source.getEmail().value;
         address = source.getAddress().value;
         guardianPhone = source.getGuardianPhone().map(GuardianPhone::toString).orElse(null);
         hourlyRate = source.getHourlyRate().map(rate -> rate.value.toPlainString()).orElse(null);
         tags.addAll(source.getTags().stream()
                 .map(JsonAdaptedTag::new)
                 .collect(Collectors.toList()));
+    }
+
+    @JsonAnySetter
+    public void readOptionalField(String key, JsonNode value) {
+        optionalFields.put(key, value);
+    }
+
+    @JsonAnyGetter
+    public Map<String, JsonNode> writeOptionalFields() {
+        return new StudentFields(optionalFields).toStorage();
     }
 
     /**
@@ -106,13 +138,10 @@ class JsonAdaptedPerson {
         }
         final Phone modelPhone = new Phone(phone);
 
-        if (email == null) {
-            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Email.class.getSimpleName()));
-        }
-        if (!Email.isValidEmail(email)) {
+        if (email != null && !Email.isValidEmail(email)) {
             throw new IllegalValueException(Email.MESSAGE_CONSTRAINTS);
         }
-        final Email modelEmail = new Email(email);
+        final Email modelEmail = email == null ? Email.unset() : new Email(email);
 
         if (address == null) {
             throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Address.class.getSimpleName()));
@@ -142,6 +171,16 @@ class JsonAdaptedPerson {
 
         return new Person(modelName, modelPhone, modelEmail, modelAddress, modelTags,
                 modelGuardianPhone, modelHourlyRate);
+        final UUID modelId;
+        try {
+            // Stable migration IDs even when an older file has not yet been saved by this version.
+            modelId = id == null ? UUID.nameUUIDFromBytes((modelName.fullName.toLowerCase(Locale.ROOT)
+                    + "\u0000" + modelPhone.value).getBytes(StandardCharsets.UTF_8)) : UUID.fromString(id);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException("Invalid student ID");
+        }
+        return new Person(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags,
+                new StudentFields(optionalFields));
     }
 
 }

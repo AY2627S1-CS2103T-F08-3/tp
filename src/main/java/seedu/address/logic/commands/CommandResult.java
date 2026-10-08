@@ -11,6 +11,10 @@ import seedu.address.commons.util.ToStringBuilder;
  * Represents the result of a command execution.
  */
 public class CommandResult {
+    /** Selection changes are applied only after successful command execution. */
+    public enum SelectionAction { UNCHANGED, PRESERVE, CLEAR }
+
+    private SelectionAction selectionAction = SelectionAction.UNCHANGED;
 
     private final String feedbackToUser;
 
@@ -51,6 +55,16 @@ public class CommandResult {
      */
     public CommandResult(String feedbackToUser) {
         this(feedbackToUser, false, false);
+    }
+
+    /** Creates a successful result with an explicit UI selection policy. */
+    public CommandResult(String feedbackToUser, SelectionAction selectionAction) {
+        this(feedbackToUser);
+        this.selectionAction = requireNonNull(selectionAction);
+    }
+
+    public SelectionAction getSelectionAction() {
+        return selectionAction;
     }
 
     public String getFeedbackToUser() {

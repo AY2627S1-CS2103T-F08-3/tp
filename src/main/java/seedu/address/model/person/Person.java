@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.UUID;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
@@ -17,6 +18,9 @@ import seedu.address.model.tag.Tag;
  * and the object is immutable.
  */
 public class Person {
+
+    private final UUID id;
+    private final StudentFields studentFields;
 
     // Identity fields
     private final Name name;
@@ -40,6 +44,21 @@ public class Person {
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags,
             Optional<GuardianPhone> guardianPhone, Optional<HourlyRate> hourlyRate) {
         requireAllNonNull(name, phone, email, address, tags, guardianPhone, hourlyRate);
+        this(UUID.randomUUID(), name, phone, email, address, tags, new StudentFields());
+    }
+
+    /** Creates a student with no optional fields or legacy contact metadata. */
+    public Person(Name name, Phone phone, Address address) {
+        this(name, phone, Email.unset(), address, Set.of());
+    }
+
+    /** Restores a complete immutable student; field updates must retain the ID and unrelated fields. */
+    public Person(UUID id, Name name, Phone phone, Email email, Address address, Set<Tag> tags,
+            StudentFields studentFields) {
+        requireAllNonNull(name, phone, email, address, tags);
+        requireAllNonNull(id, studentFields);
+        this.id = id;
+        this.studentFields = studentFields;
         this.name = name;
         this.phone = phone;
         this.email = email;
@@ -47,6 +66,23 @@ public class Person {
         this.tags.addAll(tags);
         this.guardianPhone = guardianPhone;
         this.hourlyRate = hourlyRate;
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public StudentFields getStudentFields() {
+        return studentFields;
+    }
+
+    /** Returns an updated snapshot, without changing internal identity or optional fields. */
+    public Person withDetails(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        return new Person(id, name, phone, email, address, tags, studentFields);
+    }
+
+    public Person withStudentFields(StudentFields fields) {
+        return new Person(id, name, phone, email, address, tags, fields);
     }
 
     public Name getName() {
@@ -82,7 +118,7 @@ public class Person {
     }
 
     /**
-     * Returns true if both persons have the same name.
+     * Returns true if both students have equal normalized names (ignoring case) and canonical phones.
      * This defines a weaker notion of equality between two persons.
      */
     public boolean isSamePerson(Person otherPerson) {
@@ -91,7 +127,8 @@ public class Person {
         }
 
         return otherPerson != null
-                && otherPerson.getName().equals(getName());
+                && otherPerson.getName().fullName.equalsIgnoreCase(getName().fullName)
+                && otherPerson.getPhone().equals(getPhone());
     }
 
     /**
@@ -116,12 +153,14 @@ public class Person {
                 && tags.equals(otherPerson.tags)
                 && guardianPhone.equals(otherPerson.guardianPhone)
                 && hourlyRate.equals(otherPerson.hourlyRate);
+                && studentFields.equals(otherPerson.studentFields);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
         return Objects.hash(name, phone, email, address, tags, guardianPhone, hourlyRate);
+        return Objects.hash(name, phone, email, address, tags, studentFields);
     }
 
     @Override
