@@ -98,6 +98,23 @@ public class WeeklyScheduleUiTest {
                 assertEquals(List.of("Amy", "Zoe"), names(summary));
                 assertEquals(List.of("Zoe", "Amy"), names(rows));
                 assertEquals(amy.getId(), model.getSelectedPersonId());
+                enter(input, "guardian 1 g/91234567");
+                enter(input, "level 1 l/Sec4");
+                enter(input, "subject 1 s/Math/Science");
+                enter(input, "rate 1 r/65");
+                assertEquals(zoe.getId(), model.getSelectedPersonId());
+                assertTrue(labels(details).containsAll(List.of("Guardian phone: +6591234567",
+                        "Education level: Secondary 4", "Subject: Math/Science", "Hourly rate: 65.00",
+                        "Weekly slot: Sunday 23:59")));
+                Person complete = rows.getItems().getFirst();
+                assertEquals(complete, storage.readAddressBook().orElseThrow().getPersonList().getFirst());
+                enter(input, "list");
+                assertEquals("Listed 2 students.", status.getText());
+                assertNull(rows.getSelectionModel().getSelectedItem());
+                assertNull(model.getSelectedPersonId());
+                assertEquals(List.of("Zoe", "Amy"), names(rows));
+                assertEquals(List.of("Amy", "Zoe"), names(summary));
+                rows.getSelectionModel().select(1);
                 Person selected = rows.getSelectionModel().getSelectedItem();
                 List<Node> detailNodes = List.copyOf(details.getChildren());
                 List<Person> scheduled = List.copyOf(summary.getItems());
@@ -127,6 +144,11 @@ public class WeeklyScheduleUiTest {
                 assertEquals(zoe.getId(), model.getSelectedPersonId());
                 enter(input, "schedule 2 d/Tue t/19:00");
                 assertEquals(List.of("Zoe", "Amy"), names(summary));
+                Person rescheduled = rows.getItems().getFirst();
+                for (String key : List.of("guardianPhone", "educationLevel", "subject", "hourlyRate")) {
+                    assertEquals(complete.getStudentFields().toStorage().get(key),
+                            rescheduled.getStudentFields().toStorage().get(key), key);
+                }
                 enter(input, "delete 1");
                 assertEquals(List.of("Amy"), names(summary));
                 assertEquals(amy.getId(), model.getSelectedPersonId());

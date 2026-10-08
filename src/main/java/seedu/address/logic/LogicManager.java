@@ -7,8 +7,10 @@ import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
@@ -26,6 +28,8 @@ public class LogicManager implements Logic {
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
             "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
+    public static final String MESSAGE_ATOMIC_SAVE_FAILURE =
+            "Error: Changes could not be saved. No changes were made.";
 
     private final Logger logger = LogsCenter.getLogger(LogicManager.class);
 
@@ -48,13 +52,19 @@ public class LogicManager implements Logic {
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
-        CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
         Model proposed = model.copyForCommand();
-        commandResult = command.execute(proposed);
+        if (command instanceof ListCommand) {
+            try {
+                storage.readAddressBook().ifPresent(proposed::setAddressBook);
+            } catch (DataLoadingException exception) {
+                throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
+            }
+        }
+        CommandResult commandResult = command.execute(proposed);
 
         try {
-            if (!model.getAddressBook().equals(proposed.getAddressBook())) {
+            if (!(command instanceof ListCommand) && !model.getAddressBook().equals(proposed.getAddressBook())) {
                 storage.saveAddressBook(proposed.getAddressBook());
             }
         } catch (IOException ioe) {

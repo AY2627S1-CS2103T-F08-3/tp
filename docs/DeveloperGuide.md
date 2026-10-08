@@ -193,7 +193,9 @@ Verification:
 * `./gradlew check coverage` runs validation, parser, command, persistence and end-to-end tests.
 * `F01_UI_TESTS=true ./gradlew test --rerun-tasks` also runs the real JavaFX command-box/selection/details test.
   It requires a desktop display (or a configured virtual display on Linux) and the project's prescribed JDK+FX.
-  The GUI test is explicitly disabled without that environment variable so headless checks remain usable.
+  The GUI test is explicitly disabled without that environment variable so headless local checks remain usable.
+  Linux CI enables it under `xvfb-run` using software rendering, and uploads that run's coverage to Codecov.
+  The test opt-in is a Gradle task input so enabling it cannot reuse results from a run that skipped the UI test.
 * `AtomicStudentCommandTest` injects write/replacement failures and checks old file bytes, filter and selection,
   as well as save-before-publish ordering. `StudentPersistenceTest` checks old records, stable IDs and owner data.
 * `AddStudentEndToEndTest` verifies invalid commands leave state unchanged, exact error precedence, both user
@@ -585,3 +587,24 @@ testers are expected to do more *exploratory* testing.
 * **Storage component**: The part of the application that saves and loads data.
 * **UI component**: The part of the application responsible for user interaction and displayed output.
 * **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
+
+
+## Delete/list student integration (F02/F03)
+
+* `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
+* Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+  including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
+  Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
+* List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+  It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
+* The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+  `PersonListPanel.selectPerson` refreshes cells so row numbering follows the updated positions.
+  The empty register shows a placeholder; clearing selection resets the details panel.
+* Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+  metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
+
+Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
+first/middle/last and filtered deletion, malformed/oversized indices, failure preservation, and real JavaFX
+selection/details/renumbering. The optional-field envelope fixtures verify preservation without replacing
+field owners' typed validation tests. JavaFX command tests run under `F01_UI_TESTS=true` (Linux CI uses Xvfb).

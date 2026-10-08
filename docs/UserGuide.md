@@ -61,7 +61,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
@@ -129,11 +129,21 @@ parameter (name, phone, address order); invalid name, phone, address; duplicate;
 Every failed add leaves the file, student list, current filter, selected row and details unchanged. No partial
 profile is created. If saving fails, check the data folder's permissions and available disk space before retrying.
 
-### Listing all persons: `list`
-
-Shows a list of all persons in the address book.
+### Listing students: `list`
 
 Format: `list`
+
+Reloads the complete saved register in insertion order, replaces any filtered results,
+numbers rows from 1, and clears selection. Before the first save, the in-memory register is used.
+The command does not save or sort records.
+
+* With records: `Listed N students.`
+* Empty register: `No students found.` and an empty-state panel.
+* Extra input (including `list 1` or `list n/Amy`): `Error: List does not accept parameters.`
+* Unreadable or invalid saved data: `Error: Student list could not be loaded.`
+
+Invalid input or a load failure preserves the previous register, displayed results, and selection.
+Unset optional student fields display as an em dash (—) in the details panel.
 
 ### Editing a person: `edit`
 
@@ -150,6 +160,52 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
+
+### Setting a student's education level (F05): `level`
+
+Format: `level INDEX l/LEVEL`
+
+Sets the one current education level of the student at the displayed, 1-based `INDEX`. Setting a new level
+replaces the old one; levels never accumulate. Many students may share a level.
+
+Examples:
+* `level 1 l/Secondary 4`
+* `level 2 l/JC2`
+* `level 3 l/Primary 6`
+
+Accepted levels (case-insensitive, and the space between the word and the number is optional):
+
+| Level | Canonical names | Also accepted |
+| --- | --- | --- |
+| Primary | `Primary 1` to `Primary 6` | `P1` to `P6` |
+| Secondary | `Secondary 1` to `Secondary 5` | `Sec1` to `Sec5`, `S1` to `S5` |
+| Junior college | `JC 1`, `JC 2` | `JC1`, `JC2` |
+
+For example, `Sec4`, `sec 4`, `S4` and `Secondary 4` all mean `Secondary 4`. Only these forms are accepted: other
+spellings such as `Sec Four`, and levels outside this table (preschool, polytechnic, ITE, IB, university), are not.
+The canonical name is what is stored and shown, in the student list and in the details panel. A student with no level
+shows an em dash (—).
+
+On success, the student is saved, selected and shown in the details panel. Setting a level equivalent to the current
+one changes nothing: nothing is saved and the selection stays as it was.
+
+| Outcome | Message |
+| --- | --- |
+| First level | `Education level set for NAME: LEVEL.` |
+| Replacement | `Education level updated for NAME: OLD_LEVEL -> NEW_LEVEL.` |
+| Same level | `Education level for NAME is already LEVEL.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Unknown parameter | `Error: Unknown parameter: PREFIX.` |
+| Missing parameter | `Error: Missing required parameter: l/LEVEL.` |
+| Repeated parameter | `Error: Parameter l/ may be specified only once.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid level | `Error: Invalid level. Use Primary 1-6, Secondary 1-5, or JC 1-2.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown above, and the index syntax is checked before the level. The level is
+checked before the row is looked up, so `level 99 l/Sec 6` reports the invalid level. A failed command
+changes nothing: the saved file, the student list, the filter and the selection all stay as they were.
 
 ### Locating persons by name: `find`
 
@@ -168,19 +224,76 @@ Examples:
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
-### Deleting a person: `delete`
-
-Deletes the specified person from the address book.
+### Deleting a student: `delete`
 
 Format: `delete INDEX`
 
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, ...
+Deletes the complete record at the current displayed, 1-based index. For example,
+`find Betsy` followed by `delete 1` deletes the first matching result.
+The remaining rows are renumbered. Deleting the selected record clears selection;
+otherwise the same surviving record stays selected.
+
+Use exactly one positive whole number without signs, decimals, or leading zeroes.
+Surrounding spaces and multiple spaces between the command and index are allowed.
+There is no confirmation or undo.
+
+| Outcome | Message |
+| --- | --- |
+| Deleted | `Student deleted: NAME.` |
+| Missing index | `Error: Missing required parameter: INDEX.` |
+| Multiple indices | `Error: Delete accepts exactly one index.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+The proposed register is saved before changing the displayed records. Failed deletion
+preserves the profile, stored data, results, and selection.
+
+### Setting a student's subject (F06): `subject`
+
+Format: `subject INDEX s/SUBJECT`
+
+Sets the one subject taught to the student at the displayed, 1-based `INDEX`. Setting a new subject replaces the
+old one; a student never has more than one subject. Many students may share a subject.
 
 Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+* `subject 1 s/O-Level Chemistry`
+* `subject 2 s/H2 Math`
+* `subject 3 s/Primary 6 English`
+
+The subject is normalized before it is checked and stored: Unicode is normalized (NFKC), the text is trimmed and
+repeated spaces are collapsed. It must then have:
+
+* 2 to 50 characters, with at least one letter;
+* only letters, digits, spaces and the symbols `&` `/` `-` `'` `(` `)`. Other symbols such as `@`, and control
+  characters or line breaks, are rejected.
+
+Slashes inside a subject are kept as text, e.g. `s/Math/Science`. The case you type is the case that is shown, in the
+student list and in the details panel. A student with no subject shows an em dash (—).
+
+Two subjects are the same if they differ only in letter case or spacing, e.g. `H2 Math` and `h2   MATH`. Entering
+the same subject again changes nothing: nothing is saved, the selection stays as it was, and the subject keeps the
+display text it already had.
+
+On success, the student is saved, selected and shown in the details panel.
+
+| Outcome | Message |
+| --- | --- |
+| First subject | `Subject set for NAME: SUBJECT.` |
+| Replacement | `Subject updated for NAME: OLD_SUBJECT -> NEW_SUBJECT.` |
+| Same subject | `Subject for NAME is already SUBJECT.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Unknown parameter | `Error: Unknown parameter: PREFIX.` |
+| Missing parameter | `Error: Missing required parameter: s/SUBJECT.` |
+| Repeated parameter | `Error: Parameter s/ may be specified only once.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid subject | `Error: Invalid subject. Use 2-50 letters, numbers, spaces, or the symbols & / - ' ( ).` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown above, and the index syntax is checked before the subject. The subject is
+checked before the row is looked up, so `subject 99 s/@` reports the invalid subject. A failed command changes
+nothing: the saved file, the student list, the filter and the selection all stay as they were.
 
 ### Clearing all entries: `clear`
 
@@ -237,6 +350,8 @@ Action     | Format, Examples
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Help**   | `help`

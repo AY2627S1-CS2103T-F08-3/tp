@@ -59,7 +59,7 @@ Each dependent PR is initially based on the preceding slice, not `master`, to ke
 * F02/F03: reuse `getPersonPredicate`, `getSelectedPersonId`, `selectPerson`, `copyForCommand` and `publish`.
   Shared visible-index work is tracked in #64. Never interpret UUIDs as displayed indices. The existing legacy
   command behaviour is not the final F02/F03 contract; implement exact index/list/delete messages there.
-* Guardian phone owner: reuse `Phone`; use a `StudentField<Phone>` codec with key `guardianPhone`.
+* Guardian phone owner: `GuardianPhone.FIELD` is the typed codec for the `guardianPhone` envelope key.
 * Education/subject/rate owners: supply their own validated types and codecs; use `withStudentFields` and keep
   unrelated values. Canonical levels and two-decimal BigDecimal rates remain those owners' responsibility.
 * F08: the weekly slot value is being introduced in #60. Its owner supplies the `weeklySlot` codec and final
@@ -68,3 +68,31 @@ Each dependent PR is initially based on the preceding slice, not `master`, to ke
 Owners of no-change updates must return without changing their staged model or selection. Data equality skips
 saving; it is not a substitute for command-specific no-change messages or display-format preservation.
 The fallback details renderer shows stored values; each optional-field owner should add its final formatter.
+
+## Master integration repair: F01 and F04
+
+The repair PR consolidates optional data in **one immutable `StudentFields` envelope**, not parallel fields.
+`GuardianPhone.FIELD` and `HourlyRate.FIELD` reuse F04's validated types and canonical string encodings.
+`Person.getGuardianPhone()` and `getHourlyRate()` are typed views over that envelope. The legacy constructor
+accepting those two optionals remains available for new records; it encodes them into the same envelope.
+Updates must use `withGuardianPhone`, `withHourlyRate`, `withDetails` or `withStudentFields`, never a new-person
+constructor. These methods retain the UUID and unrelated fields, including other owners' or future JSON data.
+
+The persisted format remains compatible: one top-level `guardianPhone` and one top-level `hourlyRate` property,
+alongside the other optional properties. The JSON adapter removes those two keys from its any-getter map so it
+cannot emit duplicate properties, and restores their validated values into the shared envelope when loading.
+Missing/null values remain unset. Rates normalize to two-decimal strings without rounding.
+
+All commands use the same `copyForCommand` → execute → save changed data → `publish` transaction. The legacy
+`AtomicCommand` marker is retained for source compatibility but no longer selects a competing execution path.
+`list` loads into the staged model and never saves; a load failure preserves live state. No-change field commands
+retain the original filter, objects, formatting and selected UUID. All persistence uses `AtomicJsonFile` once.
+
+Delete now uses the shared arbitrary-size `Index` and `VisibleIndexResolver`, with a compatibility constructor
+for `VisibleIndex`. Indices are narrowed only after checking the displayed list size. F02's delete-specific
+missing/multiple-index errors and Unicode normalization remain intact.
+
+This repair reconciles the merged contracts and is proposed for Eugene/Pratiksha review; it is not a claim of
+prior owner approval. `StudentFieldIntegrationTest` verifies cross-feature preservation, reload, no-change,
+filtered indices, oversized indices, single writes and save rollback. The GUI test checks typed contact values
+appear in details and that failed/no-change field updates preserve selection.
