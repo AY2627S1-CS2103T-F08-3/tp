@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="title">
+  <title id="title">Tutor Connect</title>
+  <rect width="64" height="64" rx="12" fill="#16324f"/>
+  <g fill="none" stroke="#ffffff" stroke-width="6" stroke-linecap="square" stroke-linejoin="round">
+    <path d="M10 20h20M20 20v26"/>
+    <path d="M53 23a11 13 0 1 0 0 20"/>
+  </g>
+</svg>

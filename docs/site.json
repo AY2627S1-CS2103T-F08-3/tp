@@ -2,7 +2,7 @@
   "baseUrl": "",
   "titlePrefix": "Tutor Connect",
   "titleSuffix": "",
-  "faviconPath": "images/SeEduLogo.png",
+  "faviconPath": "images/TutorConnectLogo.svg",
   "style": {
     "codeTheme": "light"
   },

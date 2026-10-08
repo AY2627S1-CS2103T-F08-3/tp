@@ -46,11 +46,10 @@ public class ParserUtil {
      */
     public static Name parseName(String name) throws ParseException {
         requireNonNull(name);
-        String trimmedName = name.trim();
-        if (!Name.isValidName(trimmedName)) {
+        if (!Name.isValidName(name)) {
             throw new ParseException(Name.MESSAGE_CONSTRAINTS);
         }
-        return new Name(trimmedName);
+        return new Name(name);
     }
 
     /**
@@ -61,11 +60,10 @@ public class ParserUtil {
      */
     public static Phone parsePhone(String phone) throws ParseException {
         requireNonNull(phone);
-        String trimmedPhone = phone.trim();
-        if (!Phone.isValidPhone(trimmedPhone)) {
+        if (!Phone.isValidPhone(phone)) {
             throw new ParseException(Phone.MESSAGE_CONSTRAINTS);
         }
-        return new Phone(trimmedPhone);
+        return new Phone(phone);
     }
 
     /**
@@ -76,11 +74,10 @@ public class ParserUtil {
      */
     public static Address parseAddress(String address) throws ParseException {
         requireNonNull(address);
-        String trimmedAddress = address.trim();
-        if (!Address.isValidAddress(trimmedAddress)) {
+        if (!Address.isValidAddress(address)) {
             throw new ParseException(Address.MESSAGE_CONSTRAINTS);
         }
-        return new Address(trimmedAddress);
+        return new Address(address);
     }
 
     /**
