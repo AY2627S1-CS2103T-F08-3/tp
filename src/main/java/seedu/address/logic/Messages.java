@@ -20,6 +20,11 @@ public class Messages {
     public static final String MESSAGE_PERSONS_LISTED_OVERVIEW = "%1$d person(s) listed!";
     public static final String MESSAGE_DUPLICATE_FIELDS =
                 "Multiple values specified for the following single-valued field(s): ";
+    public static final String MESSAGE_UNKNOWN_PARAMETER = "Error: Unknown parameter: %1$s.";
+    public static final String MESSAGE_MISSING_REQUIRED_PARAMETER = "Error: Missing required parameter: %1$s.";
+    public static final String MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE =
+            "Error: Parameter %1$s may be specified only once.";
+    public static final String MESSAGE_UNEXPECTED_TEXT = "Error: Unexpected text after command.";
 
     /**
      * Returns an error message indicating the duplicate prefixes.
