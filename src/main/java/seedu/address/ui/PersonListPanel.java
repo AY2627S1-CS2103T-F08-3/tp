@@ -29,6 +29,12 @@ public class PersonListPanel extends UiPart<Region> {
         personListView.setCellFactory(listView -> new PersonListViewCell());
     }
 
+    /** Selects and scrolls to a zero-based row in the currently displayed list. */
+    public void selectIndex(int zeroBasedIndex) {
+        personListView.getSelectionModel().select(zeroBasedIndex);
+        personListView.scrollTo(zeroBasedIndex);
+    }
+
     /**
      * Custom {@code ListCell} that displays the graphics of a {@code Person} using a {@code PersonCard}.
      */

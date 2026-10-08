@@ -3,6 +3,7 @@ package seedu.address.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+import java.util.Optional;
 
 import seedu.address.commons.util.ToStringBuilder;
 
@@ -19,13 +20,29 @@ public class CommandResult {
     /** The application should exit. */
     private final boolean exit;
 
+    /** One-based index of a person to select after a successful command, if any. */
+    private final Integer selectedPersonIndex;
+
     /**
      * Constructs a {@code CommandResult} with the specified fields.
      */
     public CommandResult(String feedbackToUser, boolean showHelp, boolean exit) {
+        this(feedbackToUser, showHelp, exit, null);
+    }
+
+    /** Constructs a result that selects the person at the given one-based displayed index. */
+    public CommandResult(String feedbackToUser, int selectedPersonIndex) {
+        this(feedbackToUser, false, false, selectedPersonIndex);
+    }
+
+    private CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Integer selectedPersonIndex) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
+        if (selectedPersonIndex != null && selectedPersonIndex <= 0) {
+            throw new IllegalArgumentException("Selected person index must be positive.");
+        }
         this.showHelp = showHelp;
         this.exit = exit;
+        this.selectedPersonIndex = selectedPersonIndex;
     }
 
     /**
@@ -48,6 +65,10 @@ public class CommandResult {
         return exit;
     }
 
+    public Optional<Integer> getSelectedPersonIndex() {
+        return Optional.ofNullable(selectedPersonIndex);
+    }
+
     @Override
     public boolean equals(Object other) {
         if (other == this) {
@@ -61,12 +82,13 @@ public class CommandResult {
 
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
-                && exit == otherCommandResult.exit;
+                && exit == otherCommandResult.exit
+                && Objects.equals(selectedPersonIndex, otherCommandResult.selectedPersonIndex);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit);
+        return Objects.hash(feedbackToUser, showHelp, exit, selectedPersonIndex);
     }
 
     @Override
@@ -75,6 +97,7 @@ public class CommandResult {
                 .add("feedbackToUser", feedbackToUser)
                 .add("showHelp", showHelp)
                 .add("exit", exit)
+                .add("selectedPersonIndex", selectedPersonIndex)
                 .toString();
     }
 
