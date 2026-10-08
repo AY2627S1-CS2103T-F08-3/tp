@@ -62,12 +62,14 @@ public final class IndexedParameterParserUtil {
         }
 
         if (prefixes.size() > 1) {
-            throw new ParseException(String.format(MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE, parameterLabel));
+            throw new ParseException(String.format(MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE, expectedPrefix));
         }
 
         PrefixToken prefix = prefixes.getFirst();
-        if (!normalized.substring(firstWhitespace < 0 ? normalized.length() : firstWhitespace,
-                prefix.startPosition()).trim().isEmpty()) {
+        int indexEnd = firstWhitespace < 0 ? normalized.length() : firstWhitespace;
+        // A prefix inside the first token means the index is missing; parseIndex then reports it.
+        if (prefix.startPosition() >= indexEnd
+                && !normalized.substring(indexEnd, prefix.startPosition()).trim().isEmpty()) {
             throw new ParseException(MESSAGE_UNEXPECTED_TEXT);
         }
 

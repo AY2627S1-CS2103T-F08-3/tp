@@ -203,6 +203,52 @@ There is no confirmation or undo.
 The proposed register is saved before changing the displayed records. Failed deletion
 preserves the profile, stored data, results, and selection.
 
+### Setting a student's subject (F06): `subject`
+
+Format: `subject INDEX s/SUBJECT`
+
+Sets the one subject taught to the student at the displayed, 1-based `INDEX`. Setting a new subject replaces the
+old one; a student never has more than one subject. Many students may share a subject.
+
+Examples:
+* `subject 1 s/O-Level Chemistry`
+* `subject 2 s/H2 Math`
+* `subject 3 s/Primary 6 English`
+
+The subject is normalized before it is checked and stored: Unicode is normalized (NFKC), the text is trimmed and
+repeated spaces are collapsed. It must then have:
+
+* 2 to 50 characters, with at least one letter;
+* only letters, digits, spaces and the symbols `&` `/` `-` `'` `(` `)`. Other symbols such as `@`, and control
+  characters or line breaks, are rejected.
+
+Slashes inside a subject are kept as text, e.g. `s/Math/Science`. The case you type is the case that is shown, in the
+student list and in the details panel. A student with no subject shows an em dash (—).
+
+Two subjects are the same if they differ only in letter case or spacing, e.g. `H2 Math` and `h2   MATH`. Entering
+the same subject again changes nothing: nothing is saved, the selection stays as it was, and the subject keeps the
+display text it already had.
+
+On success, the student is saved, selected and shown in the details panel.
+
+| Outcome | Message |
+| --- | --- |
+| First subject | `Subject set for NAME: SUBJECT.` |
+| Replacement | `Subject updated for NAME: OLD_SUBJECT -> NEW_SUBJECT.` |
+| Same subject | `Subject for NAME is already SUBJECT.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Unknown parameter | `Error: Unknown parameter: PREFIX.` |
+| Missing parameter | `Error: Missing required parameter: s/SUBJECT.` |
+| Repeated parameter | `Error: Parameter s/ may be specified only once.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid subject | `Error: Invalid subject. Use 2-50 letters, numbers, spaces, or the symbols & / - ' ( ).` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown above, and the index syntax is checked before the subject. The subject is
+checked before the row is looked up, so `subject 99 s/@` reports the invalid subject. A failed command changes
+nothing: the saved file, the student list, the filter and the selection all stay as they were.
+
 ### Clearing all entries: `clear`
 
 Clears all entries from the address book.
@@ -260,4 +306,5 @@ Action     | Format, Examples
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Help**   | `help`
