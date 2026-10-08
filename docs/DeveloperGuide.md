@@ -545,3 +545,36 @@ testers are expected to do more *exploratory* testing.
 * **Storage component**: The part of the application that saves and loads data.
 * **UI component**: The part of the application responsible for user interaction and displayed output.
 * **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
+
+
+## Delete/list student integration (F02/F03)
+
+This implementation builds on the F01 student identity and optional-field envelope merged into master.
+
+* `VisibleIndex.parse` validates decimal syntax; `resolve` targets the supplied displayed list.
+  It compares decimal text with list size before integer conversion, safely handling oversized indices.
+* `DeleteCommand.resolveTarget` selects the visible record. `LogicManager` copies the complete
+  register, removes the target, saves the proposal, and only then publishes the deletion.
+* JSON storage delegates to F01's `AtomicJsonFile`, which saves and forces a sibling temporary
+  file before atomic replacement. Unsupported atomic replacement fails safely.
+* List reads and validates storage before publishing the complete register and clearing selection.
+  A missing file uses the initial in-memory register. List never saves.
+* `CommandResult.SelectionAction` changes selection only after success. Delete matches surviving
+  students by stable UUID, including replacement snapshots with the same ID.
+* Unset legacy email values display as an em dash. Optional-field owners supply their own UI
+  and typed codecs; the existing `StudentFields` envelope is preserved when deleting other students.
+
+### Remaining integration
+
+F01's UUID/optional-field JSON mapping, shared command transaction, and model-selection API
+have not yet merged. Optional-field reload verification is pending that storage mapping. When it lands,
+route these commands through that interface instead of keeping competing transaction paths.
+The current name-based uniqueness rules still prevent duplicate-name records; verify shared-name
+and shared-phone listing/deletion after F01's duplicate rules are integrated.
+
+Current tests cover optional-field envelopes in proposed deletion states, legacy profile deletion
+after reload, first/middle/last deletion,
+filtered targeting, malformed/oversized indices, save/load failure, stored order, empty lists,
+strict list syntax, and JavaFX UUID selection preservation/clearing. Field owners should extend
+these with typed guardian phone, level, subject, rate, and weekly-slot fixtures when available.
+Mutations outside F02 retain their existing logic pending F01's transaction integration.

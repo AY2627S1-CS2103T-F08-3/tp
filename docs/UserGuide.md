@@ -61,7 +61,7 @@ AddressBook Level 3 (AB3) is a **desktop application for managing contacts, opti
 * Parameters can be in any order.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `list`, `exit`, and `clear`, are ignored.<br>
+* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
@@ -91,11 +91,21 @@ Examples:
 * `add n/John Doe p/98765432 e/johnd@example.com a/John street, block 123, #01-01`
 * `add n/Betsy Crowe t/friend e/betsycrowe@example.com a/Newgate Prison p/1234567 t/criminal`
 
-### Listing all persons: `list`
-
-Shows a list of all persons in the address book.
+### Listing students: `list`
 
 Format: `list`
+
+Reloads the complete saved register in insertion order, replaces any filtered results,
+numbers rows from 1, and clears selection. Before the first save, the in-memory register is used.
+The command does not save or sort records.
+
+* With records: `Listed N students.`
+* Empty register: `No students found.` and an empty-state panel.
+* Extra input (including `list 1` or `list n/Amy`): `Error: List does not accept parameters.`
+* Unreadable or invalid saved data: `Error: Student list could not be loaded.`
+
+Invalid input or a load failure preserves the previous register, displayed results, and selection.
+Unset legacy email values display as an em dash (—).
 
 ### Editing a person: `edit`
 
@@ -130,19 +140,30 @@ Examples:
 * `find alex david` returns `Alex Yeoh`, `David Li`<br>
   ![result for 'find alex david'](images/findAlexDavidResult.png)
 
-### Deleting a person: `delete`
-
-Deletes the specified person from the address book.
+### Deleting a student: `delete`
 
 Format: `delete INDEX`
 
-* Deletes the person at the specified `INDEX`.
-* The index refers to the index number shown in the displayed person list.
-* The index **must be a positive integer** 1, 2, 3, ...
+Deletes the complete record at the current displayed, 1-based index. For example,
+`find Betsy` followed by `delete 1` deletes the first matching result.
+The remaining rows are renumbered. Deleting the selected record clears selection;
+otherwise the same surviving record stays selected.
 
-Examples:
-* `list` followed by `delete 2` deletes the 2nd person in the address book.
-* `find Betsy` followed by `delete 1` deletes the 1st person in the results of the `find` command.
+Use exactly one positive whole number without signs, decimals, or leading zeroes.
+Surrounding spaces and multiple spaces between the command and index are allowed.
+There is no confirmation or undo.
+
+| Outcome | Message |
+| --- | --- |
+| Deleted | `Student deleted: NAME.` |
+| Missing index | `Error: Missing required parameter: INDEX.` |
+| Multiple indices | `Error: Delete accepts exactly one index.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+The proposed register is saved before changing the displayed records. Failed deletion
+preserves the profile, stored data, results, and selection.
 
 ### Clearing all entries: `clear`
 

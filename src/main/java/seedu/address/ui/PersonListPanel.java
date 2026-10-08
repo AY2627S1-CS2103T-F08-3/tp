@@ -4,10 +4,12 @@ import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Region;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.commands.CommandResult.SelectionAction;
 import seedu.address.model.person.Person;
 
 /**
@@ -27,6 +29,28 @@ public class PersonListPanel extends UiPart<Region> {
         super(FXML);
         personListView.setItems(personList);
         personListView.setCellFactory(listView -> new PersonListViewCell());
+        personListView.setPlaceholder(new Label("No students found."));
+    }
+
+    public Person getSelectedPerson() {
+        return personListView.getSelectionModel().getSelectedItem();
+    }
+
+    /** Restores the same surviving record, never the record now occupying its former row. */
+    public void applySelection(SelectionAction action, Person previousSelection) {
+        if (action == SelectionAction.UNCHANGED) {
+            return;
+        }
+        personListView.getSelectionModel().clearSelection();
+        if (action == SelectionAction.PRESERVE && previousSelection != null) {
+            for (int i = 0; i < personListView.getItems().size(); i++) {
+                if (personListView.getItems().get(i).getId().equals(previousSelection.getId())) {
+                    personListView.getSelectionModel().select(i);
+                    break;
+                }
+            }
+        }
+        personListView.refresh();
     }
 
     /**
