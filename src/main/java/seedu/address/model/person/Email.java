@@ -33,6 +33,10 @@ public class Email {
 
     public final String value;
 
+    private Email() {
+        value = "";
+    }
+
     /**
      * Constructs an {@code Email}.
      *
@@ -42,6 +46,11 @@ public class Email {
         requireNonNull(email);
         checkArgument(isValidEmail(email), MESSAGE_CONSTRAINTS);
         value = email;
+    }
+
+    /** Legacy email is not required for a student; do not invent a placeholder address. */
+    public static Email unset() {
+        return new Email();
     }
 
     /**

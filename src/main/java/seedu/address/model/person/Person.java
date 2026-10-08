@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
+import java.util.UUID;
 
 import seedu.address.commons.util.ToStringBuilder;
 import seedu.address.model.tag.Tag;
@@ -15,6 +16,9 @@ import seedu.address.model.tag.Tag;
  * Guarantees: details are present and not null, field values are validated, immutable.
  */
 public class Person {
+
+    private final UUID id;
+    private final StudentFields studentFields;
 
     // Identity fields
     private final Name name;
@@ -29,12 +33,43 @@ public class Person {
      * Every field must be present and not null.
      */
     public Person(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        this(UUID.randomUUID(), name, phone, email, address, tags, new StudentFields());
+    }
+
+    /** Creates a student with no optional fields or legacy contact metadata. */
+    public Person(Name name, Phone phone, Address address) {
+        this(name, phone, Email.unset(), address, Set.of());
+    }
+
+    /** Restores a complete immutable student; field updates must retain the ID and unrelated fields. */
+    public Person(UUID id, Name name, Phone phone, Email email, Address address, Set<Tag> tags,
+            StudentFields studentFields) {
         requireAllNonNull(name, phone, email, address, tags);
+        requireAllNonNull(id, studentFields);
+        this.id = id;
+        this.studentFields = studentFields;
         this.name = name;
         this.phone = phone;
         this.email = email;
         this.address = address;
         this.tags.addAll(tags);
+    }
+
+    public UUID getId() {
+        return id;
+    }
+
+    public StudentFields getStudentFields() {
+        return studentFields;
+    }
+
+    /** Returns an updated snapshot, without changing internal identity or optional fields. */
+    public Person withDetails(Name name, Phone phone, Email email, Address address, Set<Tag> tags) {
+        return new Person(id, name, phone, email, address, tags, studentFields);
+    }
+
+    public Person withStudentFields(StudentFields fields) {
+        return new Person(id, name, phone, email, address, tags, fields);
     }
 
     public Name getName() {
@@ -93,13 +128,14 @@ public class Person {
                 && phone.equals(otherPerson.phone)
                 && email.equals(otherPerson.email)
                 && address.equals(otherPerson.address)
-                && tags.equals(otherPerson.tags);
+                && tags.equals(otherPerson.tags)
+                && studentFields.equals(otherPerson.studentFields);
     }
 
     @Override
     public int hashCode() {
         // use this method for custom fields hashing instead of implementing your own
-        return Objects.hash(name, phone, email, address, tags);
+        return Objects.hash(name, phone, email, address, tags, studentFields);
     }
 
     @Override
