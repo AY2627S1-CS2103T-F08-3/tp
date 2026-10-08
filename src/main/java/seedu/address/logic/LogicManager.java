@@ -7,11 +7,14 @@ import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
+import seedu.address.logic.commands.ListCommand;
 import seedu.address.logic.commands.exceptions.CommandException;
 import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
+import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
 import seedu.address.model.person.Person;
 import seedu.address.storage.Storage;
@@ -46,6 +49,19 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
+        if (command instanceof ListCommand) {
+            try {
+                // A new installation can have an in-memory register before its first save.
+                var loaded = storage.readAddressBook();
+                if (loaded.isPresent()) {
+                    AddressBook validated = new AddressBook(loaded.get());
+                    model.setAddressBook(validated);
+                }
+            } catch (DataLoadingException | IllegalArgumentException e) {
+                throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, e);
+            }
+            return command.execute(model);
+        }
         commandResult = command.execute(model);
 
         try {
