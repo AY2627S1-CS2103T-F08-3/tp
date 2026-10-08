@@ -99,7 +99,7 @@ line breaks are rejected before whitespace processing. Name and address display 
   The stored/displayed form is `+6581234567`. International numbers are not supported.
 * **Address:** 1–200 Unicode characters after normalization, including at least one letter or digit.
   Letters, combining marks, digits, spaces and `# , . - / ' ( ) &` are accepted. For example, `12/3 Street`
-  keeps its slash. A whitespace-delimited single-letter token followed by `/` is reserved as a parameter
+  keeps its slash. A whitespace-delimited token of ASCII letters followed by `/` is reserved as a parameter
   boundary, not literal address text.
 
 On success, the complete student is saved, appended to the full list, selected and shown in the details panel.
@@ -295,6 +295,55 @@ Errors are reported in the order shown above, and the index syntax is checked be
 checked before the row is looked up, so `subject 99 s/@` reports the invalid subject. A failed command changes
 nothing: the saved file, the student list, the filter and the selection all stay as they were.
 
+### Scheduling a weekly lesson (F08): `schedule`
+
+Sets one recurring weekly lesson for the student at an index in the **currently displayed list**.
+
+Format: `schedule INDEX d/DAY t/TIME`
+
+Examples:
+
+* `schedule 1 d/Tuesday t/19:00`
+* `schedule 2 d/Sat t/09:30`
+* `schedule 2 t/09:30 d/sAT`
+
+Supply one positive index without leading zeroes, exactly one `d/DAY`, and exactly one `t/TIME`.
+The two prefixed parameters may appear in either order. Commands and prefixes are lowercase and case-sensitive.
+Surrounding spaces and multiple spaces between tokens are accepted. Values use the shared Unicode normalization;
+controls and line breaks are rejected.
+
+Days accept Monday through Sunday, including weekends, or exactly `Mon`, `Tue`, `Wed`, `Thu`, `Fri`, `Sat`, `Sun`.
+Day names are case-insensitive and display in full. Time uses 24-hour `HH:mm` with exactly two digits in each part:
+hours `00`–`23`, minutes `00`–`59`. For example, `09:00`, `18:30` and `23:59` are valid;
+`9:00`, `6pm`, `18.30`, `24:00` and `12:60` are invalid.
+
+An unset weekly slot appears as an em dash in student details. Setting or replacing a slot selects the student
+and refreshes the details and weekly summary. Day and time are saved together; a failed command leaves the
+complete previous slot, displayed list and selection unchanged. Equivalent normalized input preserves selection
+and does not save again. Different students may share an identical slot.
+
+The **Weekly schedule** summary shows all scheduled students, including students outside a filtered list.
+It orders entries Monday–Sunday, then by time, then by student insertion order for ties. It does not reorder
+the student register. Deleting a student also removes their entry from this summary and saved schedule.
+This feature supports one slot per student; lesson durations, multiple slots and conflict detection are outside its scope.
+
+Outcome | Status message
+--- | ---
+First slot | `Weekly lesson set for NAME: DAY TIME.`
+Replacement | `Weekly lesson updated for NAME: OLD_DAY OLD_TIME -> NEW_DAY NEW_TIME.`
+Equivalent slot | `Weekly lesson for NAME is already DAY TIME.`
+Invalid day | `Error: Invalid day. Use Monday-Sunday or Mon-Sun.`
+Invalid time | `Error: Invalid time. Use 24-hour HH:mm, for example 09:00 or 18:30.`
+Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.`
+No displayed student | `Error: No student exists at index INDEX.`
+Save failure | `Error: Changes could not be saved. No changes were made.`
+
+Structural errors are reported before values. For example, omitting `d/` reports
+`Error: Missing required parameter: d/DAY.`, repeating it reports
+`Error: Parameter d/ may be specified only once.`, and `x/value` reports
+`Error: Unknown parameter: x/.` Extra unprefixed tokens report `Error: Unexpected text after command.`
+Values are checked in order: index syntax, day, time, then whether the displayed row exists.
+
 ### Clearing all entries: `clear`
 
 Clears all entries from the address book.
@@ -353,5 +402,6 @@ Action     | Format, Examples
 **Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
+**Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Help**   | `help`
