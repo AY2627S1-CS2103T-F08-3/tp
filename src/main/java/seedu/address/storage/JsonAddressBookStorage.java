@@ -10,7 +10,6 @@ import java.util.logging.Logger;
 import seedu.address.commons.core.LogsCenter;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.commons.exceptions.IllegalValueException;
-import seedu.address.commons.util.FileUtil;
 import seedu.address.commons.util.JsonUtil;
 import seedu.address.model.ReadOnlyAddressBook;
 
@@ -22,9 +21,16 @@ public class JsonAddressBookStorage {
     private static final Logger logger = LogsCenter.getLogger(JsonAddressBookStorage.class);
 
     private Path filePath;
+    private final AtomicJsonFile writer;
 
     public JsonAddressBookStorage(Path filePath) {
+        this(filePath, new AtomicJsonFile());
+    }
+
+    /** Allows deterministic failure injection without changing the production save protocol. */
+    public JsonAddressBookStorage(Path filePath, AtomicJsonFile writer) {
         this.filePath = filePath;
+        this.writer = requireNonNull(writer);
     }
 
     public Path getAddressBookFilePath() {
@@ -82,8 +88,8 @@ public class JsonAddressBookStorage {
         requireNonNull(addressBook);
         requireNonNull(filePath);
 
-        FileUtil.createIfMissing(filePath);
-        JsonUtil.saveJsonFile(new JsonSerializableAddressBook(addressBook), filePath);
+        String json = JsonUtil.toJsonString(new JsonSerializableAddressBook(addressBook));
+        writer.write(filePath, json);
     }
 
 }

@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
@@ -13,6 +14,7 @@ import com.fasterxml.jackson.databind.JsonNode;
  * Unknown fields are preserved so one owner's changes cannot erase another owner's data.
  */
 public final class StudentFields {
+    private static final Set<String> CORE_KEYS = Set.of("id", "name", "phone", "address", "email", "tags");
     private final Map<String, JsonNode> values;
 
     public StudentFields() {
@@ -25,6 +27,9 @@ public final class StudentFields {
         this.values = new LinkedHashMap<>();
         values.forEach((key, value) -> {
             requireNonNull(key);
+            if (CORE_KEYS.contains(key)) {
+                throw new IllegalArgumentException("Optional fields must not overwrite core student fields: " + key);
+            }
             if (value != null && !value.isNull()) {
                 this.values.put(key, value.deepCopy());
             }
