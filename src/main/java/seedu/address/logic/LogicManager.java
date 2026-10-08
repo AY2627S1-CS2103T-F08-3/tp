@@ -1,12 +1,15 @@
 package seedu.address.logic;
 
 import java.io.IOException;
+import java.nio.file.AccessDeniedException;
+import java.util.List;
 import java.util.UUID;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import seedu.address.commons.core.GuiSettings;
 import seedu.address.commons.core.LogsCenter;
+import seedu.address.logic.commands.AtomicCommand;
 import seedu.address.commons.exceptions.DataLoadingException;
 import seedu.address.logic.commands.Command;
 import seedu.address.logic.commands.CommandResult;
@@ -16,6 +19,7 @@ import seedu.address.logic.parser.AddressBookParser;
 import seedu.address.logic.parser.exceptions.ParseException;
 import seedu.address.model.AddressBook;
 import seedu.address.model.Model;
+import seedu.address.model.ModelManager;
 import seedu.address.model.person.Person;
 import seedu.address.storage.Storage;
 
@@ -28,6 +32,8 @@ public class LogicManager implements Logic {
 
     public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
             "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
+    public static final String MESSAGE_ATOMIC_SAVE_FAILURE =
+            "Error: Changes could not be saved. No changes were made.";
 
     private final Logger logger = LogsCenter.getLogger(LogicManager.class);
 
@@ -50,22 +56,10 @@ public class LogicManager implements Logic {
 
         CommandResult commandResult;
         Command command = addressBookParser.parseCommand(commandText);
-        Model proposed = model.copyForCommand();
-        if (command instanceof ListCommand) {
-            try {
-                // Before the first save, retain the initial in-memory register.
-                var loaded = storage.readAddressBook();
-                if (loaded.isPresent()) {
-                    proposed.setAddressBook(new AddressBook(loaded.get()));
-                }
-            } catch (DataLoadingException | IllegalArgumentException e) {
-                throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, e);
-            }
-            commandResult = command.execute(proposed);
-            model.publish(proposed);
-            return commandResult;
+        if (command instanceof AtomicCommand) {
+            return executeAtomically(command);
         }
-        commandResult = command.execute(proposed);
+        commandResult = command.execute(model);
 
         try {
             if (!model.getAddressBook().equals(proposed.getAddressBook())) {
@@ -76,6 +70,29 @@ public class LogicManager implements Logic {
         }
         model.publish(proposed);
         return commandResult;
+    }
+
+    /** Executes a state-changing command against a copy, saves it, then publishes it to the live model. */
+    private CommandResult executeAtomically(Command command) throws CommandException {
+        AddressBook proposedAddressBook = new AddressBook(model.getAddressBook());
+        Model proposedModel = new ModelManager(proposedAddressBook, model.getUserPrefs());
+        List<Person> currentlyDisplayed = List.copyOf(model.getFilteredPersonList());
+        proposedModel.updateFilteredPersonList(person -> currentlyDisplayed.stream()
+                .anyMatch(displayedPerson -> displayedPerson.isSamePerson(person)));
+
+        CommandResult result = command.execute(proposedModel);
+        if (model.getAddressBook().equals(proposedModel.getAddressBook())) {
+            return result;
+        }
+
+        try {
+            storage.saveAddressBook(proposedModel.getAddressBook());
+        } catch (IOException exception) {
+            throw new CommandException(MESSAGE_ATOMIC_SAVE_FAILURE, exception);
+        }
+
+        model.setAddressBook(proposedModel.getAddressBook());
+        return result;
     }
 
     @Override

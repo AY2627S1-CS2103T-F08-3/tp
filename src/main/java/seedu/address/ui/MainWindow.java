@@ -191,6 +191,7 @@ public class MainWindow extends UiPart<Stage> {
             personListPanel.selectPerson(logic.getSelectedPersonId());
             logger.info("Result: " + commandResult.getFeedbackToUser());
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
+            commandResult.getSelectedPersonIndex().ifPresent(index -> personListPanel.selectIndex(index - 1));
 
             if (commandResult.isShowHelp()) {
                 handleHelp();

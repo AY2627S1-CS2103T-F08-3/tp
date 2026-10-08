@@ -13,7 +13,7 @@ import seedu.address.model.person.HourlyRate;
 import seedu.address.model.person.Person;
 
 /** Sets a person's hourly rate using the rate's displayed index. */
-public class RateCommand extends Command {
+public class RateCommand extends Command implements AtomicCommand {
 
     public static final String COMMAND_WORD = "rate";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Sets a student's hourly rate in SGD.\n"
@@ -49,7 +49,7 @@ public class RateCommand extends Command {
         String message = previous.isEmpty()
                 ? String.format(MESSAGE_SET_SUCCESS, name, hourlyRate)
                 : String.format(MESSAGE_UPDATE_SUCCESS, name, previous.get(), hourlyRate);
-        return new CommandResult(message);
+        return new CommandResult(message, index.getOneBased());
     }
 
     @Override

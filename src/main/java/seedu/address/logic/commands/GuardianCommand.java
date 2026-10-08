@@ -13,7 +13,7 @@ import seedu.address.model.person.GuardianPhone;
 import seedu.address.model.person.Person;
 
 /** Sets the guardian phone number of a person selected by displayed index. */
-public class GuardianCommand extends Command {
+public class GuardianCommand extends Command implements AtomicCommand {
 
     public static final String COMMAND_WORD = "guardian";
     public static final String MESSAGE_USAGE = COMMAND_WORD + ": Sets a student's guardian contact.\n"
@@ -49,7 +49,7 @@ public class GuardianCommand extends Command {
         String message = previous.isEmpty()
                 ? String.format(MESSAGE_SET_SUCCESS, name, guardianPhone)
                 : String.format(MESSAGE_UPDATE_SUCCESS, name, previous.get(), guardianPhone);
-        return new CommandResult(message);
+        return new CommandResult(message, index.getOneBased());
     }
 
     @Override
