@@ -591,32 +591,20 @@ testers are expected to do more *exploratory* testing.
 
 ## Delete/list student integration (F02/F03)
 
-This implementation builds on the F01 student identity and optional-field envelope merged into master.
+* `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
+* Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+  including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
+  Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
+* List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+  It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
+* The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+  `PersonListPanel.selectPerson` refreshes cells so row numbering follows the updated positions.
+  The empty register shows a placeholder; clearing selection resets the details panel.
+* Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+  metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
 
-* `VisibleIndex.parse` validates decimal syntax; `resolve` targets the supplied displayed list.
-  It compares decimal text with list size before integer conversion, safely handling oversized indices.
-* `DeleteCommand.resolveTarget` selects the visible record. `LogicManager` copies the complete
-  register, removes the target, saves the proposal, and only then publishes the deletion.
-* JSON storage delegates to F01's `AtomicJsonFile`, which saves and forces a sibling temporary
-  file before atomic replacement. Unsupported atomic replacement fails safely.
-* List reads and validates storage before publishing the complete register and clearing selection.
-  A missing file uses the initial in-memory register. List never saves.
-* `CommandResult.SelectionAction` changes selection only after success. Delete matches surviving
-  students by stable UUID, including replacement snapshots with the same ID.
-* Unset legacy email values display as an em dash. Optional-field owners supply their own UI
-  and typed codecs; the existing `StudentFields` envelope is preserved when deleting other students.
-
-### Remaining integration
-
-F01's UUID/optional-field JSON mapping, shared command transaction, and model-selection API
-have not yet merged. Optional-field reload verification is pending that storage mapping. When it lands,
-route these commands through that interface instead of keeping competing transaction paths.
-The current name-based uniqueness rules still prevent duplicate-name records; verify shared-name
-and shared-phone listing/deletion after F01's duplicate rules are integrated.
-
-Current tests cover optional-field envelopes in proposed deletion states, legacy profile deletion
-after reload, first/middle/last deletion,
-filtered targeting, malformed/oversized indices, save/load failure, stored order, empty lists,
-strict list syntax, and JavaFX UUID selection preservation/clearing. Field owners should extend
-these with typed guardian phone, level, subject, rate, and weekly-slot fixtures when available.
-Mutations outside F02 retain their existing logic pending F01's transaction integration.
+Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
+first/middle/last and filtered deletion, malformed/oversized indices, failure preservation, and real JavaFX
+selection/details/renumbering. The optional-field envelope fixtures verify preservation without replacing
+field owners' typed validation tests. JavaFX command tests run under `F01_UI_TESTS=true` (Linux CI uses Xvfb).

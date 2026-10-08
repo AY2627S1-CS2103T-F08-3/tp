@@ -112,7 +112,27 @@ public class AddStudentUiTest {
                 enter(input, "add n/Nur Aisyah p/92345678 a/8 Jalan Besar");
                 assertEquals(1, rows.getSelectionModel().getSelectedIndex());
                 assertEquals("Name: Nur Aisyah", ((Label) details.getChildren().getFirst()).getText());
+                Person survivor = rows.getSelectionModel().getSelectedItem();
+                failSave.set(true);
+                enter(input, "delete 1");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(survivor.getId(), model.getSelectedPersonId());
+                assertEquals(2, rows.getItems().size());
+                failSave.set(false);
+                enter(input, "delete 1");
+                assertEquals("Student deleted: Alex Tan.", status.getText());
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals(survivor.getId(), model.getSelectedPersonId());
+                assertEquals("Name: Nur Aisyah", ((Label) details.getChildren().getFirst()).getText());
+                stage.getScene().getRoot().applyCss();
+                stage.getScene().getRoot().layout();
+                assertEquals("1. ", ((Label) rows.lookup("#id")).getText());
+                enter(input, "delete 1");
+                assertNull(rows.getSelectionModel().getSelectedItem());
+                assertEquals("Select a student to view details.", ((Label) details.getChildren().getFirst()).getText());
                 enter(input, "list");
+                assertEquals("No students found.", status.getText());
+                assertEquals("No students found.", ((Label) rows.getPlaceholder()).getText());
                 assertNull(rows.getSelectionModel().getSelectedItem());
                 assertNull(model.getSelectedPersonId());
             } finally {

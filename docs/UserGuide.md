@@ -143,7 +143,7 @@ The command does not save or sort records.
 * Unreadable or invalid saved data: `Error: Student list could not be loaded.`
 
 Invalid input or a load failure preserves the previous register, displayed results, and selection.
-Unset legacy email values display as an em dash (—).
+Unset optional student fields display as an em dash (—) in the details panel.
 
 ### Editing a person: `edit`
 
