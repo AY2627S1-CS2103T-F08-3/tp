@@ -70,7 +70,8 @@
         "launch-and-shutdown": "Launch and shutdown",
         "deleting-a-person": "Deleting a person",
         "saving-data": "Saving data",
-        "glossary-2": "Glossary"
+        "glossary-2": "Glossary",
+        "delete-list-student-integration-f02-f03": "Delete/list student integration (F02/F03)"
       },
       "headingKeywords": {}
     },
@@ -130,10 +131,10 @@
         "features": "Features",
         "viewing-help-help": "Viewing help: help",
         "adding-a-student-f01-add": "Adding a student (F01): add",
-        "listing-all-persons-list": "Listing all persons: list",
+        "listing-students-list": "Listing students: list",
         "editing-a-person-edit": "Editing a person: edit",
         "locating-persons-by-name-find": "Locating persons by name: find",
-        "deleting-a-person-delete": "Deleting a person: delete",
+        "deleting-a-student-delete": "Deleting a student: delete",
         "clearing-all-entries-clear": "Clearing all entries: clear",
         "exiting-the-program-exit": "Exiting the program: exit",
         "saving-the-data": "Saving the data",
