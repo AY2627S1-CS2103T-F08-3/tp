@@ -6,8 +6,8 @@ F01 implements Add Student only. This document does not allocate or implement ot
 
 ## Student model
 
-The existing `Person` aggregate represents a student, avoiding a repository-wide rename while owners work in parallel.
-`getId()` returns a stable UUID independent of displayed indices. New students use `Person(Name, Phone, Address)`;
+The existing `Student` aggregate represents a student, avoiding a repository-wide rename while owners work in parallel.
+`getId()` returns a stable UUID independent of displayed indices. New students use `Student(Name, Phone, Address)`;
 legacy email/tags remain available for old files but are empty for new students. Never invent optional values.
 `withDetails(...)` and `withStudentFields(...)` preserve identity and unrelated fields. Equality compares content;
 use the UUID explicitly for selection and identity, and normalized name plus phone for duplicate detection.
@@ -40,7 +40,7 @@ The F02/F03 owner supplies index syntax/resolution and list/delete selection pol
 when data changed, and calls `Model.publish()` only after successful storage. Errors leave the live model,
 filter and selected UUID untouched. Read-only/no-change commands must not write storage.
 `AtomicJsonFile` writes and forces a sibling temporary file before atomic replacement. Unsupported atomic
-moves fail safely; there is no truncate-in-place fallback. JSON keeps the existing `persons` array in order.
+moves fail safely; there is no truncate-in-place fallback. JSON keeps the existing `students` array in order.
 
 The model exposes a selected UUID and current predicate. Add shows the full list and selects its new UUID.
 F02/F03 can use this state for list (clear), delete (preserve unless selected target removed) and displayed-index
@@ -48,7 +48,7 @@ resolution. Field owners should select their target only after a real successful
 and display formatting for equivalent normalized no-change input. All command effects remain staged until save.
 
 UI selection is synchronized only after successful execution. Optional values display an em dash when unset.
-Please coordinate changes to Model, LogicManager, Person, JsonAdaptedPerson and selection APIs before merging.
+Please coordinate changes to Model, LogicManager, Student, JsonAdaptedStudent and selection APIs before merging.
 
 ## Review slices and owner handoff
 
@@ -57,7 +57,7 @@ Each dependent PR is initially based on the preceding slice, not `master`, to ke
 `master` after the prerequisite has landed there; merging into a dependency branch does not itself deliver to
 `master`. No PR in this chain implements another owner's command.
 
-* F02/F03: reuse `getPersonPredicate`, `getSelectedPersonId`, `selectPerson`, `copyForCommand` and `publish`.
+* F02/F03: reuse `getStudentPredicate`, `getSelectedStudentId`, `selectStudent`, `copyForCommand` and `publish`.
   F08 uses the F03 owner's `VisibleIndex` from #68. Never interpret UUIDs as displayed indices. Delete and the
   other field commands use the compatible arbitrary-size `Index` and `VisibleIndexResolver` interfaces.
 * Guardian phone owner: `GuardianPhone.FIELD` is the typed codec for the `guardianPhone` envelope key.
@@ -78,9 +78,9 @@ F08's complete pair uses its typed formatter in details/cards and a separately s
 
 The repair PR consolidates optional data in **one immutable `StudentFields` envelope**, not parallel fields.
 `GuardianPhone.FIELD` and `HourlyRate.FIELD` reuse F04's validated types and canonical string encodings.
-`Person.getGuardianPhone()` and `getHourlyRate()` are typed views over that envelope. The legacy constructor
+`Student.getGuardianPhone()` and `getHourlyRate()` are typed views over that envelope. The legacy constructor
 accepting those two optionals remains available for new records; it encodes them into the same envelope.
-Updates must use `withGuardianPhone`, `withHourlyRate`, `withDetails` or `withStudentFields`, never a new-person
+Updates must use `withGuardianPhone`, `withHourlyRate`, `withDetails` or `withStudentFields`, never a new-student
 constructor. These methods retain the UUID and unrelated fields, including other owners' or future JSON data.
 
 The persisted format remains compatible: one top-level `guardianPhone` and one top-level `hourlyRate` property,

@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = 'seedu.address.Main'
+    mainClass = 'tutorconnect.TutorConnectLauncher'
 }
 
 java {
@@ -73,7 +73,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = 'addressbook.jar'
+    archiveFileName = 'tutorconnect.jar'
 }
 
 defaultTasks 'clean', 'test'
