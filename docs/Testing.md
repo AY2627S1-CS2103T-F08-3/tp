@@ -114,3 +114,41 @@ Use [Bug triage and prevention](BugTriage.md) when reviewing affected features. 
 mistakes, long values, symbols, duplicates, validation/error usefulness, search, manual JSON edits,
 terminal behavior, and guide consistency. Record unverified scenarios and owner decisions; passing the
 automated suite is not a guarantee that all design or visual issues are resolved.
+
+## F04 guardian contact acceptance (v1.3)
+
+The existing `StudentFieldIntegrationTest` covers cross-feature preservation, no-change, filtered indices
+and atomic replacement rollback. Additional guardian-specific coverage is kept separate:
+
+* `GuardianContactIntegrationTest`: first assignment/replacement, shared family and student numbers,
+  fresh-model JSON reload, unrelated fields and IDs, partial-write and atomic-move failures for unset and
+  existing guardians, invalid phone before missing row, oversized indices, recovery and no-save equivalence.
+* `GuardianContactStorageTest`: missing/null legacy values, canonical manual edits and invalid guardian
+  values, with unchanged bytes on read failure.
+* `GuardianContactUiTest`: real command-box input, unset em dash, assignment/replacement failures, filtered
+  targeting, exact feedback, no-change selection preservation, and a fresh window/model/storage instance.
+  Enable `F01_UI_TESTS=true`; a skipped test is not desktop acceptance. Also enable `F08_UI_TESTS=true`
+  when running the full suite above.
+
+The guardian desktop test captures real JavaFX scenes under `build/guardian-ui/` for unset, filtered
+replacement, fresh-window reload and minimum-window inspection. These generated images use synthetic
+contacts and are not committed. Scene capture waits for rendering pulses, not just model property updates.
+
+Manual verification (use a fresh temporary data folder, never real student records):
+
+1. Launch the built `build/libs/addressbook.jar` using JDK 25 from that folder. Add Alex with
+   `add n/Alex Tan p/81234567 a/21 Clementi Ave` and Nur with
+   `add n/Nur Aisyah p/92345678 a/8 Jalan Besar`. Check `Guardian phone: —` on both students.
+2. Enter `find Nur`, then `guardian 1 g/+65 9123 4567`. Nur, not Alex, should be selected and display
+   `+6591234567`. Replace it with `guardian 1 g/67778899`; check both old/new numbers in the status.
+3. Enter `guardian 2 g/81234567` while filtered. Check the missing-row error and unchanged Nur details.
+4. Enter `list`, select Alex, then `guardian 2 g/+65-6777-8899`. Check the no-change message while Alex
+   remains selected with an unset guardian. Enter `guardian 2 g/` and check the phone error without changes.
+5. Set Alex's guardian to `67778899`; shared family numbers must succeed. Set Alex's guardian to `81234567`;
+   matching the student's own phone must also succeed.
+6. Exit and reopen from the same temporary folder. Select both rows and verify Alex has `+6581234567` and
+   Nur has `+6567778899`. Inspect the guardian label at the normal and minimum supported window sizes.
+
+Save-failure injection is automated rather than changing permissions on a real user's folder. These checks
+verify the agreed one-Singapore-number MVP, not international support or recovery from arbitrary manual
+file corruption. They do not replace human PR review or the other owners' acceptance checks.
