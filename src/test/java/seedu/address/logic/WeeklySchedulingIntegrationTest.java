@@ -12,7 +12,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.DayOfWeek;
 import java.time.LocalTime;
+import java.time.format.TextStyle;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -158,6 +160,59 @@ public class WeeklySchedulingIntegrationTest {
         assertEquals(null, model.getSelectedPersonId());
         assertEquals(List.of(ALICE.getId()),
                 storage.readAddressBook().orElseThrow().getPersonList().stream().map(Person::getId).toList());
+    }
+
+    @Test
+    public void execute_allDaysAtTimeBoundaries_roundTripAndAliasNoChangeAcrossLocales() throws Exception {
+        Locale original = Locale.getDefault();
+        try {
+            for (Locale locale : List.of(Locale.forLanguageTag("tr-TR"), Locale.forLanguageTag("ar-SA"))) {
+                Locale.setDefault(locale);
+                for (DayOfWeek day : DayOfWeek.values()) {
+                    String full = day.getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+                    for (String time : List.of("00:00", "23:59")) {
+                        logic.execute("schedule 1 d/" + full + " t/" + time);
+                        Person loaded = storage.readAddressBook().orElseThrow().getPersonList().getFirst();
+                        assertEquals(new WeeklySlot(day, LocalTime.parse(time)),
+                                WeeklySlotField.get(loaded).orElseThrow());
+                        assertEquals(ALICE.getId(), loaded.getId());
+                        assertEquals(ALICE.getPhone(), loaded.getPhone());
+                        assertEquals(ALICE.getAddress(), loaded.getAddress());
+                        model.selectPerson(BOB.getId());
+                        String disk = Files.readString(file);
+                        writer.writes = 0;
+                        assertEquals("Weekly lesson for " + ALICE.getName() + " is already " + full + " " + time + ".",
+                                logic.execute("schedule 1 t/" + time + " d/"
+                                        + full.substring(0, 3).toUpperCase(Locale.ROOT)).getFeedbackToUser());
+                        assertEquals(0, writer.writes);
+                        assertEquals(disk, Files.readString(file));
+                        assertEquals(BOB.getId(), model.getSelectedPersonId());
+                    }
+                }
+            }
+        } finally {
+            Locale.setDefault(original);
+        }
+    }
+
+    @Test
+    public void summary_schedulingOrderDoesNotReplaceInsertionOrder_evenAfterFilterAndReload() throws Exception {
+        logic.execute("schedule 2 d/Tue t/19:00");
+        assertEquals(List.of(BOB.getId()), logic.getWeeklySchedule().stream().map(Person::getId).toList());
+        logic.execute("schedule 1 d/Tue t/19:00");
+        List<java.util.UUID> insertionOrder = List.of(ALICE.getId(), BOB.getId());
+        assertEquals(insertionOrder, logic.getWeeklySchedule().stream().map(Person::getId).toList());
+        model.updateFilteredPersonList(person -> person.getId().equals(BOB.getId()));
+        logic.execute("schedule 1 d/Mon t/00:00");
+        assertEquals(List.of(BOB.getId()), model.getFilteredPersonList().stream().map(Person::getId).toList());
+        assertEquals(List.of(BOB.getId(), ALICE.getId()),
+                logic.getWeeklySchedule().stream().map(Person::getId).toList());
+        logic.execute("list");
+        assertEquals(insertionOrder, model.getFilteredPersonList().stream().map(Person::getId).toList());
+        logic.execute("schedule 2 d/Tue t/19:00");
+        logic.execute("list");
+        assertEquals(insertionOrder, logic.getWeeklySchedule().stream().map(Person::getId).toList());
+        assertEquals(insertionOrder, model.getAddressBook().getPersonList().stream().map(Person::getId).toList());
     }
 
     private AtomicInteger observeRegister() {
