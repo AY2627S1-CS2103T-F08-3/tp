@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,6 +14,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import javax.imageio.ImageIO;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,7 @@ import javafx.scene.control.ListView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.stage.Stage;
+import seedu.address.commons.core.GuiSettings;
 import seedu.address.logic.LogicManager;
 import seedu.address.model.ModelManager;
 import seedu.address.model.ReadOnlyAddressBook;
@@ -58,6 +61,7 @@ public class WeeklyScheduleUiTest {
     public void commandBox_slotsSummaryDetailsAndFailures_followPublishedState() throws Exception {
         FutureTask<Void> task = new FutureTask<>(() -> {
             ModelManager model = new ModelManager();
+            model.setGuiSettings(new GuiSettings(1280, 800, 0, 0));
             Person zoe = new Person(new Name("Zoe"), new Phone("81234567"), new Address("21 Clementi Ave"));
             Person amy = new Person(new Name("Amy"), new Phone("81234567"), new Address("22 Clementi Ave"));
             model.addPerson(zoe);
@@ -98,6 +102,19 @@ public class WeeklyScheduleUiTest {
                 assertEquals(List.of("Amy", "Zoe"), names(summary));
                 assertEquals(List.of("Zoe", "Amy"), names(rows));
                 assertEquals(amy.getId(), model.getSelectedPersonId());
+                captureScene(stage, "01-weekday-order.png");
+                enter(input, "find Amy");
+                assertEquals(List.of("Amy"), names(rows));
+                assertEquals(List.of("Amy", "Zoe"), names(summary));
+                enter(input, "schedule 1 d/Mon t/00:00");
+                assertEquals("Weekly lesson updated for Amy: Monday 09:00 -> Monday 00:00.", status.getText());
+                assertEquals(amy.getId(), model.getSelectedPersonId());
+                assertEquals(List.of("Amy"), names(rows));
+                assertEquals(List.of("Amy", "Zoe"), names(summary));
+                assertTrue(labels(details).contains("Weekly slot: Monday 00:00"));
+                captureScene(stage, "02-filtered-register.png");
+                enter(input, "schedule 1 d/Mon t/09:00");
+                enter(input, "list");
                 enter(input, "guardian 1 g/91234567");
                 enter(input, "level 1 l/Sec4");
                 enter(input, "subject 1 s/Math/Science");
@@ -144,6 +161,7 @@ public class WeeklyScheduleUiTest {
                 assertEquals(zoe.getId(), model.getSelectedPersonId());
                 enter(input, "schedule 2 d/Tue t/19:00");
                 assertEquals(List.of("Zoe", "Amy"), names(summary));
+                captureScene(stage, "03-overlapping-slots.png");
                 Person rescheduled = rows.getItems().getFirst();
                 for (String key : List.of("guardianPhone", "educationLevel", "subject", "hourlyRate")) {
                     assertEquals(complete.getStudentFields().toStorage().get(key),
@@ -157,6 +175,7 @@ public class WeeklyScheduleUiTest {
                 assertNull(rows.getSelectionModel().getSelectedItem());
                 assertNull(model.getSelectedPersonId());
                 assertTrue(storage.readAddressBook().orElseThrow().getPersonList().isEmpty());
+                captureScene(stage, "04-empty-summary.png");
             } finally {
                 stage.hide();
             }
@@ -177,5 +196,29 @@ public class WeeklyScheduleUiTest {
     private void enter(TextField input, String command) {
         input.setText(command);
         input.fireEvent(new ActionEvent());
+    }
+
+    /** Captures actual scene pixels only when the reviewer explicitly requests screenshot output. */
+    private void captureScene(Stage stage, String filename) throws IOException {
+        String output = System.getenv("F08_SCREENSHOT_DIR");
+        if (output == null || output.isBlank()) {
+            return;
+        }
+        stage.getScene().getRoot().applyCss();
+        stage.getScene().getRoot().layout();
+        var snapshot = stage.getScene().snapshot(null);
+        int width = (int) snapshot.getWidth();
+        int height = (int) snapshot.getHeight();
+        BufferedImage pixels = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                pixels.setRGB(x, y, snapshot.getPixelReader().getArgb(x, y));
+            }
+        }
+        Path destination = Path.of(output).resolve(filename);
+        Files.createDirectories(destination.toAbsolutePath().getParent());
+        if (!ImageIO.write(pixels, "png", destination.toFile())) {
+            throw new IOException("No PNG writer available for the F08 screenshot.");
+        }
     }
 }

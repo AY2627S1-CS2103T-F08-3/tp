@@ -107,3 +107,106 @@ cards and the latest owner regressions while adding the separately sorted summar
 
 This records the automated combined acceptance run. Each feature owner retains responsibility for additional
 feature-specific acceptance or product sign-off; the run does not replace their documented requirements.
+
+### F08 v1.3 release handoff (15 October 2026)
+
+This audit used team master `0a5d3283`, the [team specification](https://docs.google.com/document/d/16jVZgsgFMVfAl_6DctChEAP5Lj49X11AKTatE1yRDP4/edit),
+[Week 9 requirements](https://nus-cs2103-ay2627-s1.github.io/website/schedule/week9/project.html),
+and integration issue [#79](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/79).
+The existing implementation satisfies the reviewed F08 behavior; no production change was needed.
+The outstanding work was additional acceptance evidence and a reproducible release handoff.
+
+| Work | Owner / milestone | Evidence |
+| --- | --- | --- |
+| [#104](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/104), branch `codex/f08-v13-acceptance`, [PR #108](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/108) | JimiBong / v1.3 | Two integration regressions: all seven days at 00:00 and 23:59 through commands and JSON under Turkish/Arabic locales; no-change aliases avoid saving and retain selection; summary ties retain insertion order through filtering and reload. |
+| [#105](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/105), branch `codex/f08-v13-demo` | JimiBong / v1.3 | Real command-box test of filtered-index scheduling with the full summary, opt-in scene capture, four actual screenshots and this handoff. |
+
+Both branches originate independently from master. The acceptance branch passed **399 tests**;
+the demo branch passed **397 tests**, including its extended desktop flow. Both runs had **zero failures,
+errors or skipped tests** with F01 and F08 desktop flags enabled on Windows/JDK 25.
+These are separate branch results, not a claim that their combined merge was tested.
+Existing tests cover malformed/incomplete inputs, invalid indices, identity/unrelated fields,
+replacement, normalized no-change, JSON reload, deletion and injected atomic-write failures.
+
+#### Reproduce checks and screenshots
+
+Run in PowerShell with a working desktop display:
+
+```powershell
+$env:F01_UI_TESTS = 'true'
+$env:F08_UI_TESTS = 'true'
+$env:F08_SCREENSHOT_DIR = Join-Path (Get-Location) 'build/f08-v13-screenshots'
+.\gradlew.bat check coverage shadowJar --console=plain
+Remove-Item Env:F01_UI_TESTS, Env:F08_UI_TESTS, Env:F08_SCREENSHOT_DIR
+& 'C:\Program Files\Git\bin\bash.exe' .github/run-checks.sh
+git diff --check
+```
+
+`F08_SCREENSHOT_DIR` is optional. The test captures the real JavaFX scene after CSS/layout;
+it does not synthesize UI images. Files are written only when the opt-in variable is set.
+The four committed PNGs were captured from the passing test with fictional students and visually inspected.
+The initial import-spacing Checkstyle error was corrected; the subsequent full check passed.
+JavaFX emitted native-access/Unsafe warnings under JDK 25 without test failures.
+The packaged artifact is `build/libs/addressbook.jar`; its manifest names `seedu.address.Main`.
+Packaging and manifest inspection succeeded; interactive execution of the packaged JAR was not part of this run.
+The real JavaFX acceptance run exercises the application window and command box through test classes.
+
+#### Reproducible release demonstration
+
+Use a new disposable demo directory, separate from normal application data. Copy the packaged JAR there,
+create `data/addressbook.json` containing `{"persons":[]}`, and run `java -jar addressbook.jar` from that
+new directory. This avoids the sample records and makes the following visible indices reproducible.
+If #98 has landed, use the final artifact/data names from that PR and repeat the smoke test first.
+
+1. Add `add n/Zoe p/81234567 a/21 Clementi Ave`, then
+   `add n/Amy p/82345678 a/22 Clementi Ave`.
+2. Run `schedule 1 d/Sun t/23:59`, then `schedule 2 t/09:00 d/Mon`.
+   The register remains Zoe/Amy; the summary is Amy Monday 09:00, Zoe Sunday 23:59.
+   Amy is selected and her details show the complete slot.
+3. Run `find Amy`, then `schedule 1 d/Mon t/00:00`.
+   Visible index 1 resolves to Amy. The register contains Amy, while the summary still includes Zoe.
+   Restore Amy with `schedule 1 d/Mon t/09:00`, then run `list`.
+4. Run `guardian 1 g/91234567`, `level 1 l/Sec4`, `subject 1 s/Math/Science`, and `rate 1 r/75`.
+   Schedule Zoe with `schedule 1 d/Tue t/19:00`, then Amy with `schedule 2 d/Tue t/19:00`.
+   Overlaps are accepted; the summary tie follows Zoe/Amy insertion order.
+   Select Zoe to inspect that her unrelated fields remain intact; select Amy again for the next step.
+5. Run `schedule 1 d/tUE t/19:00`. Expect a no-change result and selection to remain on Amy.
+   Run `schedule 1 d/Mon t/24:00` and `schedule 1 d/Mon`; expect errors with existing slots unchanged.
+6. Close and reopen from the same demo directory, then run `list` and inspect both schedules and Zoe's fields.
+7. Run `delete 1`; Amy becomes index 1 and the summary contains only Amy.
+   Run `delete 1` again; the summary says `No weekly lessons scheduled.` and details prompt for selection.
+
+The screenshot fixture intentionally shares the students' phone number; the manual sequence uses distinct
+numbers to avoid the unrelated shared-phone warning. Indices always refer to the visible student register,
+never the separately sorted summary. Do not perform the deletion demonstration against real student data.
+
+| Actual JavaFX capture | What to review |
+| --- | --- |
+| ![Weekday order](images/f08-v13/01-weekday-order.png) | Summary orders Monday before Sunday without moving register rows. |
+| ![Filtered register](images/f08-v13/02-filtered-register.png) | Amy is visible index 1, but the summary includes both students. |
+| ![Overlapping slots](images/f08-v13/03-overlapping-slots.png) | Tuesday 19:00 overlap is accepted with insertion-order ties. |
+| ![Empty summary](images/f08-v13/04-empty-summary.png) | Deleting the final student clears the summary and details. |
+
+#### Draft scheduling release notes
+
+* Schedule one recurring weekly lesson per student using `schedule INDEX d/DAY t/TIME`.
+* Accept full English weekday names or three-letter aliases, case-insensitively, with strict 24-hour `HH:mm` times.
+* Replace a complete slot in one command; equivalent normalized input reports no change.
+* View lessons ordered by weekday and time, with register insertion order breaking ties, independently of filtering.
+* Preserve student details and persist weekly slots across reloads; deletion also removes the student's slot.
+* Allow students to share a day/time. This feature does not provide lesson durations or conflict detection.
+
+#### Readiness and team dependencies
+
+F08 is ready for review on the audited baseline, with automated desktop evidence and a packaged JAR.
+This is not approval to publish the integrated MVP. Human reviewers must review/merge the required PRs,
+rerun the combined checks, and verify the final release artifact and demo before publishing v1.3.
+
+[PR #98](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/98) changes model/package/artifact naming;
+[PR #99](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/99) changes persistence/reload handling.
+Both were open during this audit. Reconcile the test names, JAR/data paths and documentation with their final
+versions, repeat the no-change/rollback/reload and desktop flows, and recapture screenshots if the visible UI changes.
+Neither PR's work is duplicated here. The weekly-summary heading remains low contrast in the current theme;
+the screenshots preserve that actual appearance. Broader visual polish and other feature-owner acceptance
+remain team review items. The v1.3 deadline is 15 October 2026, 23:59 SGT; the team owns final release notes,
+screenshots, artifact upload and publication after integrated MVP verification.
