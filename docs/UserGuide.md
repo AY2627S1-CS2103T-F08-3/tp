@@ -167,6 +167,61 @@ Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st person to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd person to be `Betsy Crower` and clears all existing tags.
 
+### Setting a guardian contact (F04): `guardian`
+
+Format: `guardian INDEX g/PHONE`
+
+Sets or replaces one guardian phone for the student at `INDEX` in the **currently displayed list**.
+The index is a positive whole number without leading zeroes: `1`, `2`, `3`, etc. After `find`, use the
+filtered row number, not the student's position in the full register. The index must precede `g/PHONE`.
+The lowercase command and prefix are case-sensitive. Supply `g/PHONE` exactly once; `g/` with no value
+is an invalid phone, not a missing parameter.
+
+Examples:
+
+* `guardian 1 g/91234567`
+* `guardian 3 g/+65 6777 8899`
+* `guardian 1 g/+65-8123-4567`
+
+Use eight Singapore digits starting with **6, 8 or 9**, optionally preceded by `+65`. Spaces or single
+hyphens may separate digit groups. Values undergo Unicode NFKC normalization, trimming and repeated-space
+collapse; controls and line breaks are not allowed. The saved and displayed form has no spaces, e.g.
+`+6591234567`. International numbers, extensions, multiple guardian numbers, names and relationships are
+not supported in this MVP. There is no clear-guardian command; a blank value does not remove the number.
+
+Different students may share a guardian number (for example, siblings). A guardian number may also equal
+the student's own phone number. Both cases are accepted without a duplicate warning.
+
+After a real change, the complete profile is saved before the updated row is selected and its details are
+refreshed. The student's ID, list position and other fields stay unchanged. Before assignment, the details
+panel shows `Guardian phone: —`. A saved guardian contact remains available after exiting and reopening
+the application in the same data folder. Equivalent input, such as `91234567` and `+65-9123-4567`, changes
+nothing: no save occurs, and the current filter, selected row and details are preserved.
+
+| Outcome | Message |
+| --- | --- |
+| First assignment | `Guardian contact set for NAME: PHONE.` |
+| Replacement | `Guardian contact updated for NAME: OLD_PHONE -> NEW_PHONE.` |
+| Equivalent number | `Guardian contact for NAME is already PHONE.` |
+| Unexpected text before the parameter | `Error: Unexpected text after command.` |
+| Unknown parameter, e.g. `p/` | `Error: Unknown parameter: p/.` |
+| Missing parameter | `Error: Missing required parameter: g/PHONE.` |
+| Repeated parameter | `Error: Parameter g/ may be specified only once.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid or blank phone | `Error: Invalid guardian phone. Use an 8-digit Singapore number beginning with 6, 8, or 9, optionally prefixed by +65.` |
+| Row does not exist | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Unknown commands are reported first, then unexpected text/unknown parameters, missing/repeated parameters,
+invalid index syntax, invalid guardian phone, missing row, and finally save failure. For example,
+`guardian 999 g/bad` reports the invalid phone before looking up row 999. Errors leave the saved data,
+student list, filter, selection and details unchanged. If saving fails, check folder permissions and disk
+space before retrying; the old number (or unset value) is retained.
+
+When manually editing JSON, use a canonical string such as `"guardianPhone": "+6591234567"`.
+Missing or `null` guardian properties load as unset for compatibility with older data. Invalid guardian
+values prevent the file from loading; back up the file before editing it and prefer the command above.
+
 ### Setting a student's education level (F05): `level`
 
 Format: `level INDEX l/LEVEL`
@@ -460,6 +515,7 @@ Action     | Format, Examples
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
 **Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
+**Set guardian contact** | `guardian INDEX g/PHONE`<br> e.g., `guardian 1 g/+65 9123 4567`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
