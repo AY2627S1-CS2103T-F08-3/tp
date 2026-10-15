@@ -116,7 +116,7 @@ public class AddStudentUiTest {
                 List<String> contactDetails = details.getChildren().stream()
                         .map(node -> ((Label) node).getText()).toList();
                 assertTrue(contactDetails.contains("Guardian phone: +6591234567"));
-                assertTrue(contactDetails.contains("Hourly rate: 65.00"));
+                assertTrue(contactDetails.contains("Hourly rate: S$65.00"));
                 rows.getSelectionModel().select(0);
                 enter(input, "rate 2 r/65.0");
                 assertEquals(0, rows.getSelectionModel().getSelectedIndex());

@@ -36,7 +36,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Guardian phone: " + student.getStudentFields().display("guardianPhone"));
         addDetail("Education level: " + EducationLevel.display(student.getStudentFields()));
         addDetail("Subject: " + Subject.display(student.getStudentFields()));
-        addDetail("Hourly rate: " + student.getStudentFields().display("hourlyRate"));
+        addDetail("Hourly rate: " + student.getHourlyRate().map(rate -> "S$" + rate).orElse("—"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
     }
 

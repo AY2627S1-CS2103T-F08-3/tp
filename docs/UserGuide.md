@@ -377,6 +377,61 @@ To check persistence, set a subject, close and reopen the app, then select the s
 appear unchanged on the card and in the details panel. Entering an equivalent value such as `h2   MATH`
 after saving `H2 Math` reports no change and keeps `H2 Math` as the display value.
 
+### Setting a student's hourly rate (F07): `rate`
+
+Format: `rate INDEX r/RATE`
+
+Sets one hourly tuition rate in Singapore dollars (SGD) for the student at the **currently displayed**,
+1-based `INDEX`. A new rate replaces the previous one. For example, `find Betsy` followed by `rate 1 r/80`
+sets the first matching student's rate, even if that student is elsewhere in the full register.
+
+Examples:
+
+* `rate 1 r/80` sets S$80.00 per hour.
+* `rate 1 r/80.5` replaces it with S$80.50 per hour.
+* `rate 2 r/1000.00` sets the maximum rate for the second displayed student.
+
+Supply exactly one lowercase `r/` parameter and a positive whole-number index without leading zeroes.
+Separate the index and prefix with whitespace. Surrounding spaces and multiple spaces between tokens are accepted;
+input uses the shared Unicode normalization (NFKC). Rates must be from **S$1.00 to S$1000.00 inclusive**,
+with zero, one or two decimal places. They are stored exactly and shown with two decimal places and `S$`
+in the student list card and selected-student details. Scroll the details panel if needed to see the rate.
+An unset rate shows an em dash (`—`).
+
+Use plain digits and an optional decimal point. Do not include a sign, currency symbol, commas, exponent,
+leading zeroes or extra text. For example, `0`, `-40`, `1000.01`, `40.001`, `40.000`, `S$40`, `1,000`,
+`1e2`, `040` and `forty` are invalid. Values are never rounded to fit. A bare `r/` is an invalid rate;
+omitting `r/` entirely is a missing parameter. This command cannot clear an existing rate.
+
+On a successful set or replacement, the saved student is selected and the details refresh. Student identity, contact details,
+guardian, education level, subject and weekly slot are preserved. Equivalent amounts such as `80`, `80.0`
+and `80.00` produce a no-change message, perform no save and preserve the current selection.
+
+| Outcome | Message |
+| --- | --- |
+| First rate | `Hourly rate set for NAME: S$80.00.` |
+| Replacement | `Hourly rate updated for NAME: S$80.00 -> S$80.50.` |
+| Equivalent rate | `Hourly rate for NAME is already S$80.00.` |
+| Unknown parameter, e.g. `x/` or uppercase `R/` | `Error: Unknown parameter: x/.` (or `R/.`) |
+| Repeated prefix, e.g. `rate 1 r/40 r/50` | `Error: Parameter r/ may be specified only once.` |
+| Extra text before the prefix, e.g. `rate 1 extra r/40` | `Error: Unexpected text after command.` |
+| Missing prefix, e.g. `rate 1` | `Error: Missing required parameter: r/RATE.` |
+| Invalid/missing index with a prefix, e.g. `rate 01 r/40` or `rate r/40` | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid rate | `Error: Invalid rate. Enter an SGD amount from 1.00 to 1000.00 with at most two decimal places and no currency symbol.` |
+| No displayed row (including an empty list or oversized index) | `Error: No student exists at index INDEX.` |
+| Save failure | `Error: Changes could not be saved. No changes were made.` |
+
+When multiple mistakes occur, the shared parser checks unknown prefixes first, then repeated prefixes, then
+unexpected text before a prefix. With no prefix, extra unprefixed text is unexpected text; otherwise it reports
+the missing `r/RATE`. Index syntax is checked next, then the rate, then whether the displayed row exists.
+For example, `rate 0 r/bad` reports the invalid index, while `rate 99 r/bad` reports the invalid rate.
+`rate 1r/40` reports the missing parameter because whitespace is required before the prefix.
+
+Invalid input and save failures preserve the file, student records, filter, selection and details.
+If a save fails, check the data folder's permissions and free disk space before retrying.
+Rates survive restart; existing JSON rates written as numbers or strings are accepted within the limits above,
+and are saved as exact two-decimal strings. Missing or null rates remain unset. Back up data before manual edits.
+
 ### Scheduling a weekly lesson (F08): `schedule`
 
 Sets one recurring weekly lesson for the student at an index in the **currently displayed list**.
@@ -522,4 +577,5 @@ Action     | Format, Examples
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
+**Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
 **Help**   | `help`

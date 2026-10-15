@@ -48,6 +48,8 @@ public class PersonCard extends UiPart<Region> {
     @FXML
     private Label educationLevel;
     @FXML
+    private Label hourlyRate;
+    @FXML
     private FlowPane tags;
 
     /**
@@ -66,6 +68,7 @@ public class PersonCard extends UiPart<Region> {
         email.setVisible(!person.getEmail().value.isEmpty());
         email.setManaged(email.isVisible());
         educationLevel.setText("Level: " + EducationLevel.display(person.getStudentFields()));
+        hourlyRate.setText("Hourly rate: " + person.getHourlyRate().map(rate -> "S$" + rate).orElse("—"));
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));

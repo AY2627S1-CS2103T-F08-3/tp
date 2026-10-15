@@ -104,7 +104,7 @@ public class WeeklyScheduleUiTest {
                 enter(input, "rate 1 r/65");
                 assertEquals(zoe.getId(), model.getSelectedPersonId());
                 assertTrue(labels(details).containsAll(List.of("Guardian phone: +6591234567",
-                        "Education level: Secondary 4", "Subject: Math/Science", "Hourly rate: 65.00",
+                        "Education level: Secondary 4", "Subject: Math/Science", "Hourly rate: S$65.00",
                         "Weekly slot: Sunday 23:59")));
                 Person complete = rows.getItems().getFirst();
                 assertEquals(complete, storage.readAddressBook().orElseThrow().getPersonList().getFirst());
