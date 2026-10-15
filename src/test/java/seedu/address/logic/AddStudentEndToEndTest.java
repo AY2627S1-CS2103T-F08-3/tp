@@ -34,6 +34,14 @@ public class AddStudentEndToEndTest {
         var predicate = model.getPersonPredicate();
         byte[] before = Files.readAllBytes(file);
         String[][] cases = {
+            {"add n/Alexp/81234567 a/A", "Error: Missing required parameter: p/PHONE."},
+            {"add n/Alex p/81234567a/A", "Error: Missing required parameter: a/ADDRESS."},
+            {"add n/Alex p/8123456781234567 a/A", "Error: Invalid phone. Use an 8-digit Singapore number "
+                    + "beginning with 6, 8, or 9, optionally prefixed by +65."},
+            {"add n/" + "A".repeat(71) + " p/81234567 a/A", "Error: Invalid name. Use 1-70 letters with "
+                    + "spaces, apostrophes, hyphens, or full stops."},
+            {"add n/Alex p/81234567 a/" + "A".repeat(201), "Error: Invalid address. Use 1-200 letters, "
+                    + "numbers, spaces, or common address punctuation."},
             {"ADD x/bad", "Error: Unknown command. Type help to view available commands."},
             {"add text n/Alex p/81234567 a/A", "Error: Unexpected text after command."},
             {"add n/123 a/--- x/bad", "Error: Unknown parameter: x/."},

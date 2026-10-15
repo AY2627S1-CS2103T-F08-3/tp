@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.junit.jupiter.api.Test;
 
@@ -63,6 +64,34 @@ public class SubjectTest {
         assertEquals("O-Level Chemistry", new Subject("  O-Level    Chemistry  ").value);
         assertEquals("H2 MATH", new Subject("H2 MATH").value);
         assertEquals("Math", new Subject("Ｍａｔｈ").value); // full-width letters via NFKC
+    }
+
+    @Test
+    public void constructor_unicodeSpacesAndCompatibilityCharacters_normalizeBeforeLengthCheck() {
+        assertEquals("English Language", new Subject("\u00a0English\u2002\u202fLanguage\u3000").value);
+        assertEquals("Physics & Chemistry", new Subject("Ｐｈｙｓｉｃｓ ＆ Chemistry").value);
+        assertEquals("IV", new Subject("Ⅳ").value);
+        assertInvalid("\u00a0A\u3000");
+        for (String prohibited : List.of("\t", "\r", "\n", "\u0000", "\u200b", "\u2028", "\u2029")) {
+            assertInvalid(prohibited + "Math");
+            assertInvalid("Math" + prohibited);
+            assertInvalid("Math" + prohibited + "Science");
+        }
+    }
+
+    @Test
+    public void equals_defaultLocaleDoesNotChangeComparisonOrDisplay() {
+        Locale original = Locale.getDefault();
+        try {
+            Locale.setDefault(Locale.forLanguageTag("tr-TR"));
+            Subject subject = new Subject("PHYSICS");
+            Subject equivalent = new Subject(" physics ");
+            assertEquals(subject, equivalent);
+            assertEquals(subject.hashCode(), equivalent.hashCode());
+            assertEquals("PHYSICS", subject.value);
+        } finally {
+            Locale.setDefault(original);
+        }
     }
 
     @Test
