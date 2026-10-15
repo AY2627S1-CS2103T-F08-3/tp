@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Subject;
 import seedu.address.model.person.WeeklySlotField;
 
 /** Read-only details for the selected student. Optional field owners can extend their value formatting here. */
@@ -33,7 +34,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Address: " + student.getAddress());
         addDetail("Guardian phone: " + student.getStudentFields().display("guardianPhone"));
         addDetail("Education level: " + student.getStudentFields().display("educationLevel"));
-        addDetail("Subject: " + student.getStudentFields().display("subject"));
+        addDetail("Subject: " + Subject.display(student.getStudentFields()));
         addDetail("Hourly rate: " + student.getStudentFields().display("hourlyRate"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
     }

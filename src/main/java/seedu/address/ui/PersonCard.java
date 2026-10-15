@@ -8,6 +8,7 @@ import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
 import seedu.address.model.person.Person;
+import seedu.address.model.person.Subject;
 import seedu.address.model.person.WeeklySlotField;
 
 /**
@@ -58,7 +59,7 @@ public class PersonCard extends UiPart<Region> {
         name.setText(person.getName().fullName);
         phone.setText(person.getPhone().value);
         address.setText(person.getAddress().value);
-        subject.setText("Subject: " + person.getStudentFields().display("subject"));
+        subject.setText("Subject: " + Subject.display(person.getStudentFields()));
         email.setText(person.getEmail().value);
         weeklySlot.setText("Weekly lesson: " + WeeklySlotField.display(person));
         email.setVisible(!person.getEmail().value.isEmpty());

@@ -261,45 +261,64 @@ Format: `subject INDEX s/SUBJECT`
 
 Sets the one subject taught to the student at the displayed, 1-based `INDEX`. Setting a new subject replaces the
 old one; a student never has more than one subject. Many students may share a subject.
+After filtering (for example, with `find Alex`), use the row number in the filtered list.
 
 Examples:
+
 * `subject 1 s/O-Level Chemistry`
 * `subject 2 s/H2 Math`
 * `subject 3 s/Primary 6 English`
+* `subject 1 s/English Language`
+* `subject 1 s/Math/Science`
+* `subject 1 s/Physics & Chemistry`
 
 The subject is normalized before it is checked and stored: Unicode is normalized (NFKC), the text is trimmed and
 repeated spaces are collapsed. It must then have:
 
-* 2 to 50 characters, with at least one letter;
+* 2 to 50 characters (Unicode code points) after normalization, with at least one letter;
 * only letters, digits, spaces and the symbols `&` `/` `-` `'` `(` `)`. Other symbols such as `@`, and control
   characters or line breaks, are rejected.
 
 Slashes inside a subject are kept as text, e.g. `s/Math/Science`. The case you type is the case that is shown, in the
 student list and in the details panel. A student with no subject shows an em dash (—).
+Use lowercase `subject` and `s/`, and specify `s/` exactly once. A letter-led token ending in `/` after a
+space is parsed as a parameter: `subject 1 s/Combined Math/Science` reports unknown parameter `Math/`.
+Write `subject 1 s/Combined Math / Science` instead. `subject 1 s/` is an invalid empty subject;
+this version has no command to clear a subject.
+
+If a manually edited JSON file contains a valid but nonnormalized subject, both displays use its normalized
+text and preserve capitalization. An unreadable subject shows an em dash and the next valid assignment uses
+the first-subject message. Displaying data does not rewrite the file.
 
 Two subjects are the same if they differ only in letter case or spacing, e.g. `H2 Math` and `h2   MATH`. Entering
 the same subject again changes nothing: nothing is saved, the selection stays as it was, and the subject keeps the
 display text it already had.
 
-On success, the student is saved, selected and shown in the details panel.
+On a first assignment or replacement, the student is saved, selected and shown in the details panel.
 
 | Outcome | Message |
 | --- | --- |
 | First subject | `Subject set for NAME: SUBJECT.` |
 | Replacement | `Subject updated for NAME: OLD_SUBJECT -> NEW_SUBJECT.` |
 | Same subject | `Subject for NAME is already SUBJECT.` |
-| Unexpected text | `Error: Unexpected text after command.` |
 | Unknown parameter | `Error: Unknown parameter: PREFIX.` |
-| Missing parameter | `Error: Missing required parameter: s/SUBJECT.` |
 | Repeated parameter | `Error: Parameter s/ may be specified only once.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Missing parameter | `Error: Missing required parameter: s/SUBJECT.` |
 | Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
 | Invalid subject | `Error: Invalid subject. Use 2-50 letters, numbers, spaces, or the symbols & / - ' ( ).` |
 | Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
 | Save failed | `Error: Changes could not be saved. No changes were made.` |
 
-Errors are reported in the order shown above, and the index syntax is checked before the subject. The subject is
+Structural errors take priority: unknown parameters, repeated `s/`, unexpected text before `s/`, then a missing
+parameter. For example, `subject 0 extra s/@ x/` reports unknown parameter `x/`, while
+`subject 0 extra s/ s/` reports repeated `s/`. Index syntax is checked next, before the subject. The subject is
 checked before the row is looked up, so `subject 99 s/@` reports the invalid subject. A failed command changes
 nothing: the saved file, the student list, the filter and the selection all stay as they were.
+
+To check persistence, set a subject, close and reopen the app, then select the student. The subject should
+appear unchanged on the card and in the details panel. Entering an equivalent value such as `h2   MATH`
+after saving `H2 Math` reports no change and keeps `H2 Math` as the display value.
 
 ### Scheduling a weekly lesson (F08): `schedule`
 
