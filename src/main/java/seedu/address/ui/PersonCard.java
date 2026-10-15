@@ -7,6 +7,7 @@ import javafx.scene.control.Label;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Region;
+import seedu.address.model.person.EducationLevel;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.WeeklySlotField;
 
@@ -63,7 +64,7 @@ public class PersonCard extends UiPart<Region> {
         weeklySlot.setText("Weekly lesson: " + WeeklySlotField.display(person));
         email.setVisible(!person.getEmail().value.isEmpty());
         email.setManaged(email.isVisible());
-        educationLevel.setText("Level: " + person.getStudentFields().display("educationLevel"));
+        educationLevel.setText("Level: " + EducationLevel.display(person.getStudentFields()));
         person.getTags().stream()
                 .sorted(Comparator.comparing(tag -> tag.tagName))
                 .forEach(tag -> tags.getChildren().add(new Label(tag.tagName)));

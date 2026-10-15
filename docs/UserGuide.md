@@ -184,7 +184,9 @@ Accepted levels (case-insensitive, and the space between the word and the number
 For example, `Sec4`, `sec 4`, `S4` and `Secondary 4` all mean `Secondary 4`. Only these forms are accepted: other
 spellings such as `Sec Four`, and levels outside this table (preschool, polytechnic, ITE, IB, university), are not.
 The canonical name is what is stored and shown, in the student list and in the details panel. A student with no level
-shows an em dash (—).
+shows an em dash (—). If the data file holds a spelling that `level` accepts (for example `sec4` after a manual edit),
+it is shown as its canonical name; a stored value that is not a supported level is shown as an em dash and is treated
+as unset by `level`, which then replaces it.
 
 On success, the student is saved, selected and shown in the details panel. Setting a level equivalent to the current
 one changes nothing: nothing is saved and the selection stays as it was.

@@ -3,6 +3,7 @@ package seedu.address.ui;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import seedu.address.model.person.EducationLevel;
 import seedu.address.model.person.Person;
 import seedu.address.model.person.WeeklySlotField;
 
@@ -32,7 +33,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Phone: " + student.getPhone());
         addDetail("Address: " + student.getAddress());
         addDetail("Guardian phone: " + student.getStudentFields().display("guardianPhone"));
-        addDetail("Education level: " + student.getStudentFields().display("educationLevel"));
+        addDetail("Education level: " + EducationLevel.display(student.getStudentFields()));
         addDetail("Subject: " + student.getStudentFields().display("subject"));
         addDetail("Hourly rate: " + student.getStudentFields().display("hourlyRate"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
