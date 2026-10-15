@@ -107,3 +107,10 @@ cards and the latest owner regressions while adding the separately sorted summar
 
 This records the automated combined acceptance run. Each feature owner retains responsibility for additional
 feature-specific acceptance or product sign-off; the run does not replace their documented requirements.
+
+## Bug triage and regression review
+
+Use [Bug triage and prevention](BugTriage.md) when reviewing affected features. It covers realistic input
+mistakes, long values, symbols, duplicates, validation/error usefulness, search, manual JSON edits,
+terminal behavior, and guide consistency. Record unverified scenarios and owner decisions; passing the
+automated suite is not a guarantee that all design or visual issues are resolved.

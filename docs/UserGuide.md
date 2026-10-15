@@ -110,6 +110,12 @@ The same normalized name (ignoring case) **and** phone is a duplicate, even if i
 existing student is hidden by a filter. A matching name with a different phone is accepted. A matching phone
 with a different name is accepted with `Warning: Another student uses this phone number.` appended to success.
 
+This is not fuzzy identity detection: spelling variants and nicknames are not matched. The same name with
+a different phone is accepted without a near-name warning. Review the student list before adding a record
+if you are unsure whether the student already exists. The name field is not guaranteed to support every
+legal-name convention (for example, `/` and digits are not accepted). Phone support is limited to the
+Singapore formats above; contacts requiring international or multiple numbers are outside current support.
+
 F01 errors are reported in this order: unknown command; unexpected text/unknown parameter; missing/repeated
 parameter (name, phone, address order); invalid name, phone, address; duplicate; save failure.
 
@@ -358,17 +364,52 @@ Format: `exit`
 
 ### Saving the data
 
-AddressBook automatically saves data after every command. You do not need to save manually.
+TutorConnect automatically saves a complete updated student register after a successful data-changing
+command. Read-only commands, failed commands, and successful no-change updates do not write the file.
+`list` reloads the file without saving it. A failed save leaves stored data, the current list, and selection
+unchanged and reports `Error: Changes could not be saved. No changes were made.`
 
 ### Editing the data file
 
-AddressBook data is saved automatically as a JSON file `[JAR file location]/data/addressbook.json`. Advanced users are welcome to update data directly by editing that data file.
+TutorConnect stores the register in `data/addressbook.json` relative to the working directory from which
+you start the app. If you start it in the folder containing the JAR, this is that folder's `data` directory.
+The window's status bar shows the data-file path. Advanced users can edit this human-readable JSON file.
+
+Close the app and make a backup before editing. Preserve the outer `persons` array, its order, and existing
+student `id` values. Each record needs `name`, `phone`, and `address`; existing field validation still applies.
+An older/newly written record without an ID receives a stable migration ID when loaded. IDs must be unique.
+Do not replace a record or tag entry with `null`; use an empty `persons` array for an empty register.
+
+For example, this complete file is valid:
+
+```json
+{
+  "persons": [
+    {
+      "name": "Alex Tan",
+      "phone": "+6581234567",
+      "address": "21 Clementi Ave 3 #04-18"
+    }
+  ]
+}
+```
+
+Optional properties can be missing or `null` for unset values. Use the documented formats for known
+fields: `guardianPhone` as a canonical phone string (e.g. `+6591234567`), `educationLevel` as a canonical
+level string (e.g. `Secondary 4`), `subject` as a valid subject string, `hourlyRate` as a two-decimal string
+(e.g. `40.00`), and `weeklySlot` as an object such as `{"day":"MONDAY","time":"15:30"}`. Both slot components
+are required when a slot is set. Unrelated optional properties are preserved when other fields change.
+Prefer the application's field commands if unsure about a value's restrictions.
 
 <box type="warning" seamless>
 
 **Caution:**
-If your changes make the data file invalid, AddressBook starts with an empty address book at the next run. The invalid file remains on disk until you run a command (AddressBook saves after every command). Still, we recommend backing up the file before editing it.<br>
-Furthermore, certain edits can cause the AddressBook to behave in unexpected ways (e.g., if a value entered is outside of the acceptable range). Therefore, edit the data file only if you are confident that you can update it correctly.
+Invalid edits can cause data loss. If the file cannot be loaded at startup, the app starts with an empty
+register; the original file is not automatically repaired or backed up. The next successful data-changing
+command can replace that file. Stop and restore your backup before modifying the empty register.<br>
+If `list` cannot reload the file while the app is running, it reports a load error and preserves the current
+in-memory list, filter, selection, and file bytes. Restore or correct the file before retrying. This is not
+automatic recovery of corrupted data. Only edit values you understand and verify the loaded result.
 </box>
 
 ### Archiving data files `[coming in v2.0]`
