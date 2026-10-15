@@ -31,6 +31,16 @@ public final class StudentParameters {
      * Parses one positional index followed by required single-token parameters, preserving raw field values.
      */
     public static IndexedParameters parseIndexed(String input, String... labels) throws ParseException {
+        return parseIndexedRequired(input, true, labels);
+    }
+
+    /** Parses an index and required parameters whose raw values may contain spaces. */
+    public static IndexedParameters parseIndexedValues(String input, String... labels) throws ParseException {
+        return parseIndexedRequired(input, false, labels);
+    }
+
+    private static IndexedParameters parseIndexedRequired(String input, boolean singleToken, String... labels)
+            throws ParseException {
         String leading = input.replaceFirst("^\\p{Zs}+", "");
         Matcher firstToken = Pattern.compile("^([^\\s\\p{Zs}]+)", Pattern.UNICODE_CHARACTER_CLASS).matcher(leading);
         String index = "";
@@ -39,7 +49,7 @@ public final class StudentParameters {
             index = firstToken.group(1);
             remaining = leading.substring(firstToken.end());
         }
-        return new IndexedParameters(index, parseRequired(remaining, true, labels));
+        return new IndexedParameters(index, parseRequired(remaining, singleToken, labels));
     }
 
     /**

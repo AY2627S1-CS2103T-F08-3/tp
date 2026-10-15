@@ -69,6 +69,16 @@ public final class Subject {
         return value.toLowerCase(Locale.ROOT);
     }
 
+    /** Displays the normalized subject, or an em dash for unset/unreadable stored data. */
+    public static String display(StudentFields fields) {
+        try {
+            return fields.get(FIELD).map(Subject::toString).orElse("—");
+        } catch (IllegalArgumentException e) {
+            // Match SubjectCommand's treatment of hand-edited, invalid subjects as unset.
+            return "—";
+        }
+    }
+
     @Override
     public String toString() {
         return value;

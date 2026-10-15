@@ -13,7 +13,8 @@ import seedu.address.commons.util.AppUtil;
 /** An hourly rate in SGD, stored with exactly two decimal places. */
 public final class HourlyRate {
 
-    public static final String MESSAGE_CONSTRAINTS = "Hourly rate must be from 1.00 to 1000.00 SGD.";
+    public static final String MESSAGE_CONSTRAINTS =
+            "Hourly rate must be from 1.00 to 1000.00 SGD with at most two decimal places.";
     private static final BigDecimal MINIMUM = new BigDecimal("1.00");
     private static final BigDecimal MAXIMUM = new BigDecimal("1000.00");
 
@@ -44,14 +45,8 @@ public final class HourlyRate {
     /** Constructs an hourly rate without rounding its value. */
     public HourlyRate(BigDecimal amount) {
         requireNonNull(amount);
-        BigDecimal normalizedAmount;
-        try {
-            normalizedAmount = amount.setScale(2, RoundingMode.UNNECESSARY);
-        } catch (ArithmeticException exception) {
-            throw new IllegalArgumentException(MESSAGE_CONSTRAINTS, exception);
-        }
-        AppUtil.checkArgument(isValid(normalizedAmount), MESSAGE_CONSTRAINTS);
-        value = normalizedAmount;
+        AppUtil.checkArgument(isValid(amount), MESSAGE_CONSTRAINTS);
+        value = amount.setScale(2, RoundingMode.UNNECESSARY);
     }
 
     /** Returns whether {@code amount} is within the allowed SGD range and has cent precision. */
