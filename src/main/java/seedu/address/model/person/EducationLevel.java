@@ -39,6 +39,8 @@ public final class EducationLevel {
         }
     };
 
+    private static final String UNSET_DISPLAY = "—";
+
     /** The canonical level name. */
     public final String value;
 
@@ -68,6 +70,18 @@ public final class EducationLevel {
             return "Secondary " + matcher.group(4);
         }
         return "JC " + matcher.group(6);
+    }
+
+    /**
+     * Returns the text to show for a student's level: the canonical name, or an em dash if it is unset.
+     * A stored value that is not a supported level is shown as unset, as the {@code level} command treats it.
+     */
+    public static String display(StudentFields fields) {
+        try {
+            return fields.get(FIELD).map(level -> level.value).orElse(UNSET_DISPLAY);
+        } catch (IllegalArgumentException e) {
+            return UNSET_DISPLAY;
+        }
     }
 
     @Override
