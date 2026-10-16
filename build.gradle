@@ -7,7 +7,7 @@ plugins {
 }
 
 application {
-    mainClass = 'seedu.address.Main'
+    mainClass = 'tutorconnect.TutorConnectLauncher'
 }
 
 java {
@@ -27,6 +27,8 @@ checkstyle {
 test {
     useJUnitPlatform()
     inputs.property('f01UiTests', System.getenv('F01_UI_TESTS') ?: 'false')
+    inputs.property('f06UiTests', System.getenv('F06_UI_TESTS') ?: 'false')
+    inputs.property('f08UiTests', System.getenv('F08_UI_TESTS') ?: 'false')
     finalizedBy jacocoTestReport
 }
 
@@ -73,7 +75,7 @@ dependencies {
 }
 
 shadowJar {
-    archiveFileName = 'addressbook.jar'
+    archiveFileName = 'tutorconnect.jar'
 }
 
 defaultTasks 'clean', 'test'

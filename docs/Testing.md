@@ -34,11 +34,11 @@ You can run tests in two ways.
 This project has three types of tests:
 
 1. *Unit tests* target the lowest-level methods and classes.<br>
-   For example: `seedu.address.commons.StringUtilTest`
+   For example: `tutorconnect.commons.util.StringUtilTest`
 1. *Integration tests* check how multiple code units work together; the individual units are assumed to work.<br>
-   For example: `seedu.address.storage.StorageManagerTest`
+   For example: `tutorconnect.storage.StorageManagerTest`
 1. *Hybrid tests* combine unit and integration testing. These tests check both the individual units and how they work together.<br>
-   For example: `seedu.address.logic.LogicManagerTest`
+   For example: `tutorconnect.logic.LogicManagerTest`
 
 ## F01–F08 acceptance
 
@@ -51,7 +51,7 @@ temporary dependency branches are review bases and must not be merged as product
 Use JDK 25 as configured in `build.gradle`. On a desktop or configured virtual display, run:
 
 ```sh
-env F01_UI_TESTS=true F08_UI_TESTS=true ./gradlew check shadowJar coverage --offline --no-daemon
+env F01_UI_TESTS=true F06_UI_TESTS=true F08_UI_TESTS=true ./gradlew check shadowJar coverage --offline --no-daemon
 sh .github/run-checks.sh
 git diff --check
 ```
@@ -87,7 +87,7 @@ including both F01 and F08 real JavaFX tests. Main/test Checkstyle, the Shadow J
 repository text checks and `git diff --check` also passed. The earlier 302-test F01/F03-helper/F08 snapshot
 is superseded by this combined run, which includes the merged list/delete and all optional field commands.
 
-Linux CI runs both desktop test classes under Xvfb with software rendering and uploads their coverage;
+Linux CI enables the F01, F06 and F08 desktop groups under Xvfb with software rendering and uploads their coverage;
 macOS and Windows CI run the remaining checks without desktop opt-in. Local desktop flags are required
 to reproduce the complete no-skip acceptance result.
 
@@ -134,10 +134,11 @@ Run in PowerShell with a working desktop display:
 
 ```powershell
 $env:F01_UI_TESTS = 'true'
+$env:F06_UI_TESTS = 'true'
 $env:F08_UI_TESTS = 'true'
 $env:F08_SCREENSHOT_DIR = Join-Path (Get-Location) 'build/f08-v13-screenshots'
 .\gradlew.bat check coverage shadowJar --console=plain
-Remove-Item Env:F01_UI_TESTS, Env:F08_UI_TESTS, Env:F08_SCREENSHOT_DIR
+Remove-Item Env:F01_UI_TESTS, Env:F06_UI_TESTS, Env:F08_UI_TESTS, Env:F08_SCREENSHOT_DIR
 & 'C:\Program Files\Git\bin\bash.exe' .github/run-checks.sh
 git diff --check
 ```
@@ -147,16 +148,16 @@ it does not synthesize UI images. Files are written only when the opt-in variabl
 The four committed PNGs were captured from the passing test with fictional students and visually inspected.
 The initial import-spacing Checkstyle error was corrected; the subsequent full check passed.
 JavaFX emitted native-access/Unsafe warnings under JDK 25 without test failures.
-The packaged artifact is `build/libs/addressbook.jar`; its manifest names `seedu.address.Main`.
+The packaged artifact is `build/libs/tutorconnect.jar`; its manifest names `tutorconnect.TutorConnectLauncher`.
 Packaging and manifest inspection succeeded; interactive execution of the packaged JAR was not part of this run.
 The real JavaFX acceptance run exercises the application window and command box through test classes.
 
 #### Reproducible release demonstration
 
 Use a new disposable demo directory, separate from normal application data. Copy the packaged JAR there,
-create `data/addressbook.json` containing `{"persons":[]}`, and run `java -jar addressbook.jar` from that
+create `data/addressbook.json` containing `{"persons":[]}`, and run `java -jar tutorconnect.jar` from that
 new directory. This avoids the sample records and makes the following visible indices reproducible.
-If #98 has landed, use the final artifact/data names from that PR and repeat the smoke test first.
+The refactored artifact is `tutorconnect.jar`; the legacy `data/addressbook.json` location and `persons` JSON key remain unchanged.
 
 1. Add `add n/Zoe p/81234567 a/21 Clementi Ave`, then
    `add n/Amy p/82345678 a/22 Clementi Ave`.
@@ -202,11 +203,11 @@ F08 is ready for review on the audited baseline, with automated desktop evidence
 This is not approval to publish the integrated MVP. Human reviewers must review/merge the required PRs,
 rerun the combined checks, and verify the final release artifact and demo before publishing v1.3.
 
-[PR #98](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/98) changes model/package/artifact naming;
-[PR #99](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/99) changes persistence/reload handling.
-Both were open during this audit. Reconcile the test names, JAR/data paths and documentation with their final
-versions, repeat the no-change/rollback/reload and desktop flows, and recapture screenshots if the visible UI changes.
-Neither PR's work is duplicated here. The weekly-summary heading remains low contrast in the current theme;
+[PR #98](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/98) proposed model/package/artifact naming changes;
+[PR #99](https://github.com/AY2627S1-CS2103T-F08-3/tp/pull/99) proposed persistence/reload hardening.
+Both were open during the original F08 audit. The replacement naming refactor is based on master after
+#99 merged, retains its guards/tests, and repeats the desktop and storage checks described below.
+The weekly-summary heading remains low contrast in the current theme;
 the screenshots preserve that actual appearance. Broader visual polish and other feature-owner acceptance
 remain team review items. The v1.3 deadline is 15 October 2026, 23:59 SGT; the team owns final release notes,
 screenshots, artifact upload and publication after integrated MVP verification.
@@ -229,7 +230,7 @@ and atomic replacement rollback. Additional guardian-specific coverage is kept s
   values, with unchanged bytes on read failure.
 * `GuardianContactUiTest`: real command-box input, unset em dash, assignment/replacement failures, filtered
   targeting, exact feedback, no-change selection preservation, and a fresh window/model/storage instance.
-  Enable `F01_UI_TESTS=true`; a skipped test is not desktop acceptance. Also enable `F08_UI_TESTS=true`
+  Enable `F01_UI_TESTS=true`; a skipped test is not desktop acceptance. Also enable `F06_UI_TESTS=true` and `F08_UI_TESTS=true`
   when running the full suite above.
 
 The guardian desktop test captures real JavaFX scenes under `build/guardian-ui/` for unset, filtered
@@ -238,7 +239,7 @@ contacts and are not committed. Scene capture waits for rendering pulses, not ju
 
 Manual verification (use a fresh temporary data folder, never real student records):
 
-1. Launch the built `build/libs/addressbook.jar` using JDK 25 from that folder. Add Alex with
+1. Launch the built `build/libs/tutorconnect.jar` using JDK 25 from that folder. Add Alex with
    `add n/Alex Tan p/81234567 a/21 Clementi Ave` and Nur with
    `add n/Nur Aisyah p/92345678 a/8 Jalan Besar`. Check `Guardian phone: —` on both students.
 2. Enter `find Nur`, then `guardian 1 g/+65 9123 4567`. Nur, not Alex, should be selected and display
@@ -254,3 +255,36 @@ Manual verification (use a fresh temporary data folder, never real student recor
 Save-failure injection is automated rather than changing permissions on a real user's folder. These checks
 verify the agreed one-Singapore-number MVP, not international support or recovery from arbitrary manual
 file corruption. They do not replace human PR review or the other owners' acceptance checks.
+
+## TutorConnect naming-refactor verification (16 October 2026)
+
+The replacement for the stale naming PR starts from team master `48f8b1b5`. Production/test packages now
+use `tutorconnect`, the model uses `Student` / `StudentDirectory`, and the launcher is
+`tutorconnect.TutorConnectLauncher`. This is not a data migration: retain `data/addressbook.json`,
+`preferences.json`, the `persons` array, UUIDs, optional fields and insertion order.
+
+Run `clean check coverage shadowJar` on JDK 25 with **all three** environment flags above enabled.
+Gradle tracks each flag as a test input, so changing desktop opt-in cannot reuse a skipped-test result.
+Linux CI enables all three under Xvfb. macOS/Windows CI still run without desktop opt-in; those jobs alone
+are not complete desktop acceptance.
+
+New regression evidence:
+
+* `TutorConnectAppTest` exercises first startup, valid sample records, legacy data/preferences loading,
+  the actual renamed FXML window/title, guardian update/save/reload, malformed-file fallback without
+  overwriting students, and preference-write failures. Temporary paths isolate every test from user data.
+* `StudentPersistenceTest.renamedDirectory_preservesLegacyJsonKeyAndStableIdentity` loads the old schema,
+  saves through the renamed storage, checks `persons` is present and `students` absent, and reloads the UUID.
+* Existing malformed-data, subject/level display, guardian/rate/weekly-slot, rollback and selection tests
+  are retained from latest master, with renamed imports/API calls rather than older feature implementations.
+
+The local Java 25.0.3 run passed **472 tests, zero failures, errors or skips**, both Checkstyle tasks,
+coverage/JAR generation, repository-wide checks and whitespace checks. JaCoCo reports **1,794 of 1,913
+executable lines covered (93.78%)**; GitHub's changed-line coverage result is a separate remote check.
+The JAR manifest names the new launcher and contains no old `seedu/address` classes.
+
+The packaged JAR was launched in a fresh temporary directory: startup reached the UI with the unchanged
+data path and no application exception, then the smoke process was stopped. Complete command/reload
+flows were verified through the real-window tests, not an interactive packaged-JAR session. The captured
+guardian replacement/filtered view was inspected; selection and details were readable. Existing low-contrast
+weekly-summary styling remains outside this naming change. JavaFX emitted its native-access warnings.

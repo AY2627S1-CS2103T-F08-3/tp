@@ -1,0 +1,164 @@
+package tutorconnect.ui;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.file.Path;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
+import org.junit.jupiter.api.io.TempDir;
+
+import javafx.application.Platform;
+import javafx.event.ActionEvent;
+import javafx.scene.control.Label;
+import javafx.scene.control.ListView;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.stage.Stage;
+import tutorconnect.logic.LogicManager;
+import tutorconnect.model.ModelManager;
+import tutorconnect.model.ReadOnlyStudentDirectory;
+import tutorconnect.model.student.Student;
+import tutorconnect.storage.JsonStudentDirectoryStorage;
+import tutorconnect.storage.JsonUserPrefsStorage;
+import tutorconnect.storage.StorageManager;
+import tutorconnect.testutil.JavaFxTestUtil;
+import tutorconnect.testutil.StudentBuilder;
+
+/** Real JavaFX smoke test; opt in on a desktop or under a virtual display with F01_UI_TESTS=true. */
+@EnabledIfEnvironmentVariable(named = "F01_UI_TESTS", matches = "true")
+public class AddStudentUiTest {
+    @TempDir
+    private Path directory;
+
+    @BeforeAll
+    public static void startToolkit() {
+        JavaFxTestUtil.startToolkit();
+    }
+
+    @Test
+    public void commandBox_addSelectsDetailsAndErrorsPreserveSelection() throws Exception {
+        FutureTask<Void> task = new FutureTask<>(() -> {
+            ModelManager model = new ModelManager();
+            AtomicBoolean failSave = new AtomicBoolean();
+            JsonStudentDirectoryStorage storage = new JsonStudentDirectoryStorage(directory.resolve("students.json")) {
+                @Override
+                public void saveStudentDirectory(ReadOnlyStudentDirectory proposed) throws IOException {
+                    if (failSave.get()) {
+                        throw new IOException("Injected UI save failure");
+                    }
+                    super.saveStudentDirectory(proposed);
+                }
+            };
+            LogicManager logic = new LogicManager(model, new StorageManager(storage,
+                    new JsonUserPrefsStorage(directory.resolve("prefs.json"))));
+            Stage stage = new Stage();
+            try {
+                MainWindow window = new MainWindow(stage, logic, storage.getStudentDirectoryFilePath());
+                window.fillInnerParts();
+                window.show();
+                stage.getScene().getRoot().applyCss();
+                stage.getScene().getRoot().layout();
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                TextArea status = (TextArea) stage.getScene().lookup("#resultDisplay");
+                @SuppressWarnings("unchecked")
+                ListView<Student> rows = (ListView<Student>) stage.getScene().lookup("#studentListView");
+                enter(input, "add n/Alex Tan p/81234567 a/21 Clementi Ave 3 #04-18");
+                // Materialize virtualized list cells before checking card rendering/coverage.
+                stage.getScene().getRoot().applyCss();
+                stage.getScene().getRoot().layout();
+                assertEquals("Student added: Alex Tan.", status.getText());
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals(model.getSelectedStudentId(), rows.getSelectionModel().getSelectedItem().getId());
+                StudentDetailsPanel details = (StudentDetailsPanel) stage.getScene().lookup("#studentDetails");
+                List<String> text = details.getChildren().stream().map(node -> ((Label) node).getText()).toList();
+                assertTrue(text.contains("Phone: +6581234567"));
+                assertEquals(5, text.stream().filter(line -> line.endsWith("—")).count());
+                Student selected = rows.getSelectionModel().getSelectedItem();
+                Label email = (Label) rows.lookup("#email");
+                assertFalse(email.isVisible());
+                assertFalse(email.isManaged());
+                StudentCard legacyCard = new StudentCard(new StudentBuilder().build(), 1);
+                assertTrue(legacyCard.getRoot().lookup("#email").isVisible());
+                assertTrue(legacyCard.getRoot().lookup("#email").isManaged());
+                StudentListPanel compatibilityPanel = new StudentListPanel(rows.getItems());
+                ListView<?> compatibilityRows = (ListView<?>) compatibilityPanel.getRoot().lookup("#studentListView");
+                assertEquals(rows.getItems(), compatibilityRows.getItems());
+                compatibilityPanel.selectStudent(selected.getId());
+                compatibilityPanel.selectStudent(UUID.randomUUID());
+                assertEquals(selected, compatibilityRows.getSelectionModel().getSelectedItem());
+                enter(input, "add n/123 p/81234567 a/A");
+                assertTrue(status.getText().startsWith("Error: Invalid name."));
+                assertEquals(selected, rows.getSelectionModel().getSelectedItem());
+                failSave.set(true);
+                enter(input, "add n/Nur Aisyah p/92345678 a/8 Jalan Besar");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(List.of(selected), rows.getItems());
+                assertEquals(selected, rows.getSelectionModel().getSelectedItem());
+                failSave.set(false);
+                enter(input, "add n/Nur Aisyah p/92345678 a/8 Jalan Besar");
+                assertEquals(1, rows.getSelectionModel().getSelectedIndex());
+                assertEquals("Name: Nur Aisyah", ((Label) details.getChildren().getFirst()).getText());
+                Student survivor = rows.getSelectionModel().getSelectedItem();
+                enter(input, "guardian 2 g/91234567");
+                enter(input, "rate 2 r/65");
+                assertEquals(survivor.getId(), model.getSelectedStudentId());
+                List<String> contactDetails = details.getChildren().stream()
+                        .map(node -> ((Label) node).getText()).toList();
+                assertTrue(contactDetails.contains("Guardian phone: +6591234567"));
+                assertTrue(contactDetails.contains("Hourly rate: S$65.00"));
+                rows.getSelectionModel().select(0);
+                enter(input, "rate 2 r/65.0");
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals(selected.getId(), model.getSelectedStudentId());
+                rows.getSelectionModel().select(1);
+                failSave.set(true);
+                enter(input, "guardian 2 g/92345678");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(contactDetails, details.getChildren().stream()
+                        .map(node -> ((Label) node).getText()).toList());
+                enter(input, "delete 1");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(survivor.getId(), model.getSelectedStudentId());
+                assertEquals(2, rows.getItems().size());
+                failSave.set(false);
+                enter(input, "delete 1");
+                assertEquals("Student deleted: Alex Tan.", status.getText());
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals(survivor.getId(), model.getSelectedStudentId());
+                assertEquals("Name: Nur Aisyah", ((Label) details.getChildren().getFirst()).getText());
+                stage.getScene().getRoot().applyCss();
+                stage.getScene().getRoot().layout();
+                assertEquals("1. ", ((Label) rows.lookup("#id")).getText());
+                enter(input, "delete 1");
+                assertNull(rows.getSelectionModel().getSelectedItem());
+                assertEquals("Select a student to view details.", ((Label) details.getChildren().getFirst()).getText());
+                enter(input, "list");
+                assertEquals("No students found.", status.getText());
+                assertEquals("No students found.", ((Label) rows.getPlaceholder()).getText());
+                assertNull(rows.getSelectionModel().getSelectedItem());
+                assertNull(model.getSelectedStudentId());
+            } finally {
+                stage.hide();
+            }
+            return null;
+        });
+        Platform.runLater(task);
+        task.get(30, TimeUnit.SECONDS);
+    }
+
+    private void enter(TextField input, String command) {
+        input.setText(command);
+        input.fireEvent(new ActionEvent());
+    }
+}
