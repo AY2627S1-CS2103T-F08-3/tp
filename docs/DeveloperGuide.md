@@ -4,7 +4,7 @@
   pageNav: 3
 ---
 
-# AB-3 Developer Guide
+# TutorConnect Developer Guide
 
 <!-- * Table of Contents -->
 <page-nav-print />
@@ -35,7 +35,7 @@ The following provides a quick overview of the main components and their interac
 
 **Main components of the architecture**
 
-**`Main`** (consisting of classes [`Main`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/Main.java) and [`MainApp`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/MainApp.java)) is in charge of the app launch and shut down.
+**`TutorConnectLauncher`** (consisting of classes [`TutorConnectLauncher`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/TutorConnectLauncher.java) and [`TutorConnectApp`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/TutorConnectApp.java)) is in charge of the app launch and shut down.
 * At app launch, it initializes the other components in the correct sequence, and connects them up with each other.
 * At shut down, it shuts down the other components and invokes cleanup methods where necessary.
 
@@ -67,24 +67,24 @@ The sections below give more details of each component.
 
 ### UI component
 
-The **API** of this component is specified in [`Ui.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/Ui.java)
+The **API** of this component is specified in [`Ui.java`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/ui/Ui.java)
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `PersonListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `StudentListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
 
-The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/ui/MainWindow.java).
+The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/ui/MainWindow.java).
 
 The `UI` component,
 
 * executes user commands using the `Logic` component.
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
-* depends on some classes in the `Model` component because it displays `Person` objects from the model.
+* depends on some classes in the `Model` component because it displays `Student` objects from the model.
 
 ### Logic component
 
-**API** : [`Logic.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/logic/Logic.java)
+**API** : [`Logic.java`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/logic/Logic.java)
 
 Here's a (partial) class diagram of the `Logic` component:
 
@@ -102,9 +102,9 @@ The sequence diagram below illustrates the interactions within the `Logic` compo
 
 How the `Logic` component works:
 
-1. When `Logic` is called upon to execute a command, the command is passed to an `AddressBookParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
+1. When `Logic` is called upon to execute a command, the command is passed to a `TutorConnectParser` object, which in turn creates a parser that matches the command (e.g., `DeleteCommandParser`) and uses it to parse the command.
 1. This results in a `Command` object (more precisely, an object of one of its subclasses e.g., `DeleteCommand`) which is executed by the `LogicManager`.
-1. The command can communicate with the `Model` when it is executed (e.g. to delete a person).<br>
+1. The command can communicate with the `Model` when it is executed (e.g. to delete a student).<br>
    Note that although this is shown as a single step in the diagram above for simplicity, the code can require several interactions between the command object and the `Model` to complete the operation.
 1. The result of the command execution is encapsulated as a `CommandResult` object which is returned from `Logic`.
 
@@ -113,26 +113,26 @@ Here are the other classes in `Logic` (omitted from the class diagram above) tha
 <puml src="diagrams/ParserClasses.puml" width="600"/>
 
 How the parsing works:
-* When called upon to parse a user command, the `AddressBookParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `AddressBookParser` returns that object as a `Command` object.
+* When called upon to parse a user command, the `TutorConnectParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `TutorConnectParser` returns that object as a `Command` object.
 * All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
 
 ### Model component
-**API** : [`Model.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/model/Model.java)
+**API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/model/Model.java)
 
 <puml src="diagrams/ModelClassDiagram.puml" width="450" />
 
 
 The `Model` component,
 
-* stores the address book data i.e., all `Person` objects (which are contained in a `UniquePersonList` object).
-* stores the `Person` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Person>` that the UI can observe and bind to, so the UI updates when the list changes.
+* stores the address book data i.e., all `Student` objects (which are contained in a `UniqueStudentList` object).
+* stores the `Student` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Student>` that the UI can observe and bind to, so the UI updates when the list changes.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
 
 <box type="info" seamless>
 
-**Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `AddressBook`, and each `Person` references tags from that list. This lets `AddressBook` maintain one `Tag` object per unique tag instead of each `Person` holding its own `Tag` objects.<br>
+**Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `StudentDirectory`, and each `Student` references tags from that list. This lets `StudentDirectory` maintain one `Tag` object per unique tag instead of each `Student` holding its own `Tag` objects.<br>
 
 <puml src="diagrams/BetterModelClassDiagram.puml" width="450" />
 </box>
@@ -140,18 +140,18 @@ The `Model` component,
 
 ### Storage component
 
-**API** : [`Storage.java`](https://github.com/se-edu/addressbook-level3/tree/master/src/main/java/seedu/address/storage/Storage.java)
+**API** : [`Storage.java`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/storage/Storage.java)
 
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
 The `Storage` component,
 * can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
-* is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonAddressBookStorage` and `JsonUserPrefsStorage` (one class per data file).
+* is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonStudentDirectoryStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
 ### Common classes
 
-Classes used by multiple components are in the `seedu.address.commons` package.
+Classes used by multiple components are in the `tutorconnect.commons` package.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -161,17 +161,17 @@ This section describes some noteworthy details on how certain features are imple
 
 ### F01: Add Student
 
-`AddressBookParser` recognizes the case-sensitive command, then `StudentParameters` checks parameter
+`TutorConnectParser` recognizes the case-sensitive command, then `StudentParameters` checks parameter
 boundaries, unknown/unexpected input and required/duplicate parameters. It retains raw values so controls
 cannot disappear during trimming. `AddCommandParser` validates `Name`, `Phone`, `Address` in that order and
-constructs one complete `Person` (the existing aggregate now represents a student). The three-argument
+constructs one complete `Student` (the existing aggregate now represents a student). The three-argument
 constructor assigns a UUID and leaves all optional data unset. `StudentText` owns normalization; `Phone`
-owns the reusable Singapore-number contract. `Person.isSamePerson` compares normalized name ignoring case
+owns the reusable Singapore-number contract. `Student.isSameStudent` compares normalized name ignoring case
 plus canonical phone; full content equality remains separate from UUID identity.
 
 `LogicManager` executes on `Model.copyForCommand()`. `AddCommand` checks duplicates and shared phones against
 the complete address book, then stages the append, full-list predicate and new selected UUID. The logic saves
-changed data before `Model.publish()` updates the observable model. `JsonAddressBookStorage` serializes the
+changed data before `Model.publish()` updates the observable model. `JsonStudentDirectoryStorage` serializes the
 complete state first; `AtomicJsonFile` writes and forces a sibling temporary file and atomically replaces the
 destination. There is no unsafe truncate-in-place fallback. An I/O failure reports the standard save error and
 does not publish. Read-only or identical-data operations do not save.
@@ -183,7 +183,7 @@ round trips. `StudentField<T>` lets each owner provide a validated type/codec; `
 defensively copied, and prevents optional keys from overwriting core fields. F01 does not define other owners'
 commands, education/rate/slot types or their final serialization schemas.
 
-After successful execution, `MainWindow` selects the model's UUID through `PersonListPanel`, which scrolls to
+After successful execution, `MainWindow` selects the model's UUID through `StudentListPanel`, which scrolls to
 the new row. `StudentDetailsPanel` displays the complete record and em dashes for unset optional fields. Errors
 leave the list and details untouched. The F02/F03 owner remains responsible for final index/list/delete policy;
 see [the shared interface and owner handoff contract](F01Integration.md), whose owner acknowledgement is pending.
@@ -206,7 +206,7 @@ Verification:
 `WeeklySlot` is immutable: it requires a `DayOfWeek` and a minute-precision `LocalTime` together.
 `WeeklySlotField` implements F01's `StudentField<WeeklySlot>` with the reserved key `weeklySlot`.
 It encodes one JSON object, for example `{"day":"TUESDAY","time":"19:00"}`. The optional object is either
-unset or complete. `JsonAdaptedPerson` invokes the codec before returning a loaded student, rejecting partial
+unset or complete. `JsonAdaptedStudent` invokes the codec before returning a loaded student, rejecting partial
 objects and invalid values. The shared `StudentFields` envelope retains unrelated owner fields and stable IDs.
 
 `ScheduleCommandParser` uses `StudentParameters.parseIndexed` for structure and `StudentText` for normalization.
@@ -233,41 +233,41 @@ summary ordering, and the actual JavaFX command box. See [the acceptance run and
 
 #### Proposed Implementation
 
-The proposed undo/redo mechanism is facilitated by `VersionedAddressBook`. It extends `AddressBook` with an undo/redo history, stored internally as an `addressBookStateList` and `currentStatePointer`. Additionally, it implements the following operations:
+The proposed undo/redo mechanism is facilitated by `VersionedStudentDirectory`. It extends `StudentDirectory` with an undo/redo history, stored internally as a `studentDirectoryStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
-* `VersionedAddressBook#commit()` -- Saves the current address book state in its history.
-* `VersionedAddressBook#undo()` -- Restores the previous address book state from its history.
-* `VersionedAddressBook#redo()` -- Restores a previously undone address book state from its history.
+* `VersionedStudentDirectory#commit()` -- Saves the current address book state in its history.
+* `VersionedStudentDirectory#undo()` -- Restores the previous address book state from its history.
+* `VersionedStudentDirectory#redo()` -- Restores a previously undone address book state from its history.
 
-These operations are exposed in the `Model` interface as `Model#commitAddressBook()`, `Model#undoAddressBook()` and `Model#redoAddressBook()` respectively.
+These operations are exposed in the `Model` interface as `Model#commitStudentDirectory()`, `Model#undoStudentDirectory()` and `Model#redoStudentDirectory()` respectively.
 
 Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
 
-Step 1. The user launches the application for the first time. The `VersionedAddressBook` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
+Step 1. The user launches the application for the first time. The `VersionedStudentDirectory` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
 
 <puml src="diagrams/UndoRedoState0.puml" alt="UndoRedoState0" />
 
-Step 2. The user executes `delete 5` command to delete the 5th person in the address book. The `delete` command calls `Model#commitAddressBook()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `addressBookStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
+Step 2. The user executes `delete 5` command to delete the 5th student in the address book. The `delete` command calls `Model#commitStudentDirectory()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `studentDirectoryStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
 
 <puml src="diagrams/UndoRedoState1.puml" alt="UndoRedoState1" />
 
-Step 3. The user executes `add n/David …​` to add a new person. The `add` command also calls `Model#commitAddressBook()`, causing another modified address book state to be saved into the `addressBookStateList`.
+Step 3. The user executes `add n/David …​` to add a new student. The `add` command also calls `Model#commitStudentDirectory()`, causing another modified address book state to be saved into the `studentDirectoryStateList`.
 
 <puml src="diagrams/UndoRedoState2.puml" alt="UndoRedoState2" />
 
 <box type="info" seamless>
 
-**Note:** If a command fails its execution, it will not call `Model#commitAddressBook()`, so the address book state will not be saved into the `addressBookStateList`.
+**Note:** If a command fails its execution, it will not call `Model#commitStudentDirectory()`, so the address book state will not be saved into the `studentDirectoryStateList`.
 </box>
 
-Step 4. The user now decides that adding the person was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoAddressBook()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
+Step 4. The user now decides that adding the student was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoStudentDirectory()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
 
 <puml src="diagrams/UndoRedoState3.puml" alt="UndoRedoState3" />
 
 
 <box type="info" seamless>
 
-**Note:** If the `currentStatePointer` is at index 0, pointing to the initial AddressBook state, then there are no previous AddressBook states to restore. The `undo` command uses `Model#canUndoAddressBook()` to check if this is the case. If so, it will return an error to the user rather
+**Note:** If the `currentStatePointer` is at index 0, pointing to the initial StudentDirectory state, then there are no previous StudentDirectory states to restore. The `undo` command uses `Model#canUndoStudentDirectory()` to check if this is the case. If so, it will return an error to the user rather
 than attempting to perform the undo.
 </box>
 
@@ -284,18 +284,18 @@ Similarly, how an undo operation goes through the `Model` component is shown bel
 
 <puml src="diagrams/UndoSequenceDiagram-Model.puml" alt="UndoSequenceDiagram-Model" />
 
-The `redo` command does the opposite — it calls `Model#redoAddressBook()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
+The `redo` command does the opposite — it calls `Model#redoStudentDirectory()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
 
 <box type="info" seamless>
 
-**Note:** If the `currentStatePointer` is at index `addressBookStateList.size() - 1`, pointing to the latest address book state, then there are no undone AddressBook states to restore. The `redo` command uses `Model#canRedoAddressBook()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
+**Note:** If the `currentStatePointer` is at index `studentDirectoryStateList.size() - 1`, pointing to the latest address book state, then there are no undone StudentDirectory states to restore. The `redo` command uses `Model#canRedoStudentDirectory()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
 </box>
 
-Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitAddressBook()`, `Model#undoAddressBook()` or `Model#redoAddressBook()`. Thus, the `addressBookStateList` remains unchanged.
+Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitStudentDirectory()`, `Model#undoStudentDirectory()` or `Model#redoStudentDirectory()`. Thus, the `studentDirectoryStateList` remains unchanged.
 
 <puml src="diagrams/UndoRedoState4.puml" alt="UndoRedoState4" />
 
-Step 6. The user executes `clear`, which calls `Model#commitAddressBook()`. Since the `currentStatePointer` is not pointing at the end of the `addressBookStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
+Step 6. The user executes `clear`, which calls `Model#commitStudentDirectory()`. Since the `currentStatePointer` is not pointing at the end of the `studentDirectoryStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
 
 <puml src="diagrams/UndoRedoState5.puml" alt="UndoRedoState5" />
 
@@ -313,7 +313,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 * **Alternative 2:** Individual command knows how to undo/redo by
   itself.
-  * Pros: Will use less memory (e.g. for `delete`, just save the person being deleted).
+  * Pros: Will use less memory (e.g. for `delete`, just save the student being deleted).
   * Cons: We must ensure that the implementation of each individual command is correct.
 
 _{more aspects and alternatives to be added}_
@@ -384,7 +384,7 @@ These are product priorities, not release commitments. The initial MVP covers st
 | 20 | `* *` | freelance tutor | view an aggregated monthly revenue report | understand my monthly freelance income without external accounting tools |
 | 21 | `* *` | freelance tutor | tag students with upcoming national examination years (e.g., 2026 O-Levels) | prioritise intensive revision slots for graduating cohorts |
 | 22 | `* *` | freelance tutor | assign homework tasks and flag submission statuses per student | hold students accountable for work due before the next lesson |
-| 23 | `* *` | freelance tutor | record whether lessons are conducted Online or In-Person | prepare meeting links or commute routes accordingly |
+| 23 | `* *` | freelance tutor | record whether lessons are conducted Online or In-Student | prepare meeting links or commute routes accordingly |
 | 24 | `* *` | freelance tutor | archive graduated or inactive students instead of hard deleting them | retain historical records and past exam outcomes for referrals |
 | 25 | `* *` | freelance tutor | view students who have not had a lesson logged in over two weeks | follow up on prolonged unexplained absences or paused arrangements |
 | 26 | `* *` | freelance tutor | record school syllabus streams (e.g., IP, IB, Express, Normal Academic) | align lesson pace with school-specific examination formats |
@@ -568,17 +568,17 @@ testers are expected to do more *exploratory* testing.
 
 1. _{ more test cases … }_
 
-### Deleting a person
+### Deleting a student
 
-1. Deleting a person while all persons are being shown
+1. Deleting a student while all students are being shown
 
-   1. Prerequisites: List all persons using the `list` command, with multiple persons in the list.
+   1. Prerequisites: List all students using the `list` command, with multiple students in the list.
 
    1. Test case: `delete 1`<br>
       Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
 
    1. Test case: `delete 0`<br>
-      Expected: No person is deleted. The status message shows error details.
+      Expected: No student is deleted. The status message shows error details.
 
    1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
       Expected: Similar to previous.
@@ -627,7 +627,7 @@ testers are expected to do more *exploratory* testing.
 * List reads and validates saved records into the proposed model, resets the filter, and clears selection.
   It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
 * The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
-  `PersonListPanel.selectPerson` refreshes cells so row numbering follows the updated positions.
+  `StudentListPanel.selectStudent` refreshes cells so row numbering follows the updated positions.
   The empty register shows a placeholder; clearing selection resets the details panel.
 * Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
   metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.

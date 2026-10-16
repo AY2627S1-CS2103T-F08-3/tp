@@ -13,7 +13,7 @@
 <?import javafx.scene.layout.VBox?>
 
 <fx:root type="javafx.stage.Stage" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1"
-         title="Tutor Manager" minWidth="700" minHeight="600" onCloseRequest="#handleExit">
+         title="TutorConnect" minWidth="700" minHeight="600" onCloseRequest="#handleExit">
   <icons>
     <Image url="@/images/address_book_32.png" />
   </icons>
@@ -48,11 +48,11 @@
         </StackPane>
 
         <SplitPane VBox.vgrow="ALWAYS" dividerPositions="0.55">
-          <VBox fx:id="personList" styleClass="pane-with-border" minWidth="300" prefWidth="340">
+          <VBox fx:id="studentList" styleClass="pane-with-border" minWidth="300" prefWidth="340">
             <padding>
               <Insets top="10" right="10" bottom="10" left="10" />
             </padding>
-            <StackPane fx:id="personListPanelPlaceholder" VBox.vgrow="ALWAYS"/>
+            <StackPane fx:id="studentListPanelPlaceholder" VBox.vgrow="ALWAYS"/>
           </VBox>
           <VBox spacing="12" minWidth="250" styleClass="pane-with-border">
             <ScrollPane fitToWidth="true" prefHeight="300" VBox.vgrow="ALWAYS">
