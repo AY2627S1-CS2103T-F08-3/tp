@@ -19,10 +19,12 @@
 </box>
 
 First, **fork** this repo, and **clone** the fork into your computer.
+Check that `origin` points to your personal fork and `upstream` points to the team repository.
+Before creating a branch or PR, follow the [fork-based contribution workflow](DevOps.md#contributing-with-a-fork).
 
 If you plan to use IntelliJ IDEA (highly recommended):
 
-1. **Configure the JDK**: Follow the guide [_[se-edu/guides] IDEA: Configuring the JDK_](https://se-education.org/guides/tutorials/intellijJdk.html) to ensure Intellij is configured to use **JDK 17**.
+1. **Configure the JDK**: Follow the guide [_[se-edu/guides] IDEA: Configuring the JDK_](https://se-education.org/guides/tutorials/intellijJdk.html) to ensure IntelliJ and Gradle use **JDK 25**, matching `build.gradle`.
 1. **Import the project as a Gradle project**: Follow the guide [_[se-edu/guides] IDEA: Importing a Gradle project_](https://se-education.org/guides/tutorials/intellijImportGradleProject.html) to import the project into IDEA.
    <box type="warning" seamless>
    Note: Importing a Gradle project is slightly different from importing a normal Java project.

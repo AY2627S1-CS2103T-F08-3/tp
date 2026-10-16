@@ -11,6 +11,63 @@
 
 <!-- -------------------------------------------------------------------------------------------------------------------- -->
 
+## Contributing with a fork
+
+For the course's v1.1–v1.3 iterations, create each PR from a separate branch of your **personal fork** into
+the team repository. A branch created directly in the team repository does not meet the forking requirement,
+even when its PR is merged and assigned to a milestone.
+See the [course GitHub workflow](https://nus-cs2103-ay2627-s1.github.io/website/admin/appendixE-gitHub.html#d-using-prs-to-track-task-progress).
+
+After cloning your fork, run `git remote -v`. `origin` must point to `YOUR_GITHUB_USERNAME/tp`;
+`upstream` must point to `AY2627S1-CS2103T-F08-3/tp`. If `upstream` is missing, add it:
+
+```sh
+git remote add upstream https://github.com/AY2627S1-CS2103T-F08-3/tp.git
+```
+
+Set this checkout's default push destination to your fork:
+
+```sh
+git config --local remote.pushDefault origin
+git config --local push.default simple
+```
+
+Update local `master`, then create a separate branch for the task. Replace `feature/short-description`
+with your branch name, and keep any unfinished work on its existing branch before switching:
+
+```sh
+git switch master
+git fetch upstream master
+git merge --ff-only upstream/master
+git push origin master
+git switch -c feature/short-description
+```
+
+Commit the changes, run the relevant checks, and push the branch to **origin**:
+
+```sh
+git push -u origin feature/short-description
+```
+
+Open the PR in the team repository with your fork as its source. With GitHub CLI, replace
+`YOUR_GITHUB_USERNAME`, the branch name and `MILESTONE` with the intended values:
+
+```sh
+gh pr create --repo AY2627S1-CS2103T-F08-3/tp --base master \
+  --head YOUR_GITHUB_USERNAME:feature/short-description --milestone MILESTONE
+```
+
+Before merging, verify the source repository is your personal fork, the source branch is not `master`,
+and the PR has the correct milestone. Wait for CI and review, then merge using a merge commit to preserve
+the original commit timestamps. Keep the remote feature branch for course verification.
+
+The submission dashboard requires a merged PR as well as the milestone and fork conditions.
+After merging, sync `master` with the fetch/fast-forward/push steps above and wait for the next
+[dashboard update](https://nus-cs2103-ay2627-s1.github.io/dashboards/contents/tp-progress.html).
+Pushing an already-merged source branch to a fork later does not change the original PR's source repository.
+
+--------------------------------------------------------------------------------------------------------------------
+
 ## Build automation
 
 This project uses Gradle for **build automation and dependency management**. **We recommend reading [this Gradle tutorial from se-edu/guides](https://se-education.org/guides/tutorials/gradle.html).**
