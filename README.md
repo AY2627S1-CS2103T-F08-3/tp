@@ -16,4 +16,27 @@
 
 ---
 
+## Build and launch from a terminal
+
+Install **JDK 25 with JavaFX** (the same Zulu JDK+FX distribution used in CI),
+set `JAVA_HOME` to its installation folder, and open a terminal in the repository.
+No separate Gradle installation is needed; use the checked-in wrapper.
+
+```sh
+./gradlew run
+```
+
+This opens the desktop window. Enter student commands in that window, not in
+the terminal. Close the window or enter `exit` in its command box to quit.
+
+```sh
+./gradlew build
+java -jar build/libs/tutorconnect.jar
+```
+
+`build` runs tests, Checkstyle and executable-JAR checks and creates the JAR.
+On Windows, use `gradlew.bat` instead of `./gradlew`. See the
+[terminal setup guide](docs/SettingUp.md#building-and-running-from-a-terminal)
+for Java selection, desktop test flags and data-directory precautions.
+
 * This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).

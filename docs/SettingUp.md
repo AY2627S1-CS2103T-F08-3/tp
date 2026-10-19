@@ -35,6 +35,69 @@ If you plan to use IntelliJ IDEA (highly recommended):
 
 --------------------------------------------------------------------------------------------------------------------
 
+## Building and running from a terminal
+
+Use JDK 25 with JavaFX, matching the Zulu JDK+FX distribution in CI. Set `JAVA_HOME`
+to its installation directory and add its `bin` directory to `PATH`. Do not use
+the literal placeholder below; substitute your installed JDK path.
+
+```sh
+export JAVA_HOME="/path/to/your/jdk-25-with-javafx"
+export PATH="$JAVA_HOME/bin:$PATH"
+java -version
+./gradlew --version
+```
+
+On Windows, set `JAVA_HOME` and `PATH` using your environment settings and use
+`gradlew.bat` in place of `./gradlew`. Run these commands from the cloned repository
+(the directory containing `build.gradle`), not its parent folder. Internet access
+is needed on the first build to download the pinned wrapper and dependencies.
+The wrapper verifies new Gradle downloads against the official SHA-256 checksum.
+The Java toolchain requires an installed JDK 25; it does not install one for you.
+
+To launch from source:
+
+```sh
+./gradlew run
+```
+
+Wait for the JavaFX window, then enter commands in its command box. The terminal
+is for startup and logs, not student commands. Close the window or enter `exit`
+in the app to quit. A desktop display is required; Linux CI uses Xvfb.
+
+To build and launch a standalone executable JAR:
+
+```sh
+./gradlew build
+java -jar build/libs/tutorconnect.jar
+```
+
+Running `./gradlew` with no task also runs `build`. It compiles, runs tests and
+Checkstyle, packages the application, and checks the executable manifest and
+essential UI resources. It does not delete existing build outputs first; use
+`./gradlew clean build` when a clean rebuild is needed. `shadowJar` alone packages
+the JAR without running tests; do not treat it as complete verification.
+
+Desktop tests require explicit opt-in. On macOS/Linux with a display, run:
+
+```sh
+F01_UI_TESTS=true F06_UI_TESTS=true F08_UI_TESTS=true ./gradlew build coverage
+```
+
+Without these flags, UI tests are skipped. See [Testing](Testing.md) for Windows
+environment-variable examples and the full acceptance workflow.
+
+Data remains in `data/addressbook.json` and `preferences.json` relative to the
+launch working directory. `./gradlew run` uses the repository directory. A JAR
+launched elsewhere uses that other directory, so an apparently different student
+list can simply mean a different data folder. For disposable testing, launch the
+JAR by its absolute path from a fresh temporary directory. Do not clear real data.
+
+If Java is not found or is the wrong version, correct `JAVA_HOME` and `PATH` and
+check both version commands above. If Gradle cannot find a Java 25 toolchain,
+install/select JDK 25 with JavaFX and retry. Native-access warnings from JavaFX
+under Java 25 are known; a warning alone is not an application startup failure.
+
 ## Before writing code
 
 1. **Configure the coding style**
