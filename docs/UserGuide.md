@@ -16,7 +16,7 @@ It combines typed commands with a graphical student register and details panel.
 
 ## Quick start
 
-1. Ensure that Java `25` or later is installed on your computer.<br>
+1. Ensure that Java `25` is installed on your computer (the version used to build and test this release).<br>
    **Mac users:** Ensure you have the precise JDK version prescribed [here](https://se-education.org/guides/tutorials/javaInstallationMac.html).
 
 1. Download the latest `.jar` file from the [team releases](https://github.com/AY2627S1-CS2103T-F08-3/tp/releases).
@@ -24,19 +24,19 @@ It combines typed commands with a graphical student register and details panel.
 1. Copy the file to the folder you want to use as the _home folder_ for TutorConnect.
 
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutorconnect.jar`.<br>
-   A GUI similar to the one below should appear in a few seconds. Note how the app contains some sample data.<br>
-   ![Ui](images/Ui.png)
+   The application opens with a command box, a feedback area, a student register on the left, and selected-student
+   details and a weekly schedule on the right. Scroll the details panel to see all fields.
+   If no data file exists, the register initially contains sample students.
+   The proposed dashboard mockup used elsewhere in the project is not the current application interface.
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
 
-   * `list` : Lists all contacts.
+   * `list` : Lists all students and clears selection.
 
    * `add n/John Doe p/98765432 a/John street, block 123, #01-01` : Adds a student named `John Doe`.
 
-   * `delete 3` : Deletes the 3rd contact shown in the current list.
-
-   * `clear` : Deletes all contacts.
+   * `delete 3` : Permanently deletes the 3rd student shown in the current list, without confirmation.
 
    * `exit` : Exits the app.
 
@@ -54,13 +54,17 @@ It combines typed commands with a graphical student register and details panel.
   For example, in `add n/NAME`, replace `NAME` with a value such as `John Doe`.
 
 * Items in square brackets are optional.<br>
-  For example, `n/NAME [t/TAG]` can be used as `n/John Doe t/friend` or as `n/John Doe`.
+  For example, `edit 1 n/NAME [t/TAG]` can be used as `edit 1 n/John Doe t/friend` or as `edit 1 n/John Doe`.
 
 * Items followed by `...` can appear zero or more times.<br>
   For example, `[t/TAG]... ` may be omitted, or written as `t/friend` or `t/friend t/family`.
 
-* Parameters can be in any order.<br>
+* Prefixed parameters can be in any order. If a command takes `INDEX`, put it before the prefixed parameters.<br>
   For example, if the command specifies `n/NAME p/PHONE_NUMBER`, `p/PHONE_NUMBER n/NAME` is also acceptable.
+
+* Commands and prefixes are lowercase and case-sensitive. Separate tokens with spaces; type one command per line.
+  An `INDEX` is the current displayed row number, starting at 1, not a stored student ID. After `find`, use the
+  filtered row numbers. Signs, decimals and leading zeroes such as `01` are not valid indices.
 
 * Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
   For example, `help 123` is interpreted as `help`.
@@ -70,9 +74,8 @@ It combines typed commands with a graphical student register and details panel.
 
 ### Viewing help: `help`
 
-Shows a message explaining how to access the help page.
-
-![help message](images/helpMessage.png)
+Opens a Help window displaying the address of the TutorConnect User Guide, with a **Copy URL** button.
+Copy that address into your browser to read the guide. You can also use the Help menu or `F1`.
 
 Format: `help`
 
@@ -93,13 +96,15 @@ Examples:
 Values undergo Unicode NFKC normalization, trimming and repeated-space collapsing. Prohibited controls and
 line breaks are rejected before whitespace processing. Name and address display case is preserved.
 
-* **Name:** 1–70 Unicode characters after normalization, including at least one letter. Letters, combining
-  marks, spaces, apostrophes, hyphens and full stops are accepted. Digits are not accepted in names.
+* **Name:** 1–70 Unicode code points after normalization, including at least one letter. Letters, combining
+  marks, spaces, straight apostrophes (`'`), right curly apostrophes (`’`), hyphens and full stops are accepted.
+  Digits are not accepted in names.
 * **Phone:** eight Singapore digits starting with 6, 8 or 9. An optional `+65` prefix and spaces or hyphens
   between digit groups are accepted, e.g. `81234567`, `+65 8123 4567`, `+65-8123-4567`.
+  Use a space or a single hyphen at each separator, not repeated hyphens or a mixture such as `8123 - 4567`.
   The stored/displayed form is `+6581234567`. International numbers are not supported.
-* **Address:** 1–200 Unicode characters after normalization, including at least one letter or digit.
-  Letters, combining marks, digits, spaces and `# , . - / ' ( ) &` are accepted. For example, `12/3 Street`
+* **Address:** 1–200 Unicode code points after normalization, including at least one letter or digit.
+  Letters, combining marks, numbers, spaces and `# , . - / ' ( ) &` are accepted. For example, `12/3 Street`
   keeps its slash. A whitespace-delimited token of ASCII letters followed by `/` is reserved as a parameter
   boundary, not literal address text.
 
@@ -141,7 +146,7 @@ profile is created. If saving fails, check the data folder's permissions and ava
 Format: `list`
 
 Reloads the complete saved register in insertion order, replaces any filtered results,
-numbers rows from 1, and clears selection. Before the first save, the in-memory register is used.
+numbers rows from 1, and clears selection. If the data file does not exist, the current in-memory register is used.
 The command does not save or sort records.
 
 * With records: `Listed N students.`
@@ -154,17 +159,43 @@ Unset optional student fields display as an em dash (—) in the details panel.
 
 ### Editing a student: `edit`
 
-Edits an existing student in the address book.
+Edits an existing student's core contact details and legacy email/tags. Use the separate `guardian`, `level`,
+`subject`, `rate` and `schedule` commands for those optional fields; `edit` preserves them.
 
 Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 
-* Edits the student at the specified `INDEX`. The index refers to the index number shown in the displayed student list. The index **must be a positive integer** 1, 2, 3, ...
-* At least one of the optional fields must be provided.
-* Existing values will be updated to the input values.
-* When editing tags, all of the student's existing tags are removed; adding tags is not cumulative.
-* To remove all of a student's tags, enter `t/` without a tag after it.
+* The index is from the currently displayed list, with no leading zeroes. Supply at least one field.
+* Omitted fields keep their values. Name, phone and address use the same value limits as `add`.
+  Each of `n/`, `p/`, `e/` and `a/` may appear at most once; blank values are invalid.
+* Email is optional metadata supported by `edit`, not `add`. Use an address such as `alex.tan@example.com`.
+  The local part accepts ASCII letters/digits separated by single `+`, `_`, `.` or `-` characters;
+  it must start and end with a letter/digit. Domain labels use ASCII letters/digits with internal hyphens,
+  separated by dots, and the final label must be at least two characters. Spaces are not accepted.
+  A blank `e/` cannot clear an email. Email appears on the student card, not in the selected-student details panel.
+* Tags contain ASCII letters/digits only, with no spaces or punctuation, and are case-sensitive.
+  Repeated `t/` values replace the complete tag set; they do not append to existing tags. Duplicate tags collapse
+  to one. Omit `t/` to preserve tags, or supply a single blank `t/` to clear all tags. Tags appear on the card.
+* A real edit saves the full profile, preserves its ID and insertion position, shows the **full register**
+  (clearing any search filter), and selects the edited student.
+* Identical normalized values do not save or change the filter/selection. The command still reports
+  `Edited student: ...`; there is no separate no-change message. A name or address capitalization change
+  is a real edit. Phone formatting differences alone are not.
+* Changing the name/phone to match both fields of another student is rejected, including students hidden by a filter.
+  Sharing only a name or only a phone is accepted; unlike `add`, `edit` does not append a shared-phone warning.
+
+On success, feedback starts with `Edited student: NAME; Phone: PHONE; Email: EMAIL; Address: ADDRESS; Tags: ...`.
+The email part is empty if no email is set. No fields supplied reports `At least one field to edit must be provided.`
+A repeated single-value prefix reports `Multiple values specified for the following single-valued field(s): ...`.
+A duplicate reports `This student already exists in the address book.` Invalid indices and save failures use the
+standard messages shown in the other command sections.
+
+The legacy `edit` parser checks index syntax, repeated prefixes, then values in name/phone/email/address/tag order,
+before resolving the row and checking duplicates. It recognizes only the prefixes listed above: unrecognized
+prefix-like text can be treated as part of a value, rather than producing an unknown-parameter error.
+Check the feedback after editing, especially when entering an address containing slashes.
 
 Examples:
+
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st student to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd student to be `Betsy Crower` and clears all existing tags.
 
@@ -231,9 +262,14 @@ Sets the one current education level of the student at the displayed, 1-based `I
 replaces the old one; levels never accumulate. Many students may share a level.
 
 Examples:
+
 * `level 1 l/Secondary 4`
 * `level 2 l/JC2`
 * `level 3 l/Primary 6`
+
+Supply lowercase `l/` exactly once after the index. A blank `l/` is an invalid level, not a missing parameter.
+Values use Unicode NFKC normalization, trimming and space collapsing; controls and line breaks in values
+are rejected. There is no command to clear an existing level.
 
 Accepted levels (case-insensitive, and the space between the word and the number is optional):
 
@@ -258,17 +294,19 @@ one changes nothing: nothing is saved and the selection stays as it was.
 | First level | `Education level set for NAME: LEVEL.` |
 | Replacement | `Education level updated for NAME: OLD_LEVEL -> NEW_LEVEL.` |
 | Same level | `Education level for NAME is already LEVEL.` |
-| Unexpected text | `Error: Unexpected text after command.` |
 | Unknown parameter | `Error: Unknown parameter: PREFIX.` |
-| Missing parameter | `Error: Missing required parameter: l/LEVEL.` |
 | Repeated parameter | `Error: Parameter l/ may be specified only once.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Missing parameter | `Error: Missing required parameter: l/LEVEL.` |
 | Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
 | Invalid level | `Error: Invalid level. Use Primary 1-6, Secondary 1-5, or JC 1-2.` |
 | Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
 | Save failed | `Error: Changes could not be saved. No changes were made.` |
 
-Errors are reported in the order shown above, and the index syntax is checked before the level. The level is
-checked before the row is looked up, so `level 99 l/Sec 6` reports the invalid level. A failed command
+Unknown parameters are checked first, then repeated `l/`, unexpected pre-parameter text, and a missing parameter.
+For example, `level 0 extra l/Sec4 x/` reports unknown parameter `x/`, while `level 0 extra l/Sec4 l/JC1`
+reports repeated `l/`. Index syntax is checked before the level, and the level before the row is looked up,
+so `level 99 l/Sec 6` reports the invalid level. A failed command
 changes nothing: the saved file, the student list, the filter and the selection all stay as they were.
 
 ### Locating students by name: `find`
@@ -281,12 +319,17 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
 * Only full words match; for example, `Han` does not match `Hans`.
+  Words are separated by whitespace: `Anne` does not match the single word `Anne-Marie`.
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
+* Results retain insertion order, are renumbered from 1, and clear selection. Feedback is `N student(s) listed!`.
+  `find` searches the in-memory register without saving or reloading the file; use `list` to reload/reset the view.
+* Supply at least one keyword. Keywords are case-insensitive but do not receive the NFKC normalization applied
+  to stored names, so type the spelling displayed in the register rather than relying on full-width variants.
 
 Examples:
+
 * `find John` returns `john` and `John Doe`
-* `find alex david` returns `Alex Yeoh`, `David Li`<br>
-  ![result for 'find alex david'](images/findAlexDavidResult.png)
+* With the initial sample data, `find alex david` returns `Alex Yeoh` and `David Li`, with `2 student(s) listed!`.
 
 ### Deleting a student: `delete`
 
@@ -464,6 +507,7 @@ The **Weekly schedule** summary shows all scheduled students, including students
 It orders entries Monday–Sunday, then by time, then by student insertion order for ties. It does not reorder
 the student register. Deleting a student also removes their entry from this summary and saved schedule.
 This feature supports one slot per student; lesson durations, multiple slots and conflict detection are outside its scope.
+There is no command to clear only a weekly slot; blank day/time values do not remove it.
 
 Outcome | Status message
 --- | ---
@@ -484,22 +528,37 @@ Values are checked in order: index syntax, day, time, then whether the displayed
 
 ### Clearing all entries: `clear`
 
-Clears all entries from the address book.
+Permanently removes **all students and their optional fields**, including students hidden by a filter and their
+weekly-schedule entries. There is no confirmation or undo. Back up the data file first if you may need it again.
 
 Format: `clear`
 
+Normal success feedback is `Address book has been cleared!`. A save failure reports
+`Error: Changes could not be saved. No changes were made.`
+
+<box type="warning" seamless>
+
+**Current implementation defect:** Running `clear` while a student is selected can save the empty register
+and then raise a selection error instead of displaying success. The deletion has already happened; the error
+does not mean the data was preserved. Run `list` successfully immediately before `clear`, without selecting
+a row in between, to avoid this defect. If it has already occurred, `list` refreshes the empty register but
+does not restore deleted data. This is a known code defect, not intended command behaviour.
+</box>
+
 ### Exiting the program: `exit`
 
-Exits the program.
+Closes the application and Help window. Window size/position are saved to `preferences.json`.
+Student data is saved by successful data-changing commands; `exit` is not a separate save command.
 
 Format: `exit`
 
 ### Saving the data
 
 TutorConnect automatically saves a complete updated student register after a successful data-changing
-command. Read-only commands, failed commands, and successful no-change updates do not write the file.
+command. Read-only commands, rejected input, and successful no-change updates do not write the file.
 `list` reloads the file without saving it. A failed save leaves stored data, the current list, and selection
 unchanged and reports `Error: Changes could not be saved. No changes were made.`
+The known `clear` selection defect above occurs **after** a successful save and is not a save-failure rollback.
 
 ### Editing the data file
 
@@ -544,16 +603,18 @@ in-memory list, filter, selection, and file bytes. Restore or correct the file b
 automatic recovery of corrupted data. Only edit values you understand and verify the loaded result.
 </box>
 
-### Archiving data files `[coming in v2.0]`
-
-_Details coming soon ..._
+There is no automatic backup, archive or undo command in this version. With the app closed, copy
+`data/addressbook.json` to a safe location yourself. This guide does not promise a future release date for those features.
 
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
 
 **Q**: How do I transfer my data to another computer?<br>
-**A**: Install the app on the other computer and overwrite the data file it creates with the data file from your previous TutorConnect home folder.
+**A**: Close the app on both computers. Copy the original `data/addressbook.json` into the `data` folder of
+the new TutorConnect working directory, creating that folder if needed. Back up any existing destination
+file before replacing it, then start the app from that working directory. `preferences.json` is optional;
+omitting it uses default window settings and avoids copying off-screen coordinates between computers.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -561,6 +622,8 @@ _Details coming soon ..._
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+3. **Clearing while a student is selected** can delete the records and then raise a selection error. Use the
+   `list`-then-`clear` workaround in the clearing section above; the error does not undo the deletion.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -580,3 +643,4 @@ Action     | Format, Examples
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
 **Help**   | `help`
+**Exit**   | `exit`
