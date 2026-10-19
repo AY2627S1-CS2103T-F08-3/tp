@@ -201,6 +201,16 @@ Verification:
 * `AddStudentEndToEndTest` verifies invalid commands leave state unchanged, exact error precedence, both user
   examples, shared-phone warnings, duplicate rules and insertion order after reload.
 
+### Shared single-field updates
+
+Guardian, rate, level and subject commands delegate their staged mutation to the package-private
+`StudentFieldUpdate` helper. Each command retains its public constructor, messages and owner-supplied codec.
+The helper resolves the displayed index, preserves the stored formatting and selection on equivalent input,
+and otherwise replaces only the requested optional field. Saving remains exclusively in `LogicManager`.
+Unreadable in-memory level/subject values retain the existing repair-as-unset behavior; file loading still
+validates stored fields before publication. `ClearCommand` clears its staged selection before publication,
+so an already-saved empty register never attempts to select a removed UUID.
+
 ### F08: Weekly Lesson Scheduling
 
 `WeeklySlot` is immutable: it requires a `DayOfWeek` and a minute-precision `LocalTime` together.

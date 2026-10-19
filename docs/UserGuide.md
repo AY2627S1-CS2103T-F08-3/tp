@@ -536,14 +536,8 @@ Format: `clear`
 Normal success feedback is `Address book has been cleared!`. A save failure reports
 `Error: Changes could not be saved. No changes were made.`
 
-<box type="warning" seamless>
-
-**Current implementation defect:** Running `clear` while a student is selected can save the empty register
-and then raise a selection error instead of displaying success. The deletion has already happened; the error
-does not mean the data was preserved. Run `list` successfully immediately before `clear`, without selecting
-a row in between, to avoid this defect. If it has already occurred, `list` refreshes the empty register but
-does not restore deleted data. This is a known code defect, not intended command behaviour.
-</box>
+Successful clearing also clears the selected row and details. A failed save preserves the register,
+filter, selection and details. You do not need to run `list` before `clear`.
 
 ### Exiting the program: `exit`
 
@@ -558,7 +552,6 @@ TutorConnect automatically saves a complete updated student register after a suc
 command. Read-only commands, rejected input, and successful no-change updates do not write the file.
 `list` reloads the file without saving it. A failed save leaves stored data, the current list, and selection
 unchanged and reports `Error: Changes could not be saved. No changes were made.`
-The known `clear` selection defect above occurs **after** a successful save and is not a save-failure rollback.
 
 ### Editing the data file
 
@@ -622,8 +615,6 @@ omitting it uses default window settings and avoids copying off-screen coordinat
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
-3. **Clearing while a student is selected** can delete the records and then raise a selection error. Use the
-   `list`-then-`clear` workaround in the clearing section above; the error does not undo the deletion.
 
 --------------------------------------------------------------------------------------------------------------------
 
