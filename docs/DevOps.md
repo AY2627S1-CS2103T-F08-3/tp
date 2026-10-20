@@ -75,6 +75,11 @@ This project uses Gradle for **build automation and dependency management**. **W
 
 The following commands perform common Gradle tasks.
 
+* **`build`** (also the default task): Compiles, tests, checks style, and builds distributions including
+  `build/libs/tutorconnect.jar`. It checks the executable manifest and required UI resources using
+  `verifyShadowJar`. Builds are incremental; `clean` is optional, not an automatic prerequisite.
+  The Java toolchain targets an installed JDK 25 and Java source encoding is UTF-8 on every platform.
+  See [terminal setup](SettingUp.md#building-and-running-from-a-terminal) for launch instructions.
 
 * **`clean`**: Deletes the files created during the previous build tasks (e.g. files in the `build` folder).<br>
   For example: `./gradlew clean`
@@ -89,7 +94,7 @@ The following commands perform common Gradle tasks.
   **`checkstyleTest`**: Runs the code style check for the test code base.
 
 * **`test`**
-  * `./gradlew test`: Runs all tests.
+  * `./gradlew test`: Runs tests; desktop groups require the F01/F06/F08 environment flags in [Testing](Testing.md).
   * `./gradlew clean test`: Cleans the project before running all tests
 
 --------------------------------------------------------------------------------------------------------------------
@@ -97,6 +102,10 @@ The following commands perform common Gradle tasks.
 ## Continuous integration (CI)
 
 This project uses GitHub Actions for CI. The necessary workflow configuration files are in `.github/workflows`. No further setup is required.
+
+CI runs `build coverage` on Linux, macOS and Windows. Linux enables all three desktop groups under Xvfb;
+the other jobs do not opt into desktop tests. Each successful build uploads `tutorconnect.jar` as a
+platform-named workflow artifact. These are review/test artifacts, not automatically published releases.
 
 ### Code coverage
 

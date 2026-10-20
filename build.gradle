@@ -11,13 +11,17 @@ application {
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_25
-    targetCompatibility = JavaVersion.VERSION_25
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
 }
 
 repositories {
     mavenCentral()
-    maven { url = 'https://oss.sonatype.org/content/repositories/snapshots/' }
 }
 
 checkstyle {
@@ -78,4 +82,35 @@ shadowJar {
     archiveFileName = 'tutorconnect.jar'
 }
 
-defaultTasks 'clean', 'test'
+// Keep the thin JAR distinct from the executable fat JAR when the project name matches.
+tasks.named('jar') {
+    archiveClassifier = 'plain'
+}
+
+tasks.register('verifyShadowJar') {
+    group = 'verification'
+    description = 'Checks the executable JAR manifest and essential application resources.'
+    dependsOn tasks.named('shadowJar')
+    inputs.file(tasks.named('shadowJar').flatMap { it.archiveFile })
+    inputs.property('mainClass', application.mainClass)
+    doLast {
+        new java.util.jar.JarFile(inputs.files.singleFile).withCloseable { jar ->
+            String launcher = inputs.properties.mainClass
+            if (jar.manifest?.mainAttributes?.getValue('Main-Class') != launcher) {
+                throw new GradleException('The executable JAR has an incorrect Main-Class manifest entry.')
+            }
+            [launcher.replace('.', '/') + '.class', 'view/MainWindow.fxml',
+             'view/StudentListPanel.fxml', 'view/DarkTheme.css'].each { entry ->
+                if (jar.getJarEntry(entry) == null) {
+                    throw new GradleException("The executable JAR is missing ${entry}.")
+                }
+            }
+        }
+    }
+}
+
+tasks.named('check') {
+    dependsOn tasks.named('verifyShadowJar')
+}
+
+defaultTasks 'build'
