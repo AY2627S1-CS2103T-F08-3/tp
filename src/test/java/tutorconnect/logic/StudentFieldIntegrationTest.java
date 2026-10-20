@@ -1,6 +1,7 @@
 package tutorconnect.logic;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import com.fasterxml.jackson.databind.node.TextNode;
 
+import tutorconnect.logic.commands.ClearCommand;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.ModelManager;
 import tutorconnect.model.ReadOnlyStudentDirectory;
@@ -103,7 +105,8 @@ public class StudentFieldIntegrationTest {
 
     @Test
     public void failedFieldUpdatesAndDelete_preserveFileModelFilterAndSelection() throws Exception {
-        for (String command : List.of("guardian 1 g/92345678", "rate 1 r/80", "edit 1 a/New Street", "delete 1")) {
+        for (String command : List.of("guardian 1 g/92345678", "rate 1 r/80", "edit 1 a/New Street",
+                "delete 1", "clear")) {
             ModelManager model = model();
             Student target = model.getStudentDirectory().getStudentList().getFirst();
             model.updateFilteredStudentList(student -> student.getId().equals(target.getId()));
@@ -145,6 +148,25 @@ public class StudentFieldIntegrationTest {
             CommandException failure = assertThrows(CommandException.class, () -> logic.execute(command));
             assertEquals("Error: No student exists at index " + huge + ".", failure.getMessage());
         }
+    }
+
+    @Test
+    public void clear_selectedFilteredStudentPublishesEmptyStateAndReloads() throws Exception {
+        ModelManager model = model();
+        Student selected = model.getStudentDirectory().getStudentList().getLast();
+        model.updateFilteredStudentList(student -> student.getId().equals(selected.getId()));
+        model.selectStudent(selected.getId());
+        JsonStudentDirectoryStorage storage = new JsonStudentDirectoryStorage(directory.resolve("students.json"));
+        Logic logic = logic(model, storage);
+        assertEquals(ClearCommand.MESSAGE_SUCCESS, logic.execute("clear").getFeedbackToUser());
+        assertEquals(List.of(), model.getStudentDirectory().getStudentList());
+        assertEquals(List.of(), model.getFilteredStudentList());
+        assertNull(model.getSelectedStudentId());
+        assertEquals(List.of(), storage.readStudentDirectory().orElseThrow().getStudentList());
+        assertEquals(ClearCommand.MESSAGE_SUCCESS, logic.execute("clear").getFeedbackToUser());
+        logic.execute("list");
+        assertEquals(List.of(), model.getFilteredStudentList());
+        assertNull(model.getSelectedStudentId());
     }
 
     private ModelManager model() {

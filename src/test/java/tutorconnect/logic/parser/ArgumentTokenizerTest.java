@@ -147,4 +147,11 @@ public class ArgumentTokenizerTest {
         assertNotEquals(aaa, new Prefix("aab"));
     }
 
+    @Test
+    public void tokenize_legacyBoundariesAndSlashesRemainUnchanged() {
+        ArgumentMultimap arguments = ArgumentTokenizer.tokenize("p/start\tp/tab p/12/3 x/unknown p/", pSlash);
+        assertPreamblePresent(arguments, "p/start\tp/tab");
+        assertArgumentPresent(arguments, pSlash, "12/3 x/unknown", "");
+    }
+
 }

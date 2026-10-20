@@ -3,14 +3,12 @@ package tutorconnect.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.GuardianPhone;
-import tutorconnect.model.student.Student;
 
 /** Sets the guardian phone number of a student selected by displayed index. */
 public class GuardianCommand extends Command implements AtomicCommand {
@@ -37,19 +35,8 @@ public class GuardianCommand extends Command implements AtomicCommand {
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
-        Student target = VisibleIndexResolver.resolveStudent(index, model);
-        Optional<GuardianPhone> previous = target.getGuardianPhone();
-        String name = target.getName().toString();
-        if (previous.isPresent() && previous.get().equals(guardianPhone)) {
-            return new CommandResult(String.format(MESSAGE_NO_CHANGE, name, guardianPhone));
-        }
-
-        Student updated = target.withGuardianPhone(guardianPhone);
-        model.setStudent(target, updated);
-        String message = previous.isEmpty()
-                ? String.format(MESSAGE_SET_SUCCESS, name, guardianPhone)
-                : String.format(MESSAGE_UPDATE_SUCCESS, name, previous.get(), guardianPhone);
-        return new CommandResult(message, index.getOneBased());
+        return StudentFieldUpdate.execute(model, index, GuardianPhone.FIELD, guardianPhone,
+                MESSAGE_SET_SUCCESS, MESSAGE_UPDATE_SUCCESS, MESSAGE_NO_CHANGE);
     }
 
     @Override

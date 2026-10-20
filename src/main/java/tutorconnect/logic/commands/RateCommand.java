@@ -3,14 +3,12 @@ package tutorconnect.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
-import java.util.Optional;
 
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.HourlyRate;
-import tutorconnect.model.student.Student;
 
 /** Sets a student's hourly rate using the rate's displayed index. */
 public class RateCommand extends Command implements AtomicCommand {
@@ -37,19 +35,8 @@ public class RateCommand extends Command implements AtomicCommand {
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
-        Student target = VisibleIndexResolver.resolveStudent(index, model);
-        Optional<HourlyRate> previous = target.getHourlyRate();
-        String name = target.getName().toString();
-        if (previous.isPresent() && previous.get().equals(hourlyRate)) {
-            return new CommandResult(String.format(MESSAGE_NO_CHANGE, name, hourlyRate));
-        }
-
-        Student updated = target.withHourlyRate(hourlyRate);
-        model.setStudent(target, updated);
-        String message = previous.isEmpty()
-                ? String.format(MESSAGE_SET_SUCCESS, name, hourlyRate)
-                : String.format(MESSAGE_UPDATE_SUCCESS, name, previous.get(), hourlyRate);
-        return new CommandResult(message, index.getOneBased());
+        return StudentFieldUpdate.execute(model, index, HourlyRate.FIELD, hourlyRate,
+                MESSAGE_SET_SUCCESS, MESSAGE_UPDATE_SUCCESS, MESSAGE_NO_CHANGE);
     }
 
     @Override

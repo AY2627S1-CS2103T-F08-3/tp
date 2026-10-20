@@ -148,6 +148,20 @@ public class AddStudentUiTest {
                 assertEquals("No students found.", ((Label) rows.getPlaceholder()).getText());
                 assertNull(rows.getSelectionModel().getSelectedItem());
                 assertNull(model.getSelectedStudentId());
+                enter(input, "add n/Clear Test p/81234567 a/Test Street");
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                failSave.set(true);
+                enter(input, "clear");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(0, rows.getSelectionModel().getSelectedIndex());
+                assertEquals("Name: Clear Test", ((Label) details.getChildren().getFirst()).getText());
+                failSave.set(false);
+                enter(input, "clear");
+                assertEquals("Address book has been cleared!", status.getText());
+                assertTrue(rows.getItems().isEmpty());
+                assertNull(rows.getSelectionModel().getSelectedItem());
+                assertNull(model.getSelectedStudentId());
+                assertEquals("Select a student to view details.", ((Label) details.getChildren().getFirst()).getText());
             } finally {
                 stage.hide();
             }

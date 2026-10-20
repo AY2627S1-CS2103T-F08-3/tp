@@ -31,6 +31,12 @@ You can run tests in two ways.
 
 ## Types of tests
 
+Command cleanup regressions retain the existing owner suites. `ArgumentTokenizerTest` additionally checks
+the legacy edit grammar's ASCII-space boundaries, embedded slashes, unknown prefixes and empty values.
+`StudentFieldIntegrationTest` checks clearing a selected filtered record, saving/reloading an empty register,
+repeated clearing, and atomic failure preservation. `AddStudentUiTest` verifies failed clearing retains the
+selected row/details and successful clearing resets both through the real command box.
+
 This project has three types of tests:
 
 1. *Unit tests* target the lowest-level methods and classes.<br>
