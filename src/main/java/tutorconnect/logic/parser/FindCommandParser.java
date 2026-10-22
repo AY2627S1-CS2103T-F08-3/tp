@@ -4,6 +4,7 @@ import static tutorconnect.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
 
 import java.util.List;
 
+import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.FindCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
 import tutorconnect.model.student.NameContainsKeywordsPredicate;
@@ -19,7 +20,13 @@ public class FindCommandParser implements Parser<FindCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public FindCommand parse(String args) throws ParseException {
-        String trimmedArgs = args.trim();
+        String trimmedArgs;
+        try {
+            // Keep legacy whitespace separators, then apply the same normalization as stored names.
+            trimmedArgs = StudentText.normalize(args.replaceAll("\\s+", " "));
+        } catch (IllegalArgumentException e) {
+            throw new ParseException(String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE), e);
+        }
         if (trimmedArgs.isEmpty()) {
             throw new ParseException(
                     String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
