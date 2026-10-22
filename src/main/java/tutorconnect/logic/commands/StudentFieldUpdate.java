@@ -26,6 +26,11 @@ final class StudentFieldUpdate {
         String message = previous.isEmpty()
                 ? String.format(setMessage, name, value)
                 : String.format(updateMessage, name, previous.get(), value);
+        if (model.getFilteredStudentList().stream().noneMatch(student -> student.getId().equals(target.getId()))) {
+            // A changed level or subject can remove this row from the current discovery view.
+            model.selectStudent(null);
+            return new CommandResult(message, CommandResult.SelectionAction.CLEAR);
+        }
         return new CommandResult(message, index.getOneBased());
     }
 
