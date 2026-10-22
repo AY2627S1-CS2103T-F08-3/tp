@@ -2,6 +2,9 @@ package tutorconnect.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.logging.Logger;
+
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.Messages;
 import tutorconnect.model.Model;
@@ -20,6 +23,8 @@ public class FindCommand extends Command {
             + "Parameters: KEYWORD [MORE_KEYWORDS]...\n"
             + "Example: " + COMMAND_WORD + " alice bob charlie";
 
+    private static final Logger logger = LogsCenter.getLogger(FindCommand.class);
+
     private final NameContainsKeywordsPredicate predicate;
 
     public FindCommand(NameContainsKeywordsPredicate predicate) {
@@ -30,6 +35,8 @@ public class FindCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredStudentList(predicate);
+        logger.fine(() -> "Name query applied to full register; matched "
+                + model.getFilteredStudentList().size() + " student(s); selection cleared");
         return new CommandResult(
                 String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW, model.getFilteredStudentList().size()),
                 CommandResult.SelectionAction.CLEAR);

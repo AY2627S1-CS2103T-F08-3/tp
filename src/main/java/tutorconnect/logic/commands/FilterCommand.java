@@ -2,6 +2,9 @@ package tutorconnect.logic.commands;
 
 import static java.util.Objects.requireNonNull;
 
+import java.util.logging.Logger;
+
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.logic.Messages;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.StudentCriteriaPredicate;
@@ -13,6 +16,8 @@ public class FilterCommand extends Command {
     public static final String MESSAGE_MISSING_CRITERIA =
             "Error: Supply at least one filter criterion: l/LEVEL or s/SUBJECT.";
 
+    private static final Logger logger = LogsCenter.getLogger(FilterCommand.class);
+
     private final StudentCriteriaPredicate predicate;
 
     public FilterCommand(StudentCriteriaPredicate predicate) {
@@ -23,6 +28,9 @@ public class FilterCommand extends Command {
     public CommandResult execute(Model model) {
         requireNonNull(model);
         model.updateFilteredStudentList(predicate);
+        logger.fine(() -> "Criteria query applied to full register; level=" + predicate.level().isPresent()
+                + "; subject=" + predicate.subject().isPresent() + "; matched "
+                + model.getFilteredStudentList().size() + " student(s); selection cleared");
         return new CommandResult(String.format(Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW,
                 model.getFilteredStudentList().size()), CommandResult.SelectionAction.CLEAR);
     }
