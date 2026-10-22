@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
@@ -17,6 +19,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /** Immutable payment statuses recorded for a student's months. */
 public final class PaymentHistory {
+    public static final String MESSAGE_UNREADABLE =
+            "Error: The stored payment history for %1$s could not be read. "
+                    + "Correct or remove the \"payments\" entry in the data file.";
+    public static final String MESSAGE_UNREADABLE_DISPLAY = "Payment history: stored data could not be read";
     public static final String MESSAGE_INVALID_MONTH = "Error: Invalid month. Enter a valid month in YYYY-MM format.";
     private static final String MESSAGE_INVALID_HISTORY =
             "Payment history must map YYYY-MM months to pending or completed.";
@@ -72,6 +78,23 @@ public final class PaymentHistory {
     /** Returns an empty history for a student with no recorded months. */
     public static PaymentHistory empty() {
         return new PaymentHistory(Map.of());
+    }
+
+    /** Formats recorded months in chronological order for the selected-student details panel. */
+    public static List<String> detailLines(StudentFields fields) {
+        Optional<PaymentHistory> history;
+        try {
+            history = fields.get(FIELD);
+        } catch (IllegalArgumentException exception) {
+            return List.of(MESSAGE_UNREADABLE_DISPLAY);
+        }
+        if (history.isEmpty() || history.get().statuses.isEmpty()) {
+            return List.of("Payment history: —");
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add("Payment history:");
+        history.get().statuses.forEach((month, status) -> lines.add(month + ": " + status));
+        return List.copyOf(lines);
     }
 
     /** Parses a strict four-digit year and two-digit calendar month. */

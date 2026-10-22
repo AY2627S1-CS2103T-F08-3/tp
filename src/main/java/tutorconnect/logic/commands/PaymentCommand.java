@@ -5,8 +5,8 @@ import static java.util.Objects.requireNonNull;
 import java.time.YearMonth;
 import java.util.Objects;
 
+import tutorconnect.commons.core.index.Index;
 import tutorconnect.logic.commands.exceptions.CommandException;
-import tutorconnect.logic.parser.VisibleIndex;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.PaymentHistory;
 import tutorconnect.model.student.PaymentStatus;
@@ -19,12 +19,12 @@ public class PaymentCommand extends Command {
     public static final String MESSAGE_UPDATED = "Payment status updated for %s (%s): %s -> %s.";
     public static final String MESSAGE_UNCHANGED = "Payment status for %s (%s) is already %s.";
 
-    private final VisibleIndex index;
+    private final Index index;
     private final YearMonth month;
     private final PaymentStatus status;
 
     /** Creates an update targeting a student in the current displayed list. */
-    public PaymentCommand(VisibleIndex index, YearMonth month, PaymentStatus status) {
+    public PaymentCommand(Index index, YearMonth month, PaymentStatus status) {
         this.index = requireNonNull(index);
         this.month = requireNonNull(month);
         this.status = requireNonNull(status);
@@ -32,9 +32,13 @@ public class PaymentCommand extends Command {
 
     @Override
     public CommandResult execute(Model model) throws CommandException {
-        Student target = index.resolve(model.getFilteredStudentList());
-        PaymentHistory previousHistory = target.getStudentFields().get(PaymentHistory.FIELD)
-                .orElseGet(PaymentHistory::empty);
+        Student target = VisibleIndexResolver.resolveStudent(index, model);
+        PaymentHistory previousHistory;
+        try {
+            previousHistory = target.getStudentFields().get(PaymentHistory.FIELD).orElseGet(PaymentHistory::empty);
+        } catch (IllegalArgumentException exception) {
+            throw new CommandException(String.format(PaymentHistory.MESSAGE_UNREADABLE, target.getName()), exception);
+        }
         PaymentStatus previous = previousHistory.getStatus(month).orElse(null);
         String identity = target.getName() + " (" + target.getPhone() + ")";
         String monthText = month.toString();

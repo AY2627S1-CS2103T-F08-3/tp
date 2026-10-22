@@ -586,7 +586,9 @@ A missing month entry means **unrecorded**; it is different from a recorded `pen
 have one status per month. Replacing a status affects only that month, and months and students are independent.
 The command is manual status tracking only; it does not create invoices or process payments. Payment history is
 stored with the student's UUID and survives edits and restart. Deleting the student deletes the attached history.
-Older records without payment history load with none recorded. Malformed stored payment history is rejected.
+Older records without payment history load with none recorded. Malformed payment data remains untouched on load; a
+payment command reports the affected student and tells you to correct or remove its `payments` entry before changing
+or listing payment history.
 
 On a real change, the student is selected and details refresh. An identical status is a successful no-change
 result with no save; errors and save failures preserve the existing selection and data.
@@ -608,6 +610,26 @@ Unknown or repeated prefixes and unexpected text are reported before parameter v
 syntax, month, status, and finally whether a student exists at that displayed index. For example,
 `payment 99 m/2026-13 s/invalid` reports the invalid month before looking up student 99. A valid but missing
 displayed index reports the no-student error after the month and status pass validation.
+
+### Reviewing monthly payment statuses: `payments`
+
+Format: `payments m/YYYY-MM [s/pending|completed]`
+
+Shows recorded payments for the requested month in student insertion order. The command lists the full register even
+after `find` or `filter`; it does not change the current selection or save data. Students with no recorded status
+for that month are excluded, including students who have a status for another month. Add the optional status filter
+to show only pending or completed records.
+
+Each row includes the student's name and phone, the month, and its status, for example:
+
+```text
+Alex Tan (+6591234567) — 2026-10: pending
+Casey Lim (+6581234567) — 2026-10: completed
+```
+
+If there are no recorded payments, or no rows match the optional status, the command displays
+`No recorded payments for YYYY-MM.` The selected-student details panel shows payment months chronologically;
+students with no history show an em dash.
 
 ### Scheduling a weekly lesson (F08): `schedule`
 

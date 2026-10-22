@@ -27,7 +27,6 @@ import tutorconnect.model.student.Email;
 import tutorconnect.model.student.GuardianPhone;
 import tutorconnect.model.student.HourlyRate;
 import tutorconnect.model.student.Name;
-import tutorconnect.model.student.PaymentHistory;
 import tutorconnect.model.student.Phone;
 import tutorconnect.model.student.Student;
 import tutorconnect.model.student.StudentFields;
@@ -196,7 +195,6 @@ class JsonAdaptedStudent {
         try {
             // Validate the owner's complete value before publishing a loaded record.
             fields.get(WeeklySlotField.INSTANCE);
-            fields.get(PaymentHistory.FIELD);
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException(e.getMessage());
         }
