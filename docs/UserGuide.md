@@ -534,7 +534,7 @@ The **Weekly schedule** summary shows all scheduled students, including students
 It orders entries Monday–Sunday, then by time, then by student insertion order for ties. It does not reorder
 the student register. Deleting a student also removes their entry from this summary and saved schedule.
 This feature supports one slot per student; lesson durations, multiple slots and conflict detection are outside its scope.
-There is no command to clear only a weekly slot; blank day/time values do not remove it.
+Use `unschedule INDEX` to remove only the weekly slot; blank day/time values do not remove it.
 
 Outcome | Status message
 --- | ---
@@ -581,6 +581,26 @@ Normal success feedback is `Address book has been cleared!`. A save failure repo
 
 Successful clearing also clears the selected row and details. A failed save preserves the register,
 filter, selection and details. You do not need to run `list` before `clear`.
+
+### Removing a weekly lesson: `unschedule`
+
+Format: `unschedule INDEX`. For example, `unschedule 1` removes the weekly slot of the first student
+in the currently displayed list, including after `find`. It does not delete the student or change
+their name, contacts, other optional fields, internal identity or position in the register.
+
+Success reports `Weekly lesson removed for NAME: DAY TIME.`, selects the student, clears their slot
+to an em dash and removes their schedule entry immediately. The removal persists across restart.
+If no slot exists, `No weekly lesson is scheduled for NAME.` is a successful no-change result:
+no save and no selection change. Different students sharing a slot remain unaffected.
+
+Supply one positive displayed index without leading zeroes. Missing, zero, negative or malformed
+indices report `Error: Invalid index. Enter a positive whole number without leading zeroes.`
+An oversized or out-of-range valid index reports `Error: No student exists at index INDEX.`
+Unknown prefixes report `Error: Unknown parameter: PREFIX.`; extra bare text and controls report
+`Error: Unexpected text after command.` Structure is checked before index syntax and existence.
+On a save failure, `Error: Changes could not be saved. No changes were made.` preserves the previous
+complete slot, file bytes, student list, filter, selection and details. Retry after resolving the
+storage problem. Use `schedule` to assign a slot again; there is no undo history.
 
 ### Exiting the program: `exit`
 
@@ -676,6 +696,7 @@ Action     | Format, Examples
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
 **View timetable** | `timetable [d/DAY]`<br> e.g., `timetable d/Mon`
+**Remove weekly lesson** | `unschedule INDEX`<br> e.g., `unschedule 1`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
 **Help**   | `help`

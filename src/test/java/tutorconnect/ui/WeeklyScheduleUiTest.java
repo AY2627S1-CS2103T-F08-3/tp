@@ -162,6 +162,27 @@ public class WeeklyScheduleUiTest {
                 enter(input, "schedule 2 d/Tue t/19:00");
                 assertEquals(List.of("Zoe", "Amy"), names(summary));
                 captureScene(stage, "03-overlapping-slots.png");
+
+                var beforeRemoval = model.getFilteredStudentList().getFirst();
+                var selectedBeforeRemoval = model.getSelectedStudentId();
+                failSave.set(true);
+                enter(input, "unschedule 1");
+                assertEquals(LogicManager.MESSAGE_SAVE_FAILURE, status.getText());
+                assertEquals(selectedBeforeRemoval, model.getSelectedStudentId());
+                assertEquals(beforeRemoval, model.getFilteredStudentList().getFirst());
+                assertEquals(2, summary.getItems().size());
+                failSave.set(false);
+                enter(input, "unschedule 1");
+                assertTrue(status.getText().startsWith("Weekly lesson removed for Zoe:"));
+                assertEquals(List.of("Amy"), names(summary));
+                assertTrue(labels(details).contains("Weekly slot: —"));
+                assertEquals(zoe.getId(), model.getSelectedStudentId());
+                rows.getSelectionModel().select(1);
+                enter(input, "unschedule 1");
+                assertEquals("No weekly lesson is scheduled for Zoe.", status.getText());
+                assertEquals(amy.getId(), model.getSelectedStudentId());
+                enter(input, "schedule 1 d/Tue t/19:00");
+                rows.getSelectionModel().select(1);
                 Student rescheduled = rows.getItems().getFirst();
                 for (String key : List.of("guardianPhone", "educationLevel", "subject", "hourlyRate")) {
                     assertEquals(complete.getStudentFields().toStorage().get(key),
