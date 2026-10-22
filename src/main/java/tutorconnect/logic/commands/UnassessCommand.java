@@ -3,7 +3,9 @@ package tutorconnect.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
+import java.util.logging.Logger;
 
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.commands.exceptions.CommandException;
@@ -25,6 +27,8 @@ public class UnassessCommand extends Command {
     public static final String MESSAGE_INVALID_RECORD =
             "Error: Invalid record number. Enter a positive whole number without leading zeroes.";
 
+    private static final Logger logger = LogsCenter.getLogger(UnassessCommand.class);
+
     private final Index index;
     private final Index record;
 
@@ -43,10 +47,12 @@ public class UnassessCommand extends Command {
         AssessmentHistory history = AssessmentUpdate.historyOf(target);
 
         if (!record.isWithinSize(history.size())) {
+            logger.fine("Student " + target.getId() + " has no assessment record " + record.getOneBasedString());
             throw new CommandException(String.format(MESSAGE_NO_RECORD, name, record.getOneBasedString()));
         }
         AssessmentRecord removed = history.get(record.getZeroBasedExact());
         model.setStudent(target, AssessmentUpdate.withHistory(target, history.without(record.getZeroBasedExact())));
+        logger.fine("Removed assessment #" + record.getOneBasedString() + " from student " + target.getId());
         return new CommandResult(String.format(MESSAGE_REMOVED, name, removed), index.getOneBased());
     }
 
