@@ -526,6 +526,83 @@ Structural errors are reported before values. For example, omitting `d/` reports
 `Error: Unknown parameter: x/.` Extra unprefixed tokens report `Error: Unexpected text after command.`
 Values are checked in order: index syntax, day, time, then whether the displayed row exists.
 
+### Recording exam and test results (story 12): `assess`, `assessments` and `unassess`
+
+Formats: `assess INDEX d/DATE t/TITLE g/GRADE`, `assessments INDEX` and `unassess INDEX i/RECORD`
+
+Keeps a dated history of a student's exams and tests so you can see progress over time. `assess` adds one record,
+`assessments` lists them, and `unassess` removes one, so a wrong entry can be corrected by removing it and adding
+it again. `INDEX` is the **currently displayed**, 1-based index, so after `find Betsy` the index `1` is the first
+matching student. Prefixes may come in any order, and each may appear once.
+
+Examples:
+* `assess 1 d/2026-10-01 t/Math Midterm g/85/100`
+* `assess 1 g/A1 d/2026-12-05 t/Chemistry Final`
+* `assessments 1`
+* `unassess 1 i/2`
+
+| Part | Rule |
+| --- | --- |
+| `DATE` | `yyyy-MM-dd`, zero-padded, and a real calendar date: `2026-10-31` is valid, `2026-02-30` and `2026-2-3` are not. It is not compared with today's date, so a past or future date is accepted. |
+| `TITLE` | 1 to 60 characters: letters, digits, spaces and `& / ' ( ) - . , : #`. |
+| `GRADE` | 1 to 20 characters: letters, digits, spaces and `/ . % + -`. Examples: `A1`, `B+`, `85/100`, `72.5%`, `Pass`. |
+| `RECORD` | The record's number in the student's history, as shown by `assessments` and the details panel. |
+
+Titles and grades are normalized first (Unicode NFKC, trimmed, repeated spaces collapsed) and are shown in the
+case you typed. A grade is only text: TutorConnect never reads it as a number, compares two grades, or averages
+them, so `A1`, `85/100` and `Grade 7` can sit side by side without implying that they are comparable. A title
+may contain a slash, but a word of letters directly followed by `/` that comes after a space (for example
+` Math/Science`) is read as a parameter, so write `Math / Science` or `Math-Science`.
+
+**Order and numbering.** Records are ordered by date, oldest first. Records on the same date stay in the order
+they were added. A record's number is its position in that order, from 1, so numbers can change after you add
+or remove a record: check `assessments` before using `unassess`.
+
+**Duplicates and limits.** A record with the same date and the same title as an existing one (ignoring capital
+letters and repeated spaces) is a duplicate and is rejected, whatever its grade; remove the old record first to
+change it. A student can have at most 100 records.
+
+**Display.** The selected-student details show `Assessments (N):` followed by one numbered line per record, or
+`Assessments: none recorded`. Long titles wrap and the panel scrolls, so a long history stays readable.
+`assessments` also writes the numbered list in the result box and selects the student; it never changes any
+data. Adding or removing a record selects the student and refreshes the details. Deleting a student deletes their
+records, and editing a student's contact details keeps them.
+
+| Outcome | Message |
+| --- | --- |
+| Record added | `Assessment added for NAME: #N DATE TITLE: GRADE.` |
+| Record removed | `Assessment removed from NAME: DATE TITLE: GRADE.` |
+| `assessments` | `Assessments for NAME:` and then one `N. DATE TITLE: GRADE` line per record |
+| `assessments` with no records | `NAME has no assessment records.` |
+| Unexpected text | `Error: Unexpected text after command.` |
+| Unknown parameter | `Error: Unknown parameter: PREFIX.` |
+| Missing parameter | `Error: Missing required parameter: d/DATE.` (or `t/TITLE`, `g/GRADE`, `i/RECORD`, `INDEX`) |
+| Repeated parameter | `Error: Parameter d/ may be specified only once.` (or `t/`, `g/`, `i/`) |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid date | `Error: Invalid date. Use a real date in yyyy-MM-dd format, e.g. 2026-10-31.` |
+| Invalid title | `Error: Invalid title. Use 1-60 letters, numbers, spaces, or the symbols & / ' ( ) - . , : #.` |
+| Invalid grade | `Error: Invalid grade. Use 1-20 letters, numbers, spaces, or the symbols / . % + -.` |
+| Invalid record number | `Error: Invalid record number. Enter a positive whole number without leading zeroes.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Record number does not exist | `Error: No assessment record RECORD for NAME.` |
+| Duplicate | `Error: NAME already has an assessment "TITLE" on DATE. Remove it first to change it.` |
+| Too many records | `Error: A student can have at most 100 assessment records.` |
+| Unreadable stored history | `Error: The stored assessment history for NAME could not be read. Correct or remove the "assessments" entry in the data file.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown: unexpected text or an unknown parameter, then a missing or repeated
+parameter, then the index syntax, then the date, the title and the grade in that order, then whether the row
+exists, whether the stored history can be read, and finally the duplicate, limit or record number. So
+`assess 99 d/bad t/Quiz g/A` reports the invalid date. A failed command, including a failed save, changes nothing:
+the saved file, the student list, the filter and the selection all stay as they were.
+
+**Storage.** The history is saved with the student under `"assessments"` as a list of objects with a `"date"`, a
+`"title"` and a `"grade"`, in display order, and it survives a restart. A student with no records has no
+`"assessments"` entry, and files saved before this feature load normally. If you edit the file by hand and the
+list can no longer be read (for example an impossible date, a duplicate, or an extra property), the commands
+report it and leave the file untouched rather than overwrite your data: correct or remove the entry, then
+restart. Back up the file before editing.
+
 ### Clearing all entries: `clear`
 
 Permanently removes **all students and their optional fields**, including students hidden by a filter and their
@@ -631,6 +708,9 @@ Action     | Format, Examples
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
+**Add assessment** | `assess INDEX d/DATE t/TITLE g/GRADE`<br> e.g., `assess 1 d/2026-10-01 t/Math Midterm g/85/100`
+**List assessments** | `assessments INDEX`<br> e.g., `assessments 1`
+**Remove assessment** | `unassess INDEX i/RECORD`<br> e.g., `unassess 1 i/2`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
 **Help**   | `help`
