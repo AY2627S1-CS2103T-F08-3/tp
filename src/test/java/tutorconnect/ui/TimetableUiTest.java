@@ -105,6 +105,49 @@ public class TimetableUiTest {
         task.get(30, TimeUnit.SECONDS);
     }
 
+    @Test
+    public void activeDayView_tracksSlotMovesAndRemovalWithoutReissuing() throws Exception {
+        FutureTask<Void> task = new FutureTask<>(() -> {
+            ModelManager model = new ModelManager();
+            var storage = new JsonStudentDirectoryStorage(directory.resolve("students.json"));
+            var logic = new LogicManager(model, new StorageManager(storage,
+                    new JsonUserPrefsStorage(directory.resolve("prefs.json"))));
+            Stage stage = new Stage();
+            try {
+                MainWindow window = new MainWindow(stage, logic, storage.getStudentDirectoryFilePath());
+                window.fillInnerParts();
+                window.show();
+                TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+                Label heading = (Label) stage.getScene().lookup("#timetableHeading");
+                @SuppressWarnings("unchecked")
+                ListView<Student> rows = (ListView<Student>) stage.getScene().lookup("#weeklyScheduleList");
+                enter(input, "add n/Zoe p/81234567 a/Test Street");
+                enter(input, "add n/Amy p/92345678 a/Test Street");
+                enter(input, "schedule 1 d/Mon t/10:00");
+                enter(input, "schedule 2 d/Mon t/09:00");
+                enter(input, "level 2 l/p1");
+                enter(input, "timetable d/Mon");
+                enter(input, "filter l/p1");
+                assertEquals(List.of("Amy", "Zoe"), names(rows));
+                assertEquals(1, model.getFilteredStudentList().size());
+                enter(input, "schedule 1 d/Tue t/09:00");
+                assertEquals(List.of("Zoe"), names(rows));
+                enter(input, "schedule 1 d/Mon t/11:00");
+                assertEquals(List.of("Zoe", "Amy"), names(rows));
+                enter(input, "unschedule 1");
+                assertEquals(List.of("Zoe"), names(rows));
+                assertEquals("Monday schedule", heading.getText());
+                assertEquals(1, model.getFilteredStudentList().size());
+                assertEquals("Amy", model.getFilteredStudentList().get(0).getName().toString());
+            } finally {
+                stage.hide();
+            }
+            return null;
+        });
+        Platform.runLater(task);
+        task.get(30, TimeUnit.SECONDS);
+    }
+
     private List<String> names(ListView<Student> rows) {
         return rows.getItems().stream().map(student -> student.getName().toString()).toList();
     }
