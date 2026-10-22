@@ -318,13 +318,15 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-  Words are separated by whitespace: `Anne` does not match the single word `Anne-Marie`.
+* Partial names match anywhere in the name: `Han` matches `Hans`, and `Anne` matches `Anne-Marie`.
+  Names and keywords use Unicode NFKC normalization and locale-independent lowercase comparison.
+  Full-width letters and composed/decomposed accents match; accents are not removed (`Jose` differs from `José`).
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 * Results retain insertion order, are renumbered from 1, and clear selection. Feedback is `N student(s) listed!`.
-  `find` searches the in-memory register without saving or reloading the file; use `list` to reload/reset the view.
-* Supply at least one keyword. Keywords are case-insensitive but do not receive the NFKC normalization applied
-  to stored names, so type the spelling displayed in the register rather than relying on full-width variants.
+  Each `find` searches the full in-memory register, replacing the previous query without saving or reloading
+  the file; use `list` to reload/reset the view. Zero matches show `0 student(s) listed!` and `No students found.`.
+* Supply at least one whitespace-separated keyword. Unicode spaces are supported, as are existing tab/newline
+  separators. Hidden format characters are rejected without changing the current view or selection.
 
 Examples:
 
