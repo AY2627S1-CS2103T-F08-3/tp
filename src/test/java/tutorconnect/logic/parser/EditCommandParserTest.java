@@ -53,9 +53,26 @@ public class EditCommandParserTest {
     private EditCommandParser parser = new EditCommandParser();
 
     @Test
+    public void parse_unknownPrefixInsideAddress_failure() {
+        assertParseFailure(parser, "1 a/21 Clementi x/accidental", "Error: Unknown parameter: x/.");
+        assertParseFailure(parser, "1 a/21 Clementi wrong/value", "Error: Unknown parameter: wrong/.");
+        assertParseFailure(parser, "1 N/Alex", "Error: Unknown parameter: N/.");
+    }
+
+    @Test
+    public void parse_controlAtValueBoundary_failure() {
+        for (String control : new String[] {"\n", "\r", "\t", "\u0000", "\u200b", "\u2028"}) {
+            assertParseFailure(parser, "1 n/Alex" + control, StudentParameters.UNEXPECTED_TEXT);
+            assertParseFailure(parser, "1 a/" + control + "21 Clementi", StudentParameters.UNEXPECTED_TEXT);
+            assertParseFailure(parser, "1 e/alex@example.com" + control, StudentParameters.UNEXPECTED_TEXT);
+            assertParseFailure(parser, "1 t/friend" + control, StudentParameters.UNEXPECTED_TEXT);
+        }
+    }
+
+    @Test
     public void parse_missingParts_failure() {
         // no index specified
-        assertParseFailure(parser, VALID_NAME_AMY, MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, VALID_NAME_AMY, StudentParameters.UNEXPECTED_TEXT);
 
         // no field specified
         assertParseFailure(parser, "1", EditCommand.MESSAGE_NOT_EDITED);
@@ -73,10 +90,10 @@ public class EditCommandParserTest {
         assertParseFailure(parser, "0" + NAME_DESC_AMY, MESSAGE_INVALID_FORMAT);
 
         // invalid arguments being parsed as preamble
-        assertParseFailure(parser, "1 some random string", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "1 some random string", StudentParameters.UNEXPECTED_TEXT);
 
         // invalid prefix being parsed as preamble
-        assertParseFailure(parser, "1 i/ string", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "1 i/ string", "Error: Unknown parameter: i/.");
     }
 
     @Test
@@ -202,5 +219,36 @@ public class EditCommandParserTest {
         EditCommand expectedCommand = new EditCommand(targetIndex, descriptor);
 
         assertParseSuccess(parser, userInput, expectedCommand);
+    }
+
+    @Test
+    public void parse_unicodeSpacesAndNormalizedValues_success() {
+        EditStudentDescriptor descriptor = new EditStudentDescriptorBuilder().withName("Alex Tan")
+                .withPhone("81234567").withAddress("12/3 Street").withTags("friend").build();
+        assertParseSuccess(parser, "\u00a01\u2003n/Ａｌｅｘ  Tan\u2003p/+65 8123 4567"
+                + "\u3000a/12/3 Street\u00a0t/friend\u3000t/friend",
+                new EditCommand(INDEX_FIRST_STUDENT, descriptor));
+        assertParseSuccess(parser, "1\u00a0t/\u3000",
+                new EditCommand(INDEX_FIRST_STUDENT, new EditStudentDescriptorBuilder().withTags().build()));
+    }
+
+    @Test
+    public void parse_structuralErrors_precedeValuesAndIndex() {
+        assertParseFailure(parser, "0 p/bad x/value", "Error: Unknown parameter: x/.");
+        assertParseFailure(parser, "0 extra n/Alex", StudentParameters.UNEXPECTED_TEXT);
+        assertParseFailure(parser, "0 p/bad p/81234567",
+                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+        assertParseFailure(parser, "1 n/", Name.MESSAGE_CONSTRAINTS);
+        assertParseFailure(parser, "1 p/", Phone.MESSAGE_CONSTRAINTS);
+    }
+
+    @Test
+    public void parse_invalidAndOversizedIndices_handledWithoutNarrowing() {
+        for (String index : new String[] {"01", "+1", "1.0", "-1"}) {
+            assertParseFailure(parser, index + " n/Alex", MESSAGE_INVALID_FORMAT);
+        }
+        String huge = "9".repeat(100);
+        assertParseSuccess(parser, huge + " n/Alex", new EditCommand(Index.fromOneBased(huge),
+                new EditStudentDescriptorBuilder().withName("Alex").build()));
     }
 }

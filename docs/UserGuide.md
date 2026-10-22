@@ -189,10 +189,16 @@ A repeated single-value prefix reports `Multiple values specified for the follow
 A duplicate reports `This student already exists in the address book.` Invalid indices and save failures use the
 standard messages shown in the other command sections.
 
-The legacy `edit` parser checks index syntax, repeated prefixes, then values in name/phone/email/address/tag order,
-before resolving the row and checking duplicates. It recognizes only the prefixes listed above: unrecognized
-prefix-like text can be treated as part of a value, rather than producing an unknown-parameter error.
-Check the feedback after editing, especially when entering an address containing slashes.
+`edit` rejects control characters and line breaks before trimming values. Unknown whitespace-delimited
+ASCII-letter prefixes, such as `x/` or `wrong/`, report `Error: Unknown parameter: PREFIX.`;
+extra text between the index and the first prefix reports `Error: Unexpected text after command.`
+Unicode spaces are accepted between tokens. Embedded address slashes, such as `12/3 Street`, remain value text.
+
+Structural errors are checked before repeated single-value prefixes, index syntax, and values in
+name/phone/email/address/tag order. The row is then resolved and duplicate identity checked before saving.
+An arbitrarily large positive index reports a missing row without overflowing. Failed edits preserve the
+saved file, student list, filter, selection and details. A lone blank `t/` still clears tags; repeated `t/`
+values must each contain a valid tag.
 
 Examples:
 
