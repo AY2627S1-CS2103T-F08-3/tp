@@ -86,6 +86,9 @@ public class TimetableUiTest {
                 assertEquals(List.of("Zara", "Amy", "Ben"), names(rows));
                 enter(input, "delete 1");
                 assertEquals(List.of("Amy", "Ben"), names(rows));
+                enter(input, "filter s/Math");
+                assertEquals(0, model.getFilteredStudentList().size());
+                assertEquals(List.of("Amy", "Ben"), names(rows));
                 enter(input, "timetable d/Sun");
                 assertTrue(rows.getItems().isEmpty());
                 enter(input, "timetable");

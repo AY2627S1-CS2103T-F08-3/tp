@@ -563,7 +563,7 @@ repeated `d/`, unexpected leading text and control characters are rejected witho
 
 Feedback is `Showing weekly timetable.` or `Showing timetable for Monday.` (using the chosen full day).
 An empty view says `No weekly lessons scheduled.` or `No lessons scheduled for Monday.`.
-The timetable includes students hidden by `find`, orders Monday–Sunday then time, and retains insertion
+The timetable includes students hidden by `find` or `filter`, orders Monday–Sunday then time, and retains insertion
 order for equal slots. It does not reorder the numbered student list, change its filter/selection, reload
 or save student data. Slot changes, student renaming and deletion update the current view immediately.
 The selected day remains active until another timetable command; restarting opens the full week.
