@@ -167,6 +167,23 @@ The `Storage` component,
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonStudentDirectoryStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
+Student records keep owner-defined optional values in `StudentFields`, a JSON-node envelope keyed by each
+`StudentField` codec's stable key. `JsonAdaptedStudent` captures these values through Jackson's any-field mapping,
+so adding `payments` does not require a new top-level JSON property and edits preserve fields owned by other features.
+`PaymentHistory.FIELD` owns the `payments` key and represents one student's month-to-status map. Older records without
+the key remain unset; malformed payment JSON stays in the envelope until a payment command reads it, which avoids
+loading the directory as empty and accidentally overwriting the original file.
+
+The `payment INDEX m/YYYY-MM s/pending|completed` command changes one recorded month. The companion
+`payments m/YYYY-MM [s/pending|completed]` command lists recorded entries from the full register, omits unrecorded
+students, and does not change selection. Both commands use the same typed history codec and storage key.
+
+The payment mutation uses the same transaction boundary as other updates: the command edits a staged model, the
+complete student directory is encoded and atomically saved, and only then does `LogicManager` publish the staged
+state. A no-change result skips the save; a save error leaves the live model and UI untouched.
+
+<puml src="diagrams/PaymentPersistenceSequenceDiagram.puml" width="900" alt="Monthly payment persistence transaction" />
+
 ### Common classes
 
 Classes used by multiple components are in the `tutorconnect.commons` package.

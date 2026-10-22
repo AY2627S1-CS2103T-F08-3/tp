@@ -1,0 +1,55 @@
+@startuml
+!include style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor LOGIC_COLOR
+
+actor User
+participant LogicManager
+participant TutorConnectParser
+participant PaymentCommand
+participant "Live Model" as Model
+participant "Staged Model" as Staged
+participant Storage
+participant JsonStudentDirectoryStorage
+participant JsonSerializableStudentDirectory
+participant JsonAdaptedStudent
+participant StudentFields
+participant AtomicJsonFile
+
+User -> LogicManager: execute("payment INDEX m/YYYY-MM s/STATUS")
+LogicManager -> TutorConnectParser: parseCommand(text)
+TutorConnectParser --> LogicManager: PaymentCommand
+LogicManager -> Model: copyForCommand()
+Model --> LogicManager: staged copy
+LogicManager -> PaymentCommand: execute(staged copy)
+PaymentCommand -> Staged: replace one student's month
+PaymentCommand --> LogicManager: command result
+
+alt status changed
+  LogicManager -> Storage: saveStudentDirectory(staged copy)
+  Storage -> JsonStudentDirectoryStorage: saveStudentDirectory(directory)
+  JsonStudentDirectoryStorage -> JsonSerializableStudentDirectory: new from staged directory
+  JsonSerializableStudentDirectory -> JsonAdaptedStudent: adapt each student
+  JsonAdaptedStudent -> StudentFields: toStorage()
+  StudentFields --> JsonAdaptedStudent: detached optional-field JSON\n(including payments)
+  JsonAdaptedStudent --> JsonSerializableStudentDirectory: adapted student
+  JsonSerializableStudentDirectory --> JsonStudentDirectoryStorage: complete directory JSON model
+  JsonStudentDirectoryStorage -> AtomicJsonFile: write complete JSON
+  alt atomic write succeeds
+    AtomicJsonFile --> JsonStudentDirectoryStorage: saved
+    JsonStudentDirectoryStorage --> Storage: success
+    Storage --> LogicManager: success
+    LogicManager -> Model: publish(staged copy)
+    Model --> LogicManager: published
+    LogicManager --> User: success message
+  else write fails
+    AtomicJsonFile --> JsonStudentDirectoryStorage: IOException
+    JsonStudentDirectoryStorage --> Storage: IOException
+    Storage --> LogicManager: IOException
+    LogicManager --> User: save failure; live model and view unchanged
+  end
+else same status
+  LogicManager -> Model: publish unchanged copy
+  LogicManager --> User: no-change message; no save
+end
+@enduml
