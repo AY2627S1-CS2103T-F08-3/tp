@@ -609,6 +609,26 @@ syntax, month, status, and finally whether a student exists at that displayed in
 `payment 99 m/2026-13 s/invalid` reports the invalid month before looking up student 99. A valid but missing
 displayed index reports the no-student error after the month and status pass validation.
 
+### Reviewing monthly payment statuses: `payments`
+
+Format: `payments m/YYYY-MM [s/pending|completed]`
+
+Shows recorded payments for the requested month in student insertion order. The command lists the full register even
+after `find` or `filter`; it does not change the current selection or save data. Students with no recorded status
+for that month are excluded, including students who have a status for another month. Add the optional status filter
+to show only pending or completed records.
+
+Each row includes the student's name and phone, the month, and its status, for example:
+
+```text
+Alex Tan (+6591234567) — 2026-10: pending
+Casey Lim (+6581234567) — 2026-10: completed
+```
+
+If there are no recorded payments, or no rows match the optional status, the command displays
+`No recorded payments for YYYY-MM.` The selected-student details panel shows payment months chronologically;
+students with no history show an em dash.
+
 ### Scheduling a weekly lesson (F08): `schedule`
 
 Sets one recurring weekly lesson for the student at an index in the **currently displayed list**.

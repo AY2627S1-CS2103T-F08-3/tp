@@ -6,6 +6,7 @@ import javafx.scene.layout.VBox;
 import tutorconnect.model.student.AcademicNote;
 import tutorconnect.model.student.AssessmentHistory;
 import tutorconnect.model.student.EducationLevel;
+import tutorconnect.model.student.PaymentHistory;
 import tutorconnect.model.student.Student;
 import tutorconnect.model.student.Subject;
 import tutorconnect.model.student.WeeklySlotField;
@@ -42,6 +43,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Hourly rate: " + student.getHourlyRate().map(rate -> "S$" + rate).orElse("—"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
         AssessmentHistory.detailLines(student.getStudentFields()).forEach(this::addDetail);
+        PaymentHistory.detailLines(student.getStudentFields()).forEach(this::addDetail);
     }
 
     private void addDetail(String text) {

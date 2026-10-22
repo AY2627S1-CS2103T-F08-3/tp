@@ -245,10 +245,16 @@ status updates only its month, selects the student and leaves all other fields u
 `LogicManager` copy-for-command, save-before-publish flow makes storage failure atomic for the saved file, model,
 view and selection. Tracking remains manual; there is no invoice generation or payment processing.
 
-The User Guide documents the `payment INDEX m/YYYY-MM s/pending|completed` command, error precedence,
-transitions, no-change behavior and restart examples. Tests cover strict month/status parsing, reordered prefixes,
-index errors, malformed persisted maps, legacy records, reload, unrelated-field preservation, deletion and save
-failure. Listing and selected-student presentation are documented with their implementation issue.
+`PaymentsCommandParser` validates the required month and optional status with the shared structural parser.
+`PaymentsCommand` walks the complete student register in insertion order, so active filters do not hide recorded
+payments. It excludes unrecorded months, optionally filters by status, and leaves storage and selection untouched.
+`PaymentHistory.detailLines` renders chronological months in the selected-student details panel, with an em dash
+for no history and a safe message for malformed in-memory values. Tests cover filtered-view independence, status
+filtering, empty results, no-save behavior and details rendering.
+
+The User Guide documents both commands, error precedence, transitions, no-change behavior, listing behavior and
+restart examples. Tests cover strict month/status parsing, reordered prefixes, index errors, malformed persisted
+maps, legacy records, reload, unrelated-field preservation, deletion and save failure.
 
 ### F08: Weekly Lesson Scheduling
 

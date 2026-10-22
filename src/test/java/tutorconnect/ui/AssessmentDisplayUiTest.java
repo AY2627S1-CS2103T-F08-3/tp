@@ -72,9 +72,11 @@ public class AssessmentDisplayUiTest {
                 AssessmentRecord.of("2026-09-01", "Earlier test", "85/100")));
 
         int slot = details.indexOf("Weekly slot: —");
+        int paymentHistory = details.indexOf("Payment history: —");
         assertTrue(slot >= 0, details.toString());
+        assertTrue(paymentHistory > slot, details.toString());
         assertEquals(List.of("Assessments (2):", "1. 2026-09-01 Earlier test: 85/100",
-                "2. 2026-10-05 Later test: B+"), details.subList(slot + 1, details.size()));
+                "2. 2026-10-05 Later test: B+"), details.subList(slot + 1, paymentHistory));
     }
 
     @Test

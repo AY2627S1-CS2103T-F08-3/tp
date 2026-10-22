@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.time.YearMonth;
 import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.NavigableMap;
 import java.util.Optional;
@@ -72,6 +74,23 @@ public final class PaymentHistory {
     /** Returns an empty history for a student with no recorded months. */
     public static PaymentHistory empty() {
         return new PaymentHistory(Map.of());
+    }
+
+    /** Formats recorded months in chronological order for the selected-student details panel. */
+    public static List<String> detailLines(StudentFields fields) {
+        Optional<PaymentHistory> history;
+        try {
+            history = fields.get(FIELD);
+        } catch (IllegalArgumentException exception) {
+            return List.of("Payment history: stored data could not be read");
+        }
+        if (history.isEmpty() || history.get().statuses.isEmpty()) {
+            return List.of("Payment history: —");
+        }
+        List<String> lines = new ArrayList<>();
+        lines.add("Payment history:");
+        history.get().statuses.forEach((month, status) -> lines.add(month + ": " + status));
+        return List.copyOf(lines);
     }
 
     /** Parses a strict four-digit year and two-digit calendar month. */
