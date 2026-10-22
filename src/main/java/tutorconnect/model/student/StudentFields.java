@@ -57,6 +57,13 @@ public final class StudentFields {
         return new StudentFields(copy);
     }
 
+    /** Removes one optional value without changing unrelated or future fields. */
+    public StudentFields without(StudentField<?> field) {
+        Map<String, JsonNode> copy = toStorage();
+        copy.remove(requireNonNull(field).key());
+        return new StudentFields(copy);
+    }
+
     /** Display fallback until each field owner supplies richer formatting. Unset fields use an em dash. */
     public String display(String key) {
         JsonNode value = values.get(key);
