@@ -27,6 +27,11 @@ public final class StudentParameters {
         return parseRequired(input, false, labels);
     }
 
+    /** Parses required single-token values without a positional student index. */
+    public static Map<String, String> parseSingleValues(String input, String... labels) throws ParseException {
+        return parseRequired(input, true, labels);
+    }
+
     /**
      * Parses one positional index followed by required single-token parameters, preserving raw field values.
      */
