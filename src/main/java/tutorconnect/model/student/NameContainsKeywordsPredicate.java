@@ -1,9 +1,10 @@
 package tutorconnect.model.student;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.function.Predicate;
 
-import tutorconnect.commons.util.StringUtil;
+import tutorconnect.commons.util.StudentText;
 import tutorconnect.commons.util.ToStringBuilder;
 
 /**
@@ -13,13 +14,17 @@ public class NameContainsKeywordsPredicate implements Predicate<Student> {
     private final List<String> keywords;
 
     public NameContainsKeywordsPredicate(List<String> keywords) {
-        this.keywords = keywords;
+        this.keywords = keywords.stream().map(NameContainsKeywordsPredicate::comparisonKey).toList();
     }
 
     @Override
     public boolean test(Student student) {
-        return keywords.stream()
-                .anyMatch(keyword -> StringUtil.containsWordIgnoreCase(student.getName().fullName, keyword));
+        String name = comparisonKey(student.getName().fullName);
+        return keywords.stream().anyMatch(keyword -> !keyword.isEmpty() && name.contains(keyword));
+    }
+
+    private static String comparisonKey(String value) {
+        return StudentText.normalize(value).toLowerCase(Locale.ROOT);
     }
 
     @Override

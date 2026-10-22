@@ -189,10 +189,16 @@ A repeated single-value prefix reports `Multiple values specified for the follow
 A duplicate reports `This student already exists in the address book.` Invalid indices and save failures use the
 standard messages shown in the other command sections.
 
-The legacy `edit` parser checks index syntax, repeated prefixes, then values in name/phone/email/address/tag order,
-before resolving the row and checking duplicates. It recognizes only the prefixes listed above: unrecognized
-prefix-like text can be treated as part of a value, rather than producing an unknown-parameter error.
-Check the feedback after editing, especially when entering an address containing slashes.
+`edit` rejects control characters and line breaks before trimming values. Unknown whitespace-delimited
+ASCII-letter prefixes, such as `x/` or `wrong/`, report `Error: Unknown parameter: PREFIX.`;
+extra text between the index and the first prefix reports `Error: Unexpected text after command.`
+Unicode spaces are accepted between tokens. Embedded address slashes, such as `12/3 Street`, remain value text.
+
+Structural errors are checked before repeated single-value prefixes, index syntax, and values in
+name/phone/email/address/tag order. The row is then resolved and duplicate identity checked before saving.
+An arbitrarily large positive index reports a missing row without overflowing. Failed edits preserve the
+saved file, student list, filter, selection and details. A lone blank `t/` still clears tags; repeated `t/`
+values must each contain a valid tag.
 
 Examples:
 
@@ -318,18 +324,45 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-  Words are separated by whitespace: `Anne` does not match the single word `Anne-Marie`.
+* Partial names match anywhere in the name: `Han` matches `Hans`, and `Anne` matches `Anne-Marie`.
+  Names and keywords use Unicode NFKC normalization and locale-independent lowercase comparison.
+  Full-width letters and composed/decomposed accents match; accents are not removed (`Jose` differs from `José`).
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 * Results retain insertion order, are renumbered from 1, and clear selection. Feedback is `N student(s) listed!`.
-  `find` searches the in-memory register without saving or reloading the file; use `list` to reload/reset the view.
-* Supply at least one keyword. Keywords are case-insensitive but do not receive the NFKC normalization applied
-  to stored names, so type the spelling displayed in the register rather than relying on full-width variants.
+  Each `find` searches the full in-memory register, replacing the previous query without saving or reloading
+  the file; use `list` to reload/reset the view. Zero matches show `0 student(s) listed!` and `No students found.`.
+* Supply at least one whitespace-separated keyword. Unicode spaces are supported, as are existing tab/newline
+  separators. Hidden format characters are rejected without changing the current view or selection.
 
 Examples:
 
 * `find John` returns `john` and `John Doe`
 * With the initial sample data, `find alex david` returns `Alex Yeoh` and `David Li`, with `2 student(s) listed!`.
+
+### Filtering students by level or subject: `filter`
+
+Format: `filter [l/LEVEL] [s/SUBJECT]`
+
+Supply at least one criterion, with each lowercase prefix at most once, in either order.
+Level accepts the same canonical values and aliases as `level`, such as `p1`, `sec4`, `s4`, and `jc2`.
+Subject matches the **entire label**, ignoring case and normalizing Unicode (NFKC) and repeated spaces:
+`s/h2 math` matches `H2 Math`, while `s/Math` does not. Both criteria must match when supplied together (AND).
+Students with an unset or unreadable requested field do not match.
+
+* `filter l/sec4` lists Secondary 4 students.
+* `filter s/H2 Math` lists students studying H2 Math.
+* `filter l/jc2 s/H2 Math` lists only JC 2 students studying H2 Math.
+
+Each filter starts from the full in-memory register and replaces the previous search/filter. Results retain
+stored order and are renumbered from 1; selection clears. Feedback is `N student(s) listed!`; zero matches
+show `0 student(s) listed!` and `No students found.`. Use `list` to reload and restore the full register.
+Filtering neither changes nor saves student records and does not restrict the consolidated weekly schedule.
+Use the displayed result row for subsequent indexed commands.
+
+Unknown/repeated prefixes, bare text before criteria, blank/invalid values and control characters are rejected
+without changing the view or selection. For example, `filter` reports
+`Error: Supply at least one filter criterion: l/LEVEL or s/SUBJECT.`; `filter l/p1 l/p2` reports
+`Error: Parameter l/ may be specified only once.`. Level and subject values use their existing validation rules.
 
 ### Deleting a student: `delete`
 
@@ -421,6 +454,63 @@ To check persistence, set a subject, close and reopen the app, then select the s
 appear unchanged on the card and in the details panel. Entering an equivalent value such as `h2   MATH`
 after saving `H2 Math` reports no change and keeps `H2 Math` as the display value.
 
+### Keeping a student's note (story 13): `note` and `clearnote`
+
+Format: `note INDEX m/NOTE` and `clearnote INDEX`
+
+Keeps one freeform note per student, such as `weak in calculus, short attention span`, so you can read it before
+the next lesson. `note` sets the note, or replaces the current one. `clearnote` removes it. `INDEX` is the
+**currently displayed**, 1-based index, so after `find Betsy` the index `1` is the first matching student.
+
+Examples:
+* `note 1 m/Weak in calculus; needs more practice on integration`
+* `note 2 m/Short attention span - keep exercises under 10 minutes`
+* `clearnote 1`
+
+The note is everything after `m/`. It can hold ordinary punctuation and symbols, including slashes, so
+`he/she`, `and/or`, `w/ parent` and `speed in m/s` are all fine. Only the text between the index and `m/` is
+checked: anything other than the index there is an error.
+
+* The note is normalized first: Unicode NFKC, trimmed, and repeated spaces collapsed. Compatibility characters
+  are replaced by their plain forms, so `x²` is stored as `x2` and full-width letters become ordinary letters.
+* It must have **1 to 500 characters** after that. Control characters, zero-width and other invisible format
+  characters, and line breaks are rejected, because the note is a single line.
+* Capital letters are kept as typed. Two notes are the same only if they match exactly, so `weak in calculus`
+  replaces `Weak in calculus`.
+* A student has at most one note. To remove it, use `clearnote`; `note 1 m/` with nothing after `m/` is an
+  invalid note, not a clear.
+
+The note appears as `Note: ...` in the selected-student details, wrapped over several lines if it is long (scroll
+the details panel to read all of it). A student with no note shows an em dash (`—`). Setting or clearing a note
+selects the student and refreshes the details; it does not change any other field. Deleting a student deletes
+their note, and editing a student's contact details keeps it.
+
+| Outcome | Message |
+| --- | --- |
+| Note set | `Note set for NAME.` |
+| Note replaced | `Note updated for NAME.` |
+| Same note again | `Note for NAME is already up to date.` |
+| Note cleared | `Note cleared for NAME.` |
+| `clearnote` on a student with no note | `NAME has no note to clear.` |
+| Unexpected text before `m/`, or after the index in `clearnote` | `Error: Unexpected text after command.` |
+| Another prefix before `m/`, e.g. `note 1 x/y m/text` | `Error: Unknown parameter: x/.` |
+| Missing `m/`, e.g. `note 1` | `Error: Missing required parameter: m/NOTE.` |
+| `clearnote` without an index | `Error: Missing required parameter: INDEX.` |
+| Invalid or missing index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid note | `Error: Invalid note. Use 1-500 characters with no control characters or line breaks.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown for `note`: unexpected text or an unknown prefix, then a missing `m/`,
+then the index syntax, then the note, then whether the row exists. So `note 0 m/text` reports the invalid index,
+while `note 99 m/` reports the invalid note. A failed command, including a failed save, changes nothing: the
+saved file, the student list, the filter and the selection all stay as they were. Setting the same note again
+or clearing an empty note saves nothing.
+
+The note is saved with the student as `"academicNote": "..."` in the data file and survives a restart. Files
+saved before notes existed load normally, with no note. If you edit the file by hand and the value is not a
+text, `note` treats it as no note and replaces it, and `clearnote` removes it. Back up the file before editing.
+
 ### Setting a student's hourly rate (F07): `rate`
 
 Format: `rate INDEX r/RATE`
@@ -507,7 +597,7 @@ The **Weekly schedule** summary shows all scheduled students, including students
 It orders entries Monday–Sunday, then by time, then by student insertion order for ties. It does not reorder
 the student register. Deleting a student also removes their entry from this summary and saved schedule.
 This feature supports one slot per student; lesson durations, multiple slots and conflict detection are outside its scope.
-There is no command to clear only a weekly slot; blank day/time values do not remove it.
+Use `unschedule INDEX` to remove only the weekly slot; blank day/time values do not remove it.
 
 Outcome | Status message
 --- | ---
@@ -526,6 +616,22 @@ Structural errors are reported before values. For example, omitting `d/` reports
 `Error: Unknown parameter: x/.` Extra unprefixed tokens report `Error: Unexpected text after command.`
 Values are checked in order: index syntax, day, time, then whether the displayed row exists.
 
+### Viewing a daily or weekly timetable: `timetable`
+
+Use `timetable` for the full week or `timetable d/DAY` for one weekday in the existing schedule panel.
+Examples: `timetable d/Mon`, `timetable d/sUNDAY`, then `timetable` to return to the week.
+Day names and three-letter aliases use the same normalization as `schedule`. Prefix `d/` is lowercase
+and may appear only once. Blank or invalid days report the existing invalid-day error; unknown prefixes,
+repeated `d/`, unexpected leading text and control characters are rejected without changing the view.
+
+Feedback is `Showing weekly timetable.` or `Showing timetable for Monday.` (using the chosen full day).
+An empty view says `No weekly lessons scheduled.` or `No lessons scheduled for Monday.`.
+The timetable includes students hidden by `find` or `filter`, orders Monday–Sunday then time, and retains insertion
+order for equal slots. It does not reorder the numbered student list, change its filter/selection, reload
+or save student data. Slot changes, student renaming and deletion update the current view immediately.
+The selected day remains active until another timetable command; restarting opens the full week.
+This is a recurring teaching timetable, not dated bookings, travel planning or conflict detection.
+
 ### Recording exam and test results (story 12): `assess`, `assessments` and `unassess`
 
 Formats: `assess INDEX d/DATE t/TITLE g/GRADE`, `assessments INDEX` and `unassess INDEX i/RECORD`
@@ -536,10 +642,10 @@ it again. `INDEX` is the **currently displayed**, 1-based index, so after `find 
 matching student. Prefixes may come in any order, and each may appear once.
 
 Examples:
-* `assess 1 d/2026-10-01 t/Math Midterm g/85/100`
-* `assess 1 g/A1 d/2026-12-05 t/Chemistry Final`
-* `assessments 1`
-* `unassess 1 i/2`
+- `assess 1 d/2026-10-01 t/Math Midterm g/85/100`
+- `assess 1 g/A1 d/2026-12-05 t/Chemistry Final`
+- `assessments 1`
+- `unassess 1 i/2`
 
 | Part | Rule |
 | --- | --- |
@@ -602,7 +708,6 @@ the saved file, the student list, the filter and the selection all stay as they 
 list can no longer be read (for example an impossible date, a duplicate, or an extra property), the commands
 report it and leave the file untouched rather than overwrite your data: correct or remove the entry, then
 restart. Back up the file before editing.
-
 ### Clearing all entries: `clear`
 
 Permanently removes **all students and their optional fields**, including students hidden by a filter and their
@@ -615,6 +720,26 @@ Normal success feedback is `Address book has been cleared!`. A save failure repo
 
 Successful clearing also clears the selected row and details. A failed save preserves the register,
 filter, selection and details. You do not need to run `list` before `clear`.
+
+### Removing a weekly lesson: `unschedule`
+
+Format: `unschedule INDEX`. For example, `unschedule 1` removes the weekly slot of the first student
+in the currently displayed list, including after `find`. It does not delete the student or change
+their name, contacts, other optional fields, internal identity or position in the register.
+
+Success reports `Weekly lesson removed for NAME: DAY TIME.`, selects the student, clears their slot
+to an em dash and removes their schedule entry immediately. The removal persists across restart.
+If no slot exists, `No weekly lesson is scheduled for NAME.` is a successful no-change result:
+no save and no selection change. Different students sharing a slot remain unaffected.
+
+Supply one positive displayed index without leading zeroes. Missing, zero, negative or malformed
+indices report `Error: Invalid index. Enter a positive whole number without leading zeroes.`
+An oversized or out-of-range valid index reports `Error: No student exists at index INDEX.`
+Unknown prefixes report `Error: Unknown parameter: PREFIX.`; extra bare text and controls report
+`Error: Unexpected text after command.` Structure is checked before index syntax and existence.
+On a save failure, `Error: Changes could not be saved. No changes were made.` preserves the previous
+complete slot, file bytes, student list, filter, selection and details. Retry after resolving the
+storage problem. Use `schedule` to assign a slot again; there is no undo history.
 
 ### Exiting the program: `exit`
 
@@ -706,12 +831,17 @@ Action     | Format, Examples
 **Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Set guardian contact** | `guardian INDEX g/PHONE`<br> e.g., `guardian 1 g/+65 9123 4567`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Filter** | `filter [l/LEVEL] [s/SUBJECT]`<br> e.g., `filter l/sec4 s/Math`
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
+**Remove weekly lesson** | `unschedule INDEX`<br> e.g., `unschedule 1`
+**View timetable** | `timetable [d/DAY]`<br> e.g., `timetable d/Mon`
 **Add assessment** | `assess INDEX d/DATE t/TITLE g/GRADE`<br> e.g., `assess 1 d/2026-10-01 t/Math Midterm g/85/100`
 **List assessments** | `assessments INDEX`<br> e.g., `assessments 1`
 **Remove assessment** | `unassess INDEX i/RECORD`<br> e.g., `unassess 1 i/2`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
+**Set note** | `note INDEX m/NOTE`<br> e.g., `note 1 m/Weak in calculus`
+**Clear note** | `clearnote INDEX`<br> e.g., `clearnote 1`
 **Help**   | `help`
 **Exit**   | `exit`

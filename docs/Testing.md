@@ -48,6 +48,19 @@ This project has three types of tests:
 
 ## F01–F08 acceptance
 
+Student discovery (F03, stories 10 and 15) adds focused `FindCommandParserTest`,
+`NameContainsKeywordsPredicateTest`, `FilterCommandParserTest`, `FilterCommandTest` and
+`StudentCriteriaPredicateTest` coverage. Run `StudentDiscoveryIntegrationTest` for real command parsing,
+full-register query replacement, all seven indexed mutation targets and persisted UUIDs, no-save queries,
+error preservation, and schedule independence. `StudentDiscoveryUiTest` runs with `F01_UI_TESTS=true`
+and verifies rendered result numbering, empty placeholders and selection through the command box.
+
+Manual discovery check: add three students, give rows 2 and 3 the same level, then `filter l/LEVEL`.
+The matching rows should be numbered 1 and 2 in stored order. Change the first displayed student's level
+to a different level: only that student changes, disappears from the current filter, and selection clears.
+Use a partial-name `find` to retrieve that student from the full register, then `list` to restore all rows.
+Check the weekly schedule remains independent throughout.
+
 Coordination is tracked in [acceptance issue #79](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/79).
 Each owner remains responsible for their feature's tests and fixes. The final integrated acceptance snapshot
 is `f08-04-ui-schedule` at `93ad5cf0`, combining master `7b6cc481`, scheduling integration `9f7146e6`
@@ -294,3 +307,75 @@ data path and no application exception, then the smoke process was stopped. Comp
 flows were verified through the real-window tests, not an interactive packaged-JAR session. The captured
 guardian replacement/filtered view was inspected; selection and details were readable. Existing low-contrast
 weekly-summary styling remains outside this naming change. JavaFX emitted its native-access warnings.
+
+## v1.4 release handoff (22 October 2026)
+
+Tracking issue [#139](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/139). The course calls the Week 10 release
+v1.4 ([requirements](https://nus-cs2103-ay2627-s1.github.io/website/schedule/week10/project.html)): publish a
+release with a JAR and notes on what is new since the last release. Issues and PRs for this work also use the
+v1.4 milestone. The original task asked for v1.3 by mistake and the requester corrected it.
+The previous release is [v1.3](https://github.com/AY2627S1-CS2103T-F08-3/tp/releases/tag/v1.3) at
+`529f1db3` (asset `addressbook.jar`). The in-app `TutorConnectApp.VERSION` string still reads `V0.5.1`, inherited
+from AB3; it is not a release number.
+
+### Changes since v1.3
+
+Merged into team master after `v1.3` (`git log --first-parent v1.3..master`):
+
+Area | PRs
+--- | ---
+Product rename: `tutorconnect` packages, `Student`/`StudentDirectory` classes, artifact `tutorconnect.jar` | #128
+Reproducible Gradle build, Java 25 toolchain, JAR manifest/resource check | #131
+Command internals simplified; `clear` no longer keeps a deleted selection | #130
+Partial, case-insensitive name `find` (story 15) | #136
+`filter [l/LEVEL] [s/SUBJECT]` by level and subject | #143, acceptance #149
+Malformed `edit` parameters rejected before mutation | #146
+Unknown optional JSON fields preserved across contact commands | #150
+`note INDEX m/NOTE` and `clearnote INDEX` (story 13) | #151, DG #158
+`timetable [d/DAY]` daily/weekly view (story 14) | #148
+`unschedule INDEX` removes a weekly slot only | #155
+UI class diagram and scheduling Developer Guide sections | #159
+User Guide alignment and fork-based workflow docs | #127, #129
+
+The data file stays at `data/addressbook.json` with its `persons` key, so v1.3 data loads unchanged.
+
+### Release candidate checked on 22 October 2026
+
+Item | Result
+--- | ---
+Source | team master `45cf8cf8a6a4b75dcfa1caafad8848dee470149c` (includes #159) and `df3494c8911306dbcc552b8c92618509cebcc62f`; #159 changed docs only and both built byte-identical JARs. Open PRs are excluded
+Toolchain | macOS 26 (Darwin 25.6), Zulu Java 25.0.3 FX, Gradle wrapper
+Checks | `F06_UI_TESTS=true python3 .agents/skills/test-ui/scripts/run-tp-tests.py --repo .`: **561 tests, 0 failures, errors or skips** with F01/F06/F08 desktop tests, Checkstyle, coverage, `shadowJar`, JAR verification, `.github/run-checks.sh` and `git diff --check`
+Artifact | `build/libs/tutorconnect.jar`, 12,584,447 bytes, SHA-256 `6b6137a94bcf235c9b3bcb6278f97a931b571069f337abb76e406f33f7ecda4f`
+JAR smoke | Launched from an empty temporary folder: created `preferences.json`, chose `data/addressbook.json` with sample students, reached `Starting UI...` and stayed running until stopped, with no exceptions
+Not covered | Typing commands into the packaged JAR (OS automation permission was unavailable); command flows were exercised through the real JavaFX window in `TimetableUiTest`, `WeeklyScheduleUiTest` and other desktop tests
+
+This candidate is evidence only. Rebuild from the final merged master before publishing; the hash above will
+not match a JAR built from a later commit.
+
+### Final integration and release checklist
+
+1. Review and merge the remaining v1.4 PRs manually; decide whether open PRs such as #153 (assessments)
+   are in this release. Master's DG already describes assessment history from #158,
+   while the commands are only in #153. Merge #153 or adjust that DG section before tagging.
+2. Sync: `git fetch team`, fast-forward local `master` to `team/master`, and push it to your fork.
+3. From a clean checkout of that commit, run the full desktop-enabled checks:
+
+   ```sh
+   F06_UI_TESTS=true python3 .agents/skills/test-ui/scripts/run-tp-tests.py --repo .
+   ```
+
+   On Windows, set `F01_UI_TESTS`, `F06_UI_TESTS` and `F08_UI_TESTS` to `true`, then run
+   `.\gradlew.bat clean check coverage shadowJar`. Require zero failures, errors and skips.
+4. Record `git rev-parse HEAD` and `shasum -a 256 build/libs/tutorconnect.jar` (`certutil -hashfile` on Windows).
+5. Copy the JAR to a new empty folder, create `data/addressbook.json` containing `{"persons":[]}`, run
+   `java -jar tutorconnect.jar`, and try:
+   `add n/Zoe p/81234567 a/21 Clementi Ave`, `add n/Amy p/82345678 a/22 Clementi Ave`,
+   `schedule 1 d/Sun t/23:59`, `schedule 2 d/Mon t/09:00`, `timetable d/mon` (Amy only),
+   `find zo` (register shows Zoe; timetable still shows Amy), `timetable` (Amy then Zoe), `list`,
+   `level 2 l/Sec4`, `filter l/sec4`, `unschedule 1` (Amy's slot cleared, Zoe kept), `note 1 m/Revise algebra`,
+   `timetable d/Funday` (error, view unchanged). Close and relaunch; `list` must show the same data.
+6. Publish release `v1.4` on the team repository from that exact commit, attach `tutorconnect.jar` and its
+   checksum, and use the notes from #139 updated with the final SHA, test totals and any PRs merged after
+   `45cf8cf8`. Mention that the JAR name changed from `addressbook.jar` and the data path did not.
+7. Close #139 after the release is published; until then, final release verification is pending.
