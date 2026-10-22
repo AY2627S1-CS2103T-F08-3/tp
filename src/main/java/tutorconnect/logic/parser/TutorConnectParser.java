@@ -85,8 +85,8 @@ public class TutorConnectParser {
             case FilterCommand.COMMAND_WORD -> new FilterCommandParser().parse(arguments);
             case ListCommand.COMMAND_WORD -> new ListCommandParser().parse(arguments);
             case ScheduleCommand.COMMAND_WORD -> new ScheduleCommandParser().parse(arguments);
-            case UnscheduleCommand.COMMAND_WORD -> new UnscheduleCommandParser().parse(arguments);
             case TimetableCommand.COMMAND_WORD -> new TimetableCommandParser().parse(arguments);
+            case UnscheduleCommand.COMMAND_WORD -> new UnscheduleCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
             default -> {
