@@ -4,6 +4,7 @@ import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
 import tutorconnect.model.student.AcademicNote;
+import tutorconnect.model.student.AssessmentHistory;
 import tutorconnect.model.student.EducationLevel;
 import tutorconnect.model.student.Student;
 import tutorconnect.model.student.Subject;
@@ -40,6 +41,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Note: " + AcademicNote.display(student.getStudentFields()));
         addDetail("Hourly rate: " + student.getHourlyRate().map(rate -> "S$" + rate).orElse("—"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
+        AssessmentHistory.detailLines(student.getStudentFields()).forEach(this::addDetail);
     }
 
     private void addDetail(String text) {

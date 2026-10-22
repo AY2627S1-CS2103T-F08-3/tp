@@ -9,6 +9,8 @@ import java.util.regex.Pattern;
 import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.AddCommand;
+import tutorconnect.logic.commands.AssessCommand;
+import tutorconnect.logic.commands.AssessmentsCommand;
 import tutorconnect.logic.commands.ClearCommand;
 import tutorconnect.logic.commands.ClearNoteCommand;
 import tutorconnect.logic.commands.Command;
@@ -26,6 +28,7 @@ import tutorconnect.logic.commands.RateCommand;
 import tutorconnect.logic.commands.ScheduleCommand;
 import tutorconnect.logic.commands.SubjectCommand;
 import tutorconnect.logic.commands.TimetableCommand;
+import tutorconnect.logic.commands.UnassessCommand;
 import tutorconnect.logic.commands.UnscheduleCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
 
@@ -78,6 +81,9 @@ public class TutorConnectParser {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
+            case AssessCommand.COMMAND_WORD -> new AssessCommandParser().parse(arguments);
+            case AssessmentsCommand.COMMAND_WORD -> new AssessmentsCommandParser().parse(arguments);
+            case UnassessCommand.COMMAND_WORD -> new UnassessCommandParser().parse(arguments);
             case SubjectCommand.COMMAND_WORD -> new SubjectCommandParser().parse(arguments);
             case GuardianCommand.COMMAND_WORD -> new GuardianCommandParser().parse(arguments);
             case RateCommand.COMMAND_WORD -> new RateCommandParser().parse(arguments);
