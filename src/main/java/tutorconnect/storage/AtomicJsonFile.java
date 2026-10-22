@@ -8,23 +8,32 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.nio.file.StandardOpenOption;
+import java.util.logging.Logger;
+
+import tutorconnect.commons.core.LogsCenter;
 
 /** Saves complete JSON through a sibling temporary file and atomic replacement, with no unsafe fallback. */
 public class AtomicJsonFile {
+    private static final Logger logger = LogsCenter.getLogger(AtomicJsonFile.class);
+
     /** An unsupported atomic move fails without changing the old file. */
     public void write(Path destination, String json) throws IOException {
         Path target = destination.toAbsolutePath();
         Files.createDirectories(target.getParent());
         Path temporary = Files.createTempFile(target.getParent(), ".student-save-", ".tmp");
+        logger.fine("Writing " + json.length() + " characters to " + target + " via " + temporary.getFileName());
         try {
             writeTemporary(temporary, json);
             replace(temporary, target);
+            logger.fine("Atomically replaced " + target);
         } finally {
             // Do not report a failed transaction after a successful replacement due to cleanup errors.
             try {
                 Files.deleteIfExists(temporary);
-            } catch (IOException ignored) {
+            } catch (IOException cleanupFailure) {
                 // A leftover temporary file is not a published student profile.
+                logger.warning("Could not delete temporary save file " + temporary + ": "
+                        + cleanupFailure.getMessage());
             }
         }
     }
