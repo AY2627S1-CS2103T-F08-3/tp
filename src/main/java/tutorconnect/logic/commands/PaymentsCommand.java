@@ -31,8 +31,14 @@ public class PaymentsCommand extends Command {
     public CommandResult execute(Model model) throws CommandException {
         List<String> rows = new ArrayList<>();
         for (Student student : model.getStudentDirectory().getStudentList()) {
-            Optional<PaymentStatus> recorded = student.getStudentFields().get(PaymentHistory.FIELD)
-                    .flatMap(history -> history.getStatus(month));
+            Optional<PaymentStatus> recorded;
+            try {
+                recorded = student.getStudentFields().get(PaymentHistory.FIELD)
+                        .flatMap(history -> history.getStatus(month));
+            } catch (IllegalArgumentException exception) {
+                throw new CommandException(String.format(PaymentHistory.MESSAGE_UNREADABLE, student.getName()),
+                        exception);
+            }
             if (recorded.isEmpty() || statusFilter.filter(expected -> expected != recorded.get()).isPresent()) {
                 continue;
             }

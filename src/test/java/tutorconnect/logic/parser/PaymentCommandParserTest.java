@@ -8,6 +8,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import tutorconnect.commons.core.index.Index;
 import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.PaymentCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
@@ -19,7 +20,7 @@ public class PaymentCommandParserTest {
 
     @Test
     public void parse_reorderedPrefixesAndNormalizedValues_sameCommand() throws Exception {
-        PaymentCommand expected = new PaymentCommand(VisibleIndex.parse("1"), YearMonth.of(2026, 10),
+        PaymentCommand expected = new PaymentCommand(Index.fromOneBased(1), YearMonth.of(2026, 10),
                 PaymentStatus.PENDING);
         for (String args : List.of(" 1 m/2026-10 s/pending", " 1 s/pending m/2026-10",
                 "  1   m/2026-10   s/pending  ", "\u00a0１ m/２０２６-１０ s/pending")) {
@@ -61,7 +62,7 @@ public class PaymentCommandParserTest {
     @Test
     public void parse_oversizedIndex_isRetainedForSafeResolution() throws Exception {
         String oversized = "9".repeat(100);
-        assertEquals(new PaymentCommand(VisibleIndex.parse(oversized), YearMonth.of(2026, 10),
+        assertEquals(new PaymentCommand(Index.fromOneBased(oversized), YearMonth.of(2026, 10),
                 PaymentStatus.COMPLETED), parser.parse(oversized + " m/2026-10 s/completed"));
     }
 

@@ -243,7 +243,9 @@ syntax before the month and status, then `PaymentCommand` resolves the row again
 Setting an identical typed status returns a no-change result without staging a mutation. A new or replacement
 status updates only its month, selects the student and leaves all other fields untouched. The existing
 `LogicManager` copy-for-command, save-before-publish flow makes storage failure atomic for the saved file, model,
-view and selection. Tracking remains manual; there is no invoice generation or payment processing.
+view and selection. The storage adapter retains payment JSON without decoding it during startup, so malformed history
+cannot cause the whole directory to load empty and be overwritten later. Payment commands decode on access and
+report the affected student without saving. Tracking remains manual; there is no invoice generation or payment processing.
 
 `PaymentsCommandParser` validates the required month and optional status with the shared structural parser.
 `PaymentsCommand` walks the complete student register in insertion order, so active filters do not hide recorded

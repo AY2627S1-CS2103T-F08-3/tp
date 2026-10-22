@@ -586,7 +586,9 @@ A missing month entry means **unrecorded**; it is different from a recorded `pen
 have one status per month. Replacing a status affects only that month, and months and students are independent.
 The command is manual status tracking only; it does not create invoices or process payments. Payment history is
 stored with the student's UUID and survives edits and restart. Deleting the student deletes the attached history.
-Older records without payment history load with none recorded. Malformed stored payment history is rejected.
+Older records without payment history load with none recorded. Malformed payment data remains untouched on load; a
+payment command reports the affected student and tells you to correct or remove its `payments` entry before changing
+or listing payment history.
 
 On a real change, the student is selected and details refresh. An identical status is a successful no-change
 result with no save; errors and save failures preserve the existing selection and data.

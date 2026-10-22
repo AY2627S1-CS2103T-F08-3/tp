@@ -16,7 +16,6 @@ import org.junit.jupiter.api.io.TempDir;
 import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-import tutorconnect.commons.exceptions.DataLoadingException;
 import tutorconnect.commons.util.JsonUtil;
 import tutorconnect.model.StudentDirectory;
 import tutorconnect.model.student.PaymentHistory;
@@ -68,7 +67,7 @@ public class PaymentHistoryPersistenceTest {
     }
 
     @Test
-    public void readMalformedPaymentHistory_rejectsRecordWithoutChangingFile() throws Exception {
+    public void readMalformedPaymentHistory_preservesRecordAndFileForSafeErrorHandling() throws Exception {
         Path file = directory.resolve("malformed.json");
         ObjectNode record = JsonUtil.fromJsonString(JsonUtil.toJsonString(new JsonAdaptedStudent(ALICE)),
                 ObjectNode.class);
@@ -77,8 +76,9 @@ public class PaymentHistoryPersistenceTest {
                 .set("persons", JsonNodeFactory.instance.arrayNode().add(record)).toString();
         Files.writeString(file, content);
 
-        assertThrows(DataLoadingException.class, ()
-                -> new JsonStudentDirectoryStorage(file).readStudentDirectory());
+        Student loaded = new JsonStudentDirectoryStorage(file).readStudentDirectory().orElseThrow()
+                .getStudentList().getFirst();
+        assertThrows(IllegalArgumentException.class, () -> loaded.getStudentFields().get(PaymentHistory.FIELD));
         assertEquals(content, Files.readString(file));
     }
 }

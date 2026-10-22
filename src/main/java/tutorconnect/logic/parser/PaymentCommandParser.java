@@ -2,6 +2,7 @@ package tutorconnect.logic.parser;
 
 import java.time.YearMonth;
 
+import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.PaymentCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
@@ -17,7 +18,11 @@ public class PaymentCommandParser implements Parser<PaymentCommand> {
         }
         StudentParameters.IndexedParameters parameters = StudentParameters.parseIndexed(args,
                 "m/MONTH", "s/STATUS");
-        VisibleIndex index = VisibleIndex.parse(StudentText.normalize(parameters.index()));
+        String rawIndex = StudentText.normalize(parameters.index());
+        if (!rawIndex.matches("[1-9][0-9]*")) {
+            throw new ParseException(VisibleIndex.MESSAGE_INVALID);
+        }
+        Index index = Index.fromOneBased(rawIndex);
         YearMonth month;
         PaymentStatus status;
         try {

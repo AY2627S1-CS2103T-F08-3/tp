@@ -63,9 +63,7 @@ public class TutorConnectParser {
         final String arguments = matcher.group("arguments");
         if ((commandWord.equals(ScheduleCommand.COMMAND_WORD)
                 || commandWord.equals(TimetableCommand.COMMAND_WORD)
-                || commandWord.equals(UnscheduleCommand.COMMAND_WORD)
-                || commandWord.equals(PaymentCommand.COMMAND_WORD)
-                || commandWord.equals(PaymentsCommand.COMMAND_WORD))
+                || commandWord.equals(UnscheduleCommand.COMMAND_WORD))
                 && StudentText.hasProhibitedCharacters(userInput)) {
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }

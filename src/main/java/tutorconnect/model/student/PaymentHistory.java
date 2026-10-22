@@ -19,6 +19,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 /** Immutable payment statuses recorded for a student's months. */
 public final class PaymentHistory {
+    public static final String MESSAGE_UNREADABLE =
+            "Error: The stored payment history for %1$s could not be read. "
+                    + "Correct or remove the \"payments\" entry in the data file.";
+    public static final String MESSAGE_UNREADABLE_DISPLAY = "Payment history: stored data could not be read";
     public static final String MESSAGE_INVALID_MONTH = "Error: Invalid month. Enter a valid month in YYYY-MM format.";
     private static final String MESSAGE_INVALID_HISTORY =
             "Payment history must map YYYY-MM months to pending or completed.";
@@ -82,7 +86,7 @@ public final class PaymentHistory {
         try {
             history = fields.get(FIELD);
         } catch (IllegalArgumentException exception) {
-            return List.of("Payment history: stored data could not be read");
+            return List.of(MESSAGE_UNREADABLE_DISPLAY);
         }
         if (history.isEmpty() || history.get().statuses.isEmpty()) {
             return List.of("Payment history: —");

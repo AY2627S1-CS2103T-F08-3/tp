@@ -128,6 +128,30 @@ public class PaymentIntegrationTest {
                 .noneMatch(student -> student.getId().equals(target.getId())));
     }
 
+    @Test
+    public void malformedStoredHistory_isReportedWithoutSavingOrChangingSelection() throws Exception {
+        ModelManager model = new ModelManager();
+        Student student = new StudentBuilder().withName("Alex Tan").withPhone("91234567").build()
+                .withStudentFields(new StudentFields(Map.of("payments", TextNode.valueOf("bad data"))));
+        model.addStudent(student);
+        model.selectStudent(student.getId());
+        Path file = directory.resolve("malformed-payments.json");
+        JsonStudentDirectoryStorage storage = new JsonStudentDirectoryStorage(file);
+        storage.saveStudentDirectory(model.getStudentDirectory());
+        String saved = Files.readString(file);
+        Logic logic = logic(model, storage);
+        String expected = "Error: The stored payment history for Alex Tan could not be read. "
+                + "Correct or remove the \"payments\" entry in the data file.";
+
+        assertEquals(expected, assertThrows(CommandException.class, ()
+                -> logic.execute("payment 1 m/2026-10 s/pending")).getMessage());
+        assertEquals(expected, assertThrows(CommandException.class, ()
+                -> logic.execute("payments m/2026-10")).getMessage());
+        assertEquals(saved, Files.readString(file));
+        assertEquals(student, model.getStudentDirectory().getStudentList().getFirst());
+        assertEquals(student.getId(), model.getSelectedStudentId());
+    }
+
     private ModelManager model() {
         StudentFields fields = new StudentFields(Map.of("subject", TextNode.valueOf("preserve subject")));
         ModelManager model = new ModelManager();
