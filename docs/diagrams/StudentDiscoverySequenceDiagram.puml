@@ -1,0 +1,31 @@
+@startuml
+actor Tutor
+participant MainWindow
+participant LogicManager
+participant TutorConnectParser
+participant "proposed: ModelManager" as Proposed
+participant "command: FindCommand / FilterCommand" as Command
+participant "model: ModelManager" as Model
+
+Tutor -> MainWindow: find KEYWORDS / filter CRITERIA
+MainWindow -> LogicManager: execute(text)
+LogicManager -> TutorConnectParser: parseCommand(text)
+TutorConnectParser --> LogicManager: validated command + predicate
+LogicManager -> Model: copyForCommand()
+Model --> LogicManager: proposed snapshot
+LogicManager -> Command: execute(proposed)
+Command -> Proposed: updateFilteredStudentList(predicate)
+note right of Proposed
+Apply predicate to full register;
+retain stored order, clear selection.
+end note
+Command --> LogicManager: count + CLEAR
+note right of LogicManager
+Records unchanged: no storage write.
+Parse errors never publish.
+end note
+LogicManager -> Model: publish(proposed)
+LogicManager --> MainWindow: result
+MainWindow -> MainWindow: refresh rows and details
+MainWindow --> Tutor: numbered results or empty placeholder
+@enduml
