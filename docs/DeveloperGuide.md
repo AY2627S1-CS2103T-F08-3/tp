@@ -71,7 +71,9 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `StudentListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts: `CommandBox`, `ResultDisplay`, `StudentListPanel` (with one `StudentCard` per row), `StudentDetailsPanel`, `WeeklySchedulePanel` and `StatusBarFooter`. `MainWindow` and the FXML-backed parts inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts. `StudentDetailsPanel` and `WeeklySchedulePanel` are code-built JavaFX `VBox` subclasses without FXML, so they do not extend `UiPart`.
+
+`MainWindow` wires three views of the same register. `StudentListPanel` shows `Logic#getFilteredStudentList()`, which `find`/`filter` narrow and whose order defines visible indices. `StudentDetailsPanel` shows the student whose UUID is `Logic#getSelectedStudentId()`. `WeeklySchedulePanel` shows `Logic#getWeeklySchedule()`, the separately sorted list of every scheduled student. After each command, `MainWindow` passes any `TimetableView` carried by the `CommandResult` to `WeeklySchedulePanel#showDay`, then refreshes selection and details.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/ui/MainWindow.java).
 
@@ -81,6 +83,7 @@ The `UI` component,
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Student` objects from the model.
+* keeps the timetable day as UI-only state: `timetable` never reaches the model, storage or the displayed-list predicate.
 
 ### Logic component
 
@@ -233,6 +236,29 @@ selection and both components on failure. Overlaps are accepted; there is no con
 source insertion position. Its unmodifiable entries drive `WeeklySchedulePanel`; it does not change register
 order or follow the displayed-list filter. Removal from the register automatically removes the schedule entry.
 The details/card formatters use full weekday names and HH:mm, with an em dash for an unset slot.
+
+#### Daily and weekly timetable (`timetable [d/DAY]`)
+
+`TimetableCommandParser` uses `StudentParameters.parseSingleValues` with only `d/`, then the same day
+normalizer as `schedule`, so aliases, case-insensitivity and the invalid-day message are shared.
+`TimetableCommand` touches no model state: it returns `CommandResult.timetable(message, TimetableView)`, where
+`TimetableView` wraps an `Optional<DayOfWeek>` (empty means the whole week). `LogicManager` therefore performs
+no staging or save for it. `MainWindow` hands the day to `WeeklySchedulePanel#showDay`, which sets the predicate of
+a JavaFX `FilteredList` wrapped around `Logic#getWeeklySchedule()` and updates the heading and empty message.
+Filtering preserves the underlying Monday–Sunday/time/insertion order, and because the panel observes the
+live sorted list, scheduling, renaming and deletion refresh the current day or week immediately. A parse error
+returns before the result reaches the panel, so the previous view stays. The day is not persisted; restart
+shows the week. A second calendar model was rejected to avoid duplicating ordering and refresh logic.
+
+#### Removing a weekly slot (`unschedule INDEX`)
+
+`UnscheduleCommandParser` reuses `StudentParameters.parseIndexed` and `VisibleIndex`, so structure, index and
+oversized-index errors match the other indexed commands. `UnscheduleCommand` resolves the target in the displayed
+list. Without a slot, it returns a success message without touching the staged model, so nothing is saved and
+selection stays. Otherwise it calls `StudentFields#without(WeeklySlotField.INSTANCE)` and `Model#setStudent`,
+which preserves the UUID, register position, unrelated fields and unknown stored fields, and selects the target.
+The usual staged save/publish protocol applies, so a write failure leaves the previous slot, file bytes, filter
+and selection intact. `delete` remains the way to remove a student together with their slot.
 `MainWindow` ignores transient selection events while publishing, then refreshes the selected immutable record.
 Repeated equivalent commands preserve selection, scrolling and existing details nodes.
 
@@ -594,6 +620,42 @@ testers are expected to do more *exploratory* testing.
       Expected: Similar to previous.
 
 1. _{ more test cases … }_
+
+### Weekly scheduling and timetable
+
+Use a copy of the JAR in an empty folder so that your real data file is not changed.
+
+1. Viewing the weekly and daily timetable
+
+   1. Prerequisites: three students (Zoe, Amy, Ben in that order), scheduled with `schedule 1 d/Sun t/23:59`,
+      `schedule 2 d/Mon t/09:00` and `schedule 3 d/Mon t/09:00`.
+
+   1. Test case: `timetable d/mon`<br>
+      Expected: The schedule panel heading reads `Monday schedule` and lists Amy then Ben (insertion order for the
+      tie). The student list, its numbering and the selection do not change.
+
+   1. Test case: `find Zoe`, then `timetable`<br>
+      Expected: The student list shows only Zoe, but the timetable shows all three Monday–Sunday.
+
+   1. Test case: `timetable d/Funday`, `timetable d/Mon d/Tue`, `timetable x`<br>
+      Expected: An error is shown and the previous timetable view remains.
+
+   1. Test case: `timetable d/Wed`<br>
+      Expected: `No lessons scheduled for Wednesday.` appears in the panel.
+
+1. Removing a weekly slot
+
+   1. Prerequisites: as above, with all students listed.
+
+   1. Test case: `unschedule 2`<br>
+      Expected: Amy is selected, her details show `Weekly slot: —`, and she disappears from the timetable.
+      Ben keeps the shared Monday 09:00 slot. Close and relaunch: the removal persists.
+
+   1. Test case: `unschedule 2` again<br>
+      Expected: `No weekly lesson is scheduled for Amy.` and the data file is not rewritten.
+
+   1. Test case: `unschedule 0`, `unschedule 99999999999999999999`<br>
+      Expected: Invalid-index and missing-student errors respectively; nothing changes.
 
 ### Saving data
 
