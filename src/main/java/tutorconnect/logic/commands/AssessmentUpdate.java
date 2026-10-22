@@ -1,9 +1,11 @@
 package tutorconnect.logic.commands;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.student.AssessmentHistory;
 import tutorconnect.model.student.Student;
@@ -11,6 +13,8 @@ import tutorconnect.model.student.StudentFields;
 
 /** Shared reading and rewriting of a student's assessment history by the assessment commands. */
 final class AssessmentUpdate {
+    private static final Logger logger = LogsCenter.getLogger(AssessmentUpdate.class);
+
     private AssessmentUpdate() {}
 
     /**
@@ -21,6 +25,8 @@ final class AssessmentUpdate {
         try {
             return AssessmentHistory.of(student.getStudentFields());
         } catch (IllegalArgumentException e) {
+            logger.warning("Stored assessment history of student " + student.getId()
+                    + " could not be read and was left unchanged: " + e.getMessage());
             throw new CommandException(String.format(AssessmentHistory.MESSAGE_UNREADABLE, student.getName()), e);
         }
     }

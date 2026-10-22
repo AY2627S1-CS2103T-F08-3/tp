@@ -3,9 +3,11 @@ package tutorconnect.logic.commands;
 import static java.util.Objects.requireNonNull;
 
 import java.util.Map;
+import java.util.logging.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
 
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.commands.exceptions.CommandException;
@@ -25,6 +27,8 @@ public class ClearNoteCommand extends Command {
     public static final String MESSAGE_CLEARED = "Note cleared for %1$s.";
     public static final String MESSAGE_NOTHING_TO_CLEAR = "%1$s has no note to clear.";
 
+    private static final Logger logger = LogsCenter.getLogger(ClearNoteCommand.class);
+
     private final Index index;
 
     /** Creates a command that clears the note of the student shown at {@code index}. */
@@ -42,10 +46,23 @@ public class ClearNoteCommand extends Command {
             return new CommandResult(String.format(MESSAGE_NOTHING_TO_CLEAR, name));
         }
 
+        if (!isReadable(target)) {
+            logger.warning("Clearing a stored note of student " + target.getId() + " that could not be read");
+        }
         // Removing the key also clears a stored value that could not be read.
         stored.remove(AcademicNote.FIELD.key());
         model.setStudent(target, target.withStudentFields(new StudentFields(stored)));
+        logger.fine("Cleared the note of student " + target.getId());
         return new CommandResult(String.format(MESSAGE_CLEARED, name), index.getOneBased());
+    }
+
+    private static boolean isReadable(Student student) {
+        try {
+            student.getStudentFields().get(AcademicNote.FIELD);
+            return true;
+        } catch (IllegalArgumentException e) {
+            return false;
+        }
     }
 
     @Override

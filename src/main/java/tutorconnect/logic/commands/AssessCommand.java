@@ -4,7 +4,9 @@ import static java.util.Objects.requireNonNull;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.logging.Logger;
 
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.logic.commands.exceptions.CommandException;
@@ -27,6 +29,8 @@ public class AssessCommand extends Command {
     public static final String MESSAGE_LIMIT = "Error: A student can have at most "
             + AssessmentHistory.MAX_RECORDS + " assessment records.";
 
+    private static final Logger logger = LogsCenter.getLogger(AssessCommand.class);
+
     private final Index index;
     private final AssessmentRecord record;
 
@@ -46,15 +50,19 @@ public class AssessCommand extends Command {
 
         Optional<AssessmentRecord> existing = history.findSameAssessment(record);
         if (existing.isPresent()) {
+            logger.fine("Rejected a duplicate assessment dated " + record.getDate() + " for student "
+                    + target.getId());
             throw new CommandException(String.format(MESSAGE_DUPLICATE, name, existing.get().getTitle(),
                     record.getDate()));
         }
         if (history.isFull()) {
+            logger.fine("Rejected an assessment for student " + target.getId() + ": the history is full");
             throw new CommandException(MESSAGE_LIMIT);
         }
 
         int number = history.numberIfAdded(record);
         model.setStudent(target, AssessmentUpdate.withHistory(target, history.with(record)));
+        logger.fine("Added assessment #" + number + " for student " + target.getId());
         return new CommandResult(String.format(MESSAGE_ADDED, name, number, record), index.getOneBased());
     }
 
