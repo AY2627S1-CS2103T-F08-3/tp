@@ -4,6 +4,7 @@ import java.time.DayOfWeek;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Optional;
+import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -13,6 +14,7 @@ import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
+import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.model.student.Student;
 import tutorconnect.model.student.WeeklySlotField;
 
@@ -20,6 +22,7 @@ import tutorconnect.model.student.WeeklySlotField;
  * A lightweight, read-only weekly lesson summary observing the independently sorted model list.
  */
 public class WeeklySchedulePanel extends VBox {
+    private static final Logger logger = LogsCenter.getLogger(WeeklySchedulePanel.class);
     private final FilteredList<Student> visibleSchedule;
     private final Label heading = new Label("Weekly schedule");
     private final Label emptyMessage = new Label("No weekly lessons scheduled.");
@@ -54,6 +57,7 @@ public class WeeklySchedulePanel extends VBox {
         heading.setText(day.isPresent() ? name + " schedule" : "Weekly schedule");
         emptyMessage.setText(day.isPresent() ? "No lessons scheduled for " + name + "."
                 : "No weekly lessons scheduled.");
+        logger.fine("Showing " + heading.getText() + " with " + visibleSchedule.size() + " lesson(s)");
     }
 
     /**

@@ -2,6 +2,7 @@ package tutorconnect.logic;
 
 import java.io.IOException;
 import java.util.UUID;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javafx.collections.ObservableList;
@@ -53,23 +54,33 @@ public class LogicManager implements Logic {
         logger.info("----------------[USER COMMAND][" + commandText + "]");
 
         Command command = tutorConnectParser.parseCommand(commandText);
+        String commandName = command.getClass().getSimpleName();
+        logger.fine("Parsed " + commandName + "; executing against a staged copy of the model");
         Model proposed = model.copyForCommand();
         if (command instanceof ListCommand) {
             try {
                 storage.readStudentDirectory().ifPresent(proposed::setStudentDirectory);
             } catch (DataLoadingException exception) {
+                logger.log(Level.WARNING, "Could not reload student data for list; keeping the current register",
+                        exception);
                 throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
             }
         }
         CommandResult commandResult = command.execute(proposed);
 
-        try {
-            if (!(command instanceof ListCommand)
-                    && !model.getStudentDirectory().equals(proposed.getStudentDirectory())) {
+        boolean isChanged = !(command instanceof ListCommand)
+                && !model.getStudentDirectory().equals(proposed.getStudentDirectory());
+        if (isChanged) {
+            try {
                 storage.saveStudentDirectory(proposed.getStudentDirectory());
+            } catch (IOException ioe) {
+                logger.log(Level.WARNING, commandName + " could not be saved; staged changes were discarded", ioe);
+                throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
             }
-        } catch (IOException ioe) {
-            throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
+            logger.info(commandName + " saved " + proposed.getStudentDirectory().getStudentList().size()
+                    + " student(s)");
+        } else {
+            logger.fine(commandName + " left student data unchanged; nothing was saved");
         }
         model.publish(proposed);
         return commandResult;
