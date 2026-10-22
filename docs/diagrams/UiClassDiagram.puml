@@ -13,8 +13,14 @@ Class HelpWindow
 Class ResultDisplay
 Class StudentListPanel
 Class StudentCard
+Class StudentDetailsPanel
+Class WeeklySchedulePanel
 Class StatusBarFooter
 Class CommandBox
+}
+
+package JavaFX <<Rectangle>> {
+Class VBox #6E6E6E
 }
 
 package Model <<Rectangle>> {
@@ -22,7 +28,9 @@ Class HiddenModel #FFFFFF
 }
 
 package Logic <<Rectangle>> {
-Class HiddenLogic #FFFFFF
+Class "<<interface>>\nLogic" as LogicApi LOGIC_COLOR
+Class CommandResult LOGIC_COLOR
+Class TimetableView LOGIC_COLOR
 }
 
 Class HiddenOutside #FFFFFF
@@ -30,26 +38,35 @@ HiddenOutside ..> Ui
 
 UiManager .left.|> Ui
 UiManager -down-> "1" MainWindow
-MainWindow *-down->  "1" CommandBox
+MainWindow *-down-> "1" CommandBox
 MainWindow *-down-> "1" ResultDisplay
 MainWindow *-down-> "1" StudentListPanel
+MainWindow *-down-> "1" StudentDetailsPanel
+MainWindow *-down-> "1" WeeklySchedulePanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
 
 StudentListPanel -down-> "*" StudentCard
 
 MainWindow -left-|> UiPart
-
 ResultDisplay --|> UiPart
 CommandBox --|> UiPart
 StudentListPanel --|> UiPart
 StudentCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
+StudentDetailsPanel --|> VBox
+WeeklySchedulePanel --|> VBox
 
 StudentCard ..> Model
-UiManager -right-> Logic
-MainWindow -left-> Logic
+StudentDetailsPanel ..> Model
+WeeklySchedulePanel ..> Model
+
+UiManager -right-> LogicApi
+MainWindow -right-> LogicApi
+MainWindow ..> CommandResult
+CommandResult --> "0..1" TimetableView
+MainWindow ..> TimetableView : passes day to\nWeeklySchedulePanel
 
 StudentListPanel -[hidden]left- HelpWindow
 HelpWindow -[hidden]left- CommandBox

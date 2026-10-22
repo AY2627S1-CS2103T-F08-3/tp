@@ -11,8 +11,11 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import tutorconnect.commons.core.index.Index;
+import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.EditCommand;
 import tutorconnect.logic.commands.EditCommand.EditStudentDescriptor;
 import tutorconnect.logic.parser.exceptions.ParseException;
@@ -22,6 +25,9 @@ import tutorconnect.model.tag.Tag;
  * Parses input arguments and creates a new EditCommand object
  */
 public class EditCommandParser implements Parser<EditCommand> {
+    private static final Pattern PARAMETER_BOUNDARY = Pattern.compile("(?<!\\S)([A-Za-z]+/)");
+    private static final Set<String> ALLOWED_PREFIXES = Set.of(PREFIX_NAME.getPrefix(), PREFIX_PHONE.getPrefix(),
+            PREFIX_EMAIL.getPrefix(), PREFIX_ADDRESS.getPrefix(), PREFIX_TAG.getPrefix());
 
     /**
      * Parses the given {@code String} of arguments in the context of the EditCommand
@@ -30,18 +36,26 @@ public class EditCommandParser implements Parser<EditCommand> {
      */
     public EditCommand parse(String args) throws ParseException {
         requireNonNull(args);
-        ArgumentMultimap argMultimap =
-                ArgumentTokenizer.tokenize(args, PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG);
-
-        Index index;
-
-        try {
-            index = ParserUtil.parseIndex(argMultimap.getPreamble());
-        } catch (ParseException pe) {
-            throw pe;
+        // Check raw controls before the legacy tokenizer trims any field boundaries.
+        if (StudentText.hasProhibitedCharacters(args)) {
+            throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
+        }
+        String spacedArgs = args.replaceAll("\\p{Zs}+", " ");
+        Matcher boundary = PARAMETER_BOUNDARY.matcher(spacedArgs);
+        while (boundary.find()) {
+            String prefix = boundary.group(1);
+            if (!ALLOWED_PREFIXES.contains(prefix)) {
+                throw new ParseException("Error: Unknown parameter: " + prefix + ".");
+            }
+        }
+        ArgumentMultimap argMultimap = ArgumentTokenizer.tokenize(spacedArgs,
+                PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS, PREFIX_TAG);
+        if (argMultimap.getPreamble().contains(" ")) {
+            throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }
 
         argMultimap.verifyNoDuplicatePrefixesFor(PREFIX_NAME, PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS);
+        Index index = ParserUtil.parseIndex(argMultimap.getPreamble());
 
         EditStudentDescriptor editStudentDescriptor = new EditStudentDescriptor();
 

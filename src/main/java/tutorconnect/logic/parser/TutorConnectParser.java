@@ -9,19 +9,27 @@ import java.util.regex.Pattern;
 import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.AddCommand;
+import tutorconnect.logic.commands.AssessCommand;
+import tutorconnect.logic.commands.AssessmentsCommand;
 import tutorconnect.logic.commands.ClearCommand;
+import tutorconnect.logic.commands.ClearNoteCommand;
 import tutorconnect.logic.commands.Command;
 import tutorconnect.logic.commands.DeleteCommand;
 import tutorconnect.logic.commands.EditCommand;
 import tutorconnect.logic.commands.ExitCommand;
+import tutorconnect.logic.commands.FilterCommand;
 import tutorconnect.logic.commands.FindCommand;
 import tutorconnect.logic.commands.GuardianCommand;
 import tutorconnect.logic.commands.HelpCommand;
 import tutorconnect.logic.commands.LevelCommand;
 import tutorconnect.logic.commands.ListCommand;
+import tutorconnect.logic.commands.NoteCommand;
 import tutorconnect.logic.commands.RateCommand;
 import tutorconnect.logic.commands.ScheduleCommand;
 import tutorconnect.logic.commands.SubjectCommand;
+import tutorconnect.logic.commands.TimetableCommand;
+import tutorconnect.logic.commands.UnassessCommand;
+import tutorconnect.logic.commands.UnscheduleCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
 
 /**
@@ -51,7 +59,9 @@ public class TutorConnectParser {
 
         final String commandWord = matcher.group("commandWord");
         final String arguments = matcher.group("arguments");
-        if (commandWord.equals(ScheduleCommand.COMMAND_WORD) && StudentText.hasProhibitedCharacters(userInput)) {
+        if ((commandWord.equals(ScheduleCommand.COMMAND_WORD) || commandWord.equals(TimetableCommand.COMMAND_WORD)
+                || commandWord.equals(UnscheduleCommand.COMMAND_WORD))
+                && StudentText.hasProhibitedCharacters(userInput)) {
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }
 
@@ -71,14 +81,22 @@ public class TutorConnectParser {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
             case DeleteCommand.COMMAND_WORD -> new DeleteCommandParser().parse(arguments);
+            case AssessCommand.COMMAND_WORD -> new AssessCommandParser().parse(arguments);
+            case AssessmentsCommand.COMMAND_WORD -> new AssessmentsCommandParser().parse(arguments);
+            case UnassessCommand.COMMAND_WORD -> new UnassessCommandParser().parse(arguments);
             case SubjectCommand.COMMAND_WORD -> new SubjectCommandParser().parse(arguments);
             case GuardianCommand.COMMAND_WORD -> new GuardianCommandParser().parse(arguments);
             case RateCommand.COMMAND_WORD -> new RateCommandParser().parse(arguments);
             case LevelCommand.COMMAND_WORD -> new LevelCommandParser().parse(arguments);
+            case NoteCommand.COMMAND_WORD -> new NoteCommandParser().parse(arguments);
+            case ClearNoteCommand.COMMAND_WORD -> new ClearNoteCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
+            case FilterCommand.COMMAND_WORD -> new FilterCommandParser().parse(arguments);
             case ListCommand.COMMAND_WORD -> new ListCommandParser().parse(arguments);
             case ScheduleCommand.COMMAND_WORD -> new ScheduleCommandParser().parse(arguments);
+            case TimetableCommand.COMMAND_WORD -> new TimetableCommandParser().parse(arguments);
+            case UnscheduleCommand.COMMAND_WORD -> new UnscheduleCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
             default -> {

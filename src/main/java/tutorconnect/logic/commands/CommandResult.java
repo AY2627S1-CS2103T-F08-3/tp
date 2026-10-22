@@ -26,6 +26,7 @@ public class CommandResult {
 
     /** One-based index of a student to select after a successful command, if any. */
     private final Integer selectedStudentIndex;
+    private final TimetableView timetableView;
 
     /**
      * Constructs a {@code CommandResult} with the specified fields.
@@ -40,6 +41,11 @@ public class CommandResult {
     }
 
     private CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Integer selectedStudentIndex) {
+        this(feedbackToUser, showHelp, exit, selectedStudentIndex, null);
+    }
+
+    private CommandResult(String feedbackToUser, boolean showHelp, boolean exit, Integer selectedStudentIndex,
+            TimetableView timetableView) {
         this.feedbackToUser = requireNonNull(feedbackToUser);
         if (selectedStudentIndex != null && selectedStudentIndex <= 0) {
             throw new IllegalArgumentException("Selected student index must be positive.");
@@ -47,6 +53,7 @@ public class CommandResult {
         this.showHelp = showHelp;
         this.exit = exit;
         this.selectedStudentIndex = selectedStudentIndex;
+        this.timetableView = timetableView;
     }
 
     /**
@@ -61,6 +68,15 @@ public class CommandResult {
     public CommandResult(String feedbackToUser, SelectionAction selectionAction) {
         this(feedbackToUser);
         this.selectionAction = requireNonNull(selectionAction);
+    }
+
+    /** Creates a view-only request without selecting a student or changing stored data. */
+    public static CommandResult timetable(String feedback, TimetableView view) {
+        return new CommandResult(feedback, false, false, null, requireNonNull(view));
+    }
+
+    public Optional<TimetableView> getTimetableView() {
+        return Optional.ofNullable(timetableView);
     }
 
     public SelectionAction getSelectionAction() {
@@ -97,12 +113,13 @@ public class CommandResult {
         return feedbackToUser.equals(otherCommandResult.feedbackToUser)
                 && showHelp == otherCommandResult.showHelp
                 && exit == otherCommandResult.exit
-                && Objects.equals(selectedStudentIndex, otherCommandResult.selectedStudentIndex);
+                && Objects.equals(selectedStudentIndex, otherCommandResult.selectedStudentIndex)
+                && Objects.equals(timetableView, otherCommandResult.timetableView);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(feedbackToUser, showHelp, exit, selectedStudentIndex);
+        return Objects.hash(feedbackToUser, showHelp, exit, selectedStudentIndex, timetableView);
     }
 
     @Override

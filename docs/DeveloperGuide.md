@@ -71,7 +71,9 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts, such as `CommandBox`, `ResultDisplay`, `StudentListPanel`, and `StatusBarFooter`. All of these, including `MainWindow`, inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts.
+The UI consists of a `MainWindow` and its parts: `CommandBox`, `ResultDisplay`, `StudentListPanel` (with one `StudentCard` per row), `StudentDetailsPanel`, `WeeklySchedulePanel` and `StatusBarFooter`. `MainWindow` and the FXML-backed parts inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts. `StudentDetailsPanel` and `WeeklySchedulePanel` are code-built JavaFX `VBox` subclasses without FXML, so they do not extend `UiPart`.
+
+`MainWindow` wires three views of the same register. `StudentListPanel` shows `Logic#getFilteredStudentList()`, which `find`/`filter` narrow and whose order defines visible indices. `StudentDetailsPanel` shows the student whose UUID is `Logic#getSelectedStudentId()`. `WeeklySchedulePanel` shows `Logic#getWeeklySchedule()`, the separately sorted list of every scheduled student. After each command, `MainWindow` passes any `TimetableView` carried by the `CommandResult` to `WeeklySchedulePanel#showDay`, then refreshes selection and details.
 
 The `UI` component uses the JavaFX UI framework. The layouts of these UI parts are defined in matching `.fxml` files in `src/main/resources/view`. For example, [`MainWindow.fxml`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/resources/view/MainWindow.fxml) specifies the layout of [`MainWindow`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/ui/MainWindow.java).
 
@@ -81,6 +83,7 @@ The `UI` component,
 * listens for changes to `Model` data so that the UI can be updated with the modified data.
 * keeps a reference to the `Logic` component, because the `UI` relies on the `Logic` to execute commands.
 * depends on some classes in the `Model` component because it displays `Student` objects from the model.
+* keeps the timetable day as UI-only state: `timetable` never reaches the model, storage or the displayed-list predicate.
 
 ### Logic component
 
@@ -248,11 +251,102 @@ selection and both components on failure. Overlaps are accepted; there is no con
 source insertion position. Its unmodifiable entries drive `WeeklySchedulePanel`; it does not change register
 order or follow the displayed-list filter. Removal from the register automatically removes the schedule entry.
 The details/card formatters use full weekday names and HH:mm, with an em dash for an unset slot.
+
+#### Daily and weekly timetable (`timetable [d/DAY]`)
+
+`TimetableCommandParser` uses `StudentParameters.parseSingleValues` with only `d/`, then the same day
+normalizer as `schedule`, so aliases, case-insensitivity and the invalid-day message are shared.
+`TimetableCommand` touches no model state: it returns `CommandResult.timetable(message, TimetableView)`, where
+`TimetableView` wraps an `Optional<DayOfWeek>` (empty means the whole week). `LogicManager` therefore performs
+no staging or save for it. `MainWindow` hands the day to `WeeklySchedulePanel#showDay`, which sets the predicate of
+a JavaFX `FilteredList` wrapped around `Logic#getWeeklySchedule()` and updates the heading and empty message.
+Filtering preserves the underlying Monday–Sunday/time/insertion order, and because the panel observes the
+live sorted list, scheduling, renaming and deletion refresh the current day or week immediately. A parse error
+returns before the result reaches the panel, so the previous view stays. The day is not persisted; restart
+shows the week. A second calendar model was rejected to avoid duplicating ordering and refresh logic.
+
+#### Removing a weekly slot (`unschedule INDEX`)
+
+`UnscheduleCommandParser` reuses `StudentParameters.parseIndexed` and `VisibleIndex`, so structure, index and
+oversized-index errors match the other indexed commands. `UnscheduleCommand` resolves the target in the displayed
+list. Without a slot, it returns a success message without touching the staged model, so nothing is saved and
+selection stays. Otherwise it calls `StudentFields#without(WeeklySlotField.INSTANCE)` and `Model#setStudent`,
+which preserves the UUID, register position, unrelated fields and unknown stored fields, and selects the target.
+The usual staged save/publish protocol applies, so a write failure leaves the previous slot, file bytes, filter
+and selection intact. `delete` remains the way to remove a student together with their slot.
 `MainWindow` ignores transient selection events while publishing, then refreshes the selected immutable record.
 Repeated equivalent commands preserve selection, scrolling and existing details nodes.
 
 Verification covers field validation, codec/parser/command behavior, persistence and staged failures,
 summary ordering, and the actual JavaFX command box. See [the acceptance run and commands](Testing.md).
+
+### Academic records: notes and assessments (stories 12 and 13)
+
+<puml src="diagrams/AcademicRecordsClassDiagram.puml" width="450" />
+
+A student can carry one freeform **note** and a dated **assessment history**. Both are optional fields in the
+`StudentFields` envelope, so they follow the same rules as the other owned fields: a typed `StudentField` codec
+supplies the key, validation and JSON encoding, `Student#withStudentFields` keeps the UUID and every unrelated
+field, and an unset value is simply absent from the file.
+
+**Model classes**
+
+* `AcademicNote` (key `academicNote`) is immutable text of 1-500 Unicode code points after NFKC normalization,
+  trimming and space collapsing. Control, format and line-break characters are rejected. Equality is exact, so a
+  case-only change is a different note.
+* `AssessmentRecord` is an immutable `LocalDate`, a title (1-60 characters) and a grade (1-20 characters). The
+  date must be a zero-padded, real `yyyy-MM-dd` date and is not compared with the current date. The grade is kept
+  as text and never parsed, so grading systems are never compared or averaged. Two records are the *same
+  assessment* if they share a date and a title, ignoring case and spacing.
+* `AssessmentHistory` (key `assessments`) is an immutable list of at most 100 records ordered by date, with
+  records on the same date kept in the order they were added. It never contains two records that are the same
+  assessment. A record's *number* is its 1-based position in this order, which the commands, the result box and
+  the details panel all use.
+
+**Storage.** The note is a JSON string and the history is a JSON list of `{"date", "title", "grade"}` objects in
+display order. A student with no note or no records has no key at all, so files written before these features
+load unchanged. Decoding the history is strict: anything that is not a list of exactly those three text
+properties, an impossible date, a duplicate or more than 100 records makes the value *unreadable*. The two
+fields treat unreadable data differently on purpose:
+
+| Field | Unreadable stored value |
+| --- | --- |
+| `academicNote` (one replaceable value) | Shown as an em dash; `note` treats it as unset and replaces it; `clearnote` removes it. |
+| `assessments` (a list a user may have built up) | Shown as "stored data could not be read"; `assess`, `assessments` and `unassess` report an error and never overwrite it. |
+
+**Commands.** `note` reuses the shared `StudentFieldUpdate` helper. `clearnote`, `assess`, `assessments` and
+`unassess` resolve the displayed index with `VisibleIndexResolver`, then build the updated `Student` and hand it
+to `Model#setStudent`; `AssessmentUpdate` reads the history (reporting an unreadable one) and writes it back,
+removing the key when the history becomes empty. As for every other command, `LogicManager` runs the command on
+a staged copy of the model, saves the complete proposed directory atomically only if it changed, and then
+publishes it, so a failed command or a failed save leaves the file, the list, the filter and the selection
+unchanged. Equivalent `note` input, `clearnote` on an empty note and `assessments` therefore never write the file.
+`assessments` only selects the student.
+
+| Command | Parser | Command class | Effect on `StudentFields` |
+| --- | --- | --- | --- |
+| `note INDEX m/NOTE` | `NoteCommandParser` (everything after `m/` is the note) | `NoteCommand` | sets or replaces `academicNote` |
+| `clearnote INDEX` | `ClearNoteCommandParser` | `ClearNoteCommand` | removes `academicNote` |
+| `assess INDEX d/DATE t/TITLE g/GRADE` | `AssessCommandParser` (`StudentParameters.parseIndexedValues`) | `AssessCommand` | adds one record to `assessments` |
+| `assessments INDEX` | `AssessmentsCommandParser` | `AssessmentsCommand` | none (selects the student) |
+| `unassess INDEX i/RECORD` | `UnassessCommandParser` (`IndexedParameterParserUtil`) | `UnassessCommand` | removes one record by number |
+
+**Interaction with other features.** `delete` removes the whole `Student`, so its note and records leave the file
+with it. `edit` uses `Student#withDetails`, which keeps the `StudentFields`, so contact edits never touch them.
+The level, subject, guardian, rate and schedule commands each replace only their own key.
+
+**Design decisions and alternatives**
+
+* *One note, exact comparison.* A note is free text, so unlike a subject it is not folded for case; a re-typed
+  note with different capitals is an update.
+* *Positional record numbers.* Records are identified by their number in date order rather than by a stored
+  identifier. This keeps the file and the commands simple and the numbers visible next to each record, at the cost
+  that numbers shift after an add or remove, which the User Guide tells users to check with `assessments`. A
+  stable record identifier is the alternative if corrections by number ever prove error-prone.
+* *Duplicates are rejected, not replaced.* Replacing the grade of an existing date and title would need a third
+  command or an overwrite rule; instead the user removes the old record and adds the new one.
+* *Strict history decoding.* Refusing to touch an unreadable history trades convenience for never silently
+  losing a hand-built list.
 
 ### \[Proposed\] Undo/redo feature
 
@@ -631,6 +725,42 @@ Use a disposable data directory with an empty `persons` array in `data/addressbo
 
 1. _{ more test cases … }_
 
+### Weekly scheduling and timetable
+
+Use a copy of the JAR in an empty folder so that your real data file is not changed.
+
+1. Viewing the weekly and daily timetable
+
+   1. Prerequisites: three students (Zoe, Amy, Ben in that order), scheduled with `schedule 1 d/Sun t/23:59`,
+      `schedule 2 d/Mon t/09:00` and `schedule 3 d/Mon t/09:00`.
+
+   1. Test case: `timetable d/mon`<br>
+      Expected: The schedule panel heading reads `Monday schedule` and lists Amy then Ben (insertion order for the
+      tie). The student list, its numbering and the selection do not change.
+
+   1. Test case: `find Zoe`, then `timetable`<br>
+      Expected: The student list shows only Zoe, but the timetable shows all three Monday–Sunday.
+
+   1. Test case: `timetable d/Funday`, `timetable d/Mon d/Tue`, `timetable x`<br>
+      Expected: An error is shown and the previous timetable view remains.
+
+   1. Test case: `timetable d/Wed`<br>
+      Expected: `No lessons scheduled for Wednesday.` appears in the panel.
+
+1. Removing a weekly slot
+
+   1. Prerequisites: as above, with all students listed.
+
+   1. Test case: `unschedule 2`<br>
+      Expected: Amy is selected, her details show `Weekly slot: —`, and she disappears from the timetable.
+      Ben keeps the shared Monday 09:00 slot. Close and relaunch: the removal persists.
+
+   1. Test case: `unschedule 2` again<br>
+      Expected: `No weekly lesson is scheduled for Amy.` and the data file is not rewritten.
+
+   1. Test case: `unschedule 0`, `unschedule 99999999999999999999`<br>
+      Expected: Invalid-index and missing-student errors respectively; nothing changes.
+
 ### Saving data
 
 1. Dealing with missing/corrupted data files
@@ -665,18 +795,42 @@ Use a disposable data directory with an empty `persons` array in `data/addressbo
 
 ## Delete/list student integration (F02/F03)
 
-* `ParserUtil.parseIndex` validates decimal syntax into an arbitrary-size `Index`.
-  `VisibleIndexResolver.resolveStudent` checks the current displayed list size before integer conversion,
-  safely handling oversized indices and targeting the displayed student.
-* Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+### Student discovery (stories 10 and 15)
+
+`find` uses `NameContainsKeywordsPredicate`: NFKC normalization via `StudentText`, followed by
+`Locale.ROOT` lowercase substring comparison. Whitespace-separated keywords are OR alternatives;
+accents are preserved. `filter` uses `StudentCriteriaPredicate` with optional typed `EducationLevel`
+and `Subject` criteria combined with AND. Their existing constructors/equality define alias and label
+normalization. Unset or unreadable requested fields do not match. `StudentParameters.parseOptional`
+reuses structural checks without relaxing any existing command's required parameters.
+
+<puml src="diagrams/StudentDiscoverySequenceDiagram.puml" width="900" />
+
+Both commands replace the model predicate over the full register, retain stored order, clear selection,
+and report the result count (including zero). Queries do not change records, so `LogicManager` does not
+save. `list` remains the reload/reset operation. Parse errors never publish a proposed model.
+`WeeklySchedule` observes the full register independently of the student-list predicate.
+
+Indexed commands resolve the displayed row to its UUID before mutation. If a successful level/subject
+update removes that row from the filter, `StudentFieldUpdate` clears selection and returns no row index;
+otherwise its existing selection policy is retained. This avoids publishing a hidden selected UUID or
+selecting the next student after the row disappears. Existing edit/reset and deletion behavior is retained.
+
+`StudentDiscoveryIntegrationTest` covers query replacement, no-save queries, JSON reload, every indexed
+mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
+rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
+
+- `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
+- Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
   including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
   Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
-* List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+- List reads and validates saved records into the proposed model, resets the filter, and clears selection.
   It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
-* The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+- The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
   `StudentListPanel.selectStudent` refreshes cells so row numbering follows the updated positions.
   The empty register shows a placeholder; clearing selection resets the details panel.
-* Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+- Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
   metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
 
 Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
