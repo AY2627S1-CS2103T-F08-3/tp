@@ -21,6 +21,16 @@ public class FindCommandParserTest {
     }
 
     @Test
+    public void parse_unicodeSpaceAndCompatibilityCharacters_normalizesKeywords() {
+        assertParseSuccess(parser, "\u00a0ＡＬＩ\u2003Ｂｏ\u00a0",
+                new FindCommand(new NameContainsKeywordsPredicate(List.of("ali", "bo"))));
+        assertParseFailure(parser, "\u00a0\u2003", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                FindCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "Ali\u200bce", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
+                FindCommand.MESSAGE_USAGE));
+    }
+
+    @Test
     public void parse_validArgs_returnsFindCommand() {
         // no leading and trailing whitespaces
         FindCommand expectedFindCommand =
