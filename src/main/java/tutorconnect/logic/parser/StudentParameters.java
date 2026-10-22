@@ -27,6 +27,11 @@ public final class StudentParameters {
         return parseRequired(input, false, labels);
     }
 
+    /** Parses required single-token values without a positional student index. */
+    public static Map<String, String> parseSingleValues(String input, String... labels) throws ParseException {
+        return parseRequired(input, true, labels);
+    }
+
     /** Parses optional named values, rejecting unknown prefixes, repeated prefixes and bare preambles. */
     public static Map<String, String> parseOptional(String input, String... labels) throws ParseException {
         return parseParameters(input, false, false, labels);

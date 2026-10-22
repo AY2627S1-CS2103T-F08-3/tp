@@ -37,6 +37,7 @@ public class MainWindow extends UiPart<Stage> {
     private ResultDisplay resultDisplay;
     private HelpWindow helpWindow;
     private StudentDetailsPanel studentDetailsPanel;
+    private WeeklySchedulePanel weeklySchedulePanel;
     private boolean executingCommand;
 
     @FXML
@@ -131,7 +132,8 @@ public class MainWindow extends UiPart<Stage> {
             }
         });
         studentListPanelPlaceholder.getChildren().add(studentListPanel.getRoot());
-        weeklySchedulePlaceholder.getChildren().add(new WeeklySchedulePanel(logic.getWeeklySchedule()));
+        weeklySchedulePanel = new WeeklySchedulePanel(logic.getWeeklySchedule());
+        weeklySchedulePlaceholder.getChildren().add(weeklySchedulePanel);
 
         resultDisplay = new ResultDisplay();
         resultDisplayPlaceholder.getChildren().add(resultDisplay.getRoot());
@@ -196,6 +198,7 @@ public class MainWindow extends UiPart<Stage> {
         executingCommand = true;
         try {
             CommandResult commandResult = logic.execute(commandText);
+            commandResult.getTimetableView().ifPresent(view -> weeklySchedulePanel.showDay(view.day()));
             studentListPanel.selectStudent(logic.getSelectedStudentId());
             studentDetailsPanel.showStudent(logic.getFilteredStudentList().stream()
                     .filter(student -> student.getId().equals(logic.getSelectedStudentId())).findFirst().orElse(null));

@@ -189,10 +189,16 @@ A repeated single-value prefix reports `Multiple values specified for the follow
 A duplicate reports `This student already exists in the address book.` Invalid indices and save failures use the
 standard messages shown in the other command sections.
 
-The legacy `edit` parser checks index syntax, repeated prefixes, then values in name/phone/email/address/tag order,
-before resolving the row and checking duplicates. It recognizes only the prefixes listed above: unrecognized
-prefix-like text can be treated as part of a value, rather than producing an unknown-parameter error.
-Check the feedback after editing, especially when entering an address containing slashes.
+`edit` rejects control characters and line breaks before trimming values. Unknown whitespace-delimited
+ASCII-letter prefixes, such as `x/` or `wrong/`, report `Error: Unknown parameter: PREFIX.`;
+extra text between the index and the first prefix reports `Error: Unexpected text after command.`
+Unicode spaces are accepted between tokens. Embedded address slashes, such as `12/3 Street`, remain value text.
+
+Structural errors are checked before repeated single-value prefixes, index syntax, and values in
+name/phone/email/address/tag order. The row is then resolved and duplicate identity checked before saving.
+An arbitrarily large positive index reports a missing row without overflowing. Failed edits preserve the
+saved file, student list, filter, selection and details. A lone blank `t/` still clears tags; repeated `t/`
+values must each contain a valid tag.
 
 Examples:
 
@@ -553,6 +559,22 @@ Structural errors are reported before values. For example, omitting `d/` reports
 `Error: Unknown parameter: x/.` Extra unprefixed tokens report `Error: Unexpected text after command.`
 Values are checked in order: index syntax, day, time, then whether the displayed row exists.
 
+### Viewing a daily or weekly timetable: `timetable`
+
+Use `timetable` for the full week or `timetable d/DAY` for one weekday in the existing schedule panel.
+Examples: `timetable d/Mon`, `timetable d/sUNDAY`, then `timetable` to return to the week.
+Day names and three-letter aliases use the same normalization as `schedule`. Prefix `d/` is lowercase
+and may appear only once. Blank or invalid days report the existing invalid-day error; unknown prefixes,
+repeated `d/`, unexpected leading text and control characters are rejected without changing the view.
+
+Feedback is `Showing weekly timetable.` or `Showing timetable for Monday.` (using the chosen full day).
+An empty view says `No weekly lessons scheduled.` or `No lessons scheduled for Monday.`.
+The timetable includes students hidden by `find` or `filter`, orders Monday–Sunday then time, and retains insertion
+order for equal slots. It does not reorder the numbered student list, change its filter/selection, reload
+or save student data. Slot changes, student renaming and deletion update the current view immediately.
+The selected day remains active until another timetable command; restarting opens the full week.
+This is a recurring teaching timetable, not dated bookings, travel planning or conflict detection.
+
 ### Clearing all entries: `clear`
 
 Permanently removes **all students and their optional fields**, including students hidden by a filter and their
@@ -679,6 +701,7 @@ Action     | Format, Examples
 **Filter** | `filter [l/LEVEL] [s/SUBJECT]`<br> e.g., `filter l/sec4 s/Math`
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
+**View timetable** | `timetable [d/DAY]`<br> e.g., `timetable d/Mon`
 **Remove weekly lesson** | `unschedule INDEX`<br> e.g., `unschedule 1`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
