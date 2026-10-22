@@ -3,6 +3,7 @@ package tutorconnect.ui;
 import javafx.geometry.Insets;
 import javafx.scene.control.Label;
 import javafx.scene.layout.VBox;
+import tutorconnect.model.student.AcademicNote;
 import tutorconnect.model.student.EducationLevel;
 import tutorconnect.model.student.Student;
 import tutorconnect.model.student.Subject;
@@ -36,6 +37,7 @@ public class StudentDetailsPanel extends VBox {
         addDetail("Guardian phone: " + student.getStudentFields().display("guardianPhone"));
         addDetail("Education level: " + EducationLevel.display(student.getStudentFields()));
         addDetail("Subject: " + Subject.display(student.getStudentFields()));
+        addDetail("Note: " + AcademicNote.display(student.getStudentFields()));
         addDetail("Hourly rate: " + student.getHourlyRate().map(rate -> "S$" + rate).orElse("—"));
         addDetail("Weekly slot: " + WeeklySlotField.display(student));
     }
