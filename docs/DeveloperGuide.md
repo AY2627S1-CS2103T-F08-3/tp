@@ -229,6 +229,27 @@ Unreadable in-memory level/subject values retain the existing repair-as-unset be
 validates stored fields before publication. `ClearCommand` clears its staged selection before publication,
 so an already-saved empty register never attempts to select a removed UUID.
 
+### Story 11: Monthly payment status
+
+`PaymentHistory` is the optional `StudentField` value stored under the `payments` JSON key. Each student record
+already carries a stable UUID, so its sorted `YYYY-MM` to `pending|completed` map represents one status per
+student and month. An absent month is unrecorded; pending is an explicit value. The typed codec validates the
+whole object during JSON load, leaving older records without `payments` unset and rejecting malformed months,
+types or statuses safely. Editing preserves the UUID and optional-field envelope; deleting the student removes
+the history with it.
+
+`PaymentCommandParser` uses the shared structural parser and `VisibleIndex`. It validates the displayed index
+syntax before the month and status, then `PaymentCommand` resolves the row against the currently filtered list.
+Setting an identical typed status returns a no-change result without staging a mutation. A new or replacement
+status updates only its month, selects the student and leaves all other fields untouched. The existing
+`LogicManager` copy-for-command, save-before-publish flow makes storage failure atomic for the saved file, model,
+view and selection. Tracking remains manual; there is no invoice generation or payment processing.
+
+The User Guide documents the `payment INDEX m/YYYY-MM s/pending|completed` command, error precedence,
+transitions, no-change behavior and restart examples. Tests cover strict month/status parsing, reordered prefixes,
+index errors, malformed persisted maps, legacy records, reload, unrelated-field preservation, deletion and save
+failure. Listing and selected-student presentation are documented with their implementation issue.
+
 ### F08: Weekly Lesson Scheduling
 
 `WeeklySlot` is immutable: it requires a `DayOfWeek` and a minute-precision `LocalTime` together.
@@ -785,7 +806,7 @@ Use a copy of the JAR in an empty folder so that your real data file is not chan
 * **Model component**: The part of the application that represents and manages domain data such as students and lesson details.
 * **MVP (Minimum Viable Product)**: The smallest usable version containing the essential features needed by the target user.
 * **Parent contact**: The parent or guardian's contact information associated with a student.
-* **Payment status**: The recorded state of a lesson fee, such as pending or completed.
+* **Payment status**: A manually recorded pending or completed state for one student and calendar month; no entry means unrecorded.
 * **Persona**: A representative user profile used to guide product and feature decisions.
 * **Recurring lesson slot**: A lesson slot that repeats on a regular schedule, such as every Monday at 4 p.m.
 * **Storage component**: The part of the application that saves and loads data.

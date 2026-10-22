@@ -24,6 +24,7 @@ import tutorconnect.logic.commands.HelpCommand;
 import tutorconnect.logic.commands.LevelCommand;
 import tutorconnect.logic.commands.ListCommand;
 import tutorconnect.logic.commands.NoteCommand;
+import tutorconnect.logic.commands.PaymentCommand;
 import tutorconnect.logic.commands.RateCommand;
 import tutorconnect.logic.commands.ScheduleCommand;
 import tutorconnect.logic.commands.SubjectCommand;
@@ -59,8 +60,10 @@ public class TutorConnectParser {
 
         final String commandWord = matcher.group("commandWord");
         final String arguments = matcher.group("arguments");
-        if ((commandWord.equals(ScheduleCommand.COMMAND_WORD) || commandWord.equals(TimetableCommand.COMMAND_WORD)
-                || commandWord.equals(UnscheduleCommand.COMMAND_WORD))
+        if ((commandWord.equals(ScheduleCommand.COMMAND_WORD)
+                || commandWord.equals(TimetableCommand.COMMAND_WORD)
+                || commandWord.equals(UnscheduleCommand.COMMAND_WORD)
+                || commandWord.equals(PaymentCommand.COMMAND_WORD))
                 && StudentText.hasProhibitedCharacters(userInput)) {
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
         }
@@ -87,6 +90,7 @@ public class TutorConnectParser {
             case SubjectCommand.COMMAND_WORD -> new SubjectCommandParser().parse(arguments);
             case GuardianCommand.COMMAND_WORD -> new GuardianCommandParser().parse(arguments);
             case RateCommand.COMMAND_WORD -> new RateCommandParser().parse(arguments);
+            case PaymentCommand.COMMAND_WORD -> new PaymentCommandParser().parse(arguments);
             case LevelCommand.COMMAND_WORD -> new LevelCommandParser().parse(arguments);
             case NoteCommand.COMMAND_WORD -> new NoteCommandParser().parse(arguments);
             case ClearNoteCommand.COMMAND_WORD -> new ClearNoteCommandParser().parse(arguments);
