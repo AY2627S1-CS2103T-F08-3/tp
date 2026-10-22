@@ -202,7 +202,7 @@ public class MainWindow extends UiPart<Stage> {
             studentListPanel.selectStudent(logic.getSelectedStudentId());
             studentDetailsPanel.showStudent(logic.getFilteredStudentList().stream()
                     .filter(student -> student.getId().equals(logic.getSelectedStudentId())).findFirst().orElse(null));
-            logger.info("Result: " + commandResult.getFeedbackToUser());
+            logger.fine("Command completed; updating UI");
             resultDisplay.setFeedbackToUser(commandResult.getFeedbackToUser());
             commandResult.getSelectedStudentIndex().ifPresent(index -> studentListPanel.selectIndex(index - 1));
 
@@ -216,7 +216,7 @@ public class MainWindow extends UiPart<Stage> {
 
             return commandResult;
         } catch (CommandException | ParseException e) {
-            logger.info("An error occurred while executing command: " + commandText);
+            logger.fine("Command rejected; displaying error");
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
         } finally {

@@ -51,9 +51,15 @@ public class LogicManager implements Logic {
 
     @Override
     public CommandResult execute(String commandText) throws CommandException, ParseException {
-        logger.info("----------------[USER COMMAND][" + commandText + "]");
+        logger.fine("Command received");
 
-        Command command = tutorConnectParser.parseCommand(commandText);
+        Command command;
+        try {
+            command = tutorConnectParser.parseCommand(commandText);
+        } catch (ParseException exception) {
+            logger.fine("Command rejected during parsing; model unchanged");
+            throw exception;
+        }
         String commandName = command.getClass().getSimpleName();
         logger.fine("Parsed " + commandName + "; executing against a staged copy of the model");
         Model proposed = model.copyForCommand();
@@ -66,7 +72,13 @@ public class LogicManager implements Logic {
                 throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
             }
         }
-        CommandResult commandResult = command.execute(proposed);
+        CommandResult commandResult;
+        try {
+            commandResult = command.execute(proposed);
+        } catch (CommandException exception) {
+            logger.fine(commandName + " rejected during execution; staged changes discarded");
+            throw exception;
+        }
 
         boolean isChanged = !(command instanceof ListCommand)
                 && !model.getStudentDirectory().equals(proposed.getStudentDirectory());
@@ -83,6 +95,7 @@ public class LogicManager implements Logic {
             logger.fine(commandName + " left student data unchanged; nothing was saved");
         }
         model.publish(proposed);
+        logger.fine(commandName + " completed; staged model published");
         return commandResult;
     }
 
