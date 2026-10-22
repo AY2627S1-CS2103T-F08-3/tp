@@ -318,18 +318,45 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * The search is case-insensitive; for example, `hans` matches `Hans`.
 * Keyword order does not matter; for example, `Hans Bo` matches `Bo Hans`.
 * The search considers only names.
-* Only full words match; for example, `Han` does not match `Hans`.
-  Words are separated by whitespace: `Anne` does not match the single word `Anne-Marie`.
+* Partial names match anywhere in the name: `Han` matches `Hans`, and `Anne` matches `Anne-Marie`.
+  Names and keywords use Unicode NFKC normalization and locale-independent lowercase comparison.
+  Full-width letters and composed/decomposed accents match; accents are not removed (`Jose` differs from `José`).
 * Students matching at least one keyword are returned (an `OR` search); for example, `Hans Bo` returns `Hans Gruber` and `Bo Yang`.
 * Results retain insertion order, are renumbered from 1, and clear selection. Feedback is `N student(s) listed!`.
-  `find` searches the in-memory register without saving or reloading the file; use `list` to reload/reset the view.
-* Supply at least one keyword. Keywords are case-insensitive but do not receive the NFKC normalization applied
-  to stored names, so type the spelling displayed in the register rather than relying on full-width variants.
+  Each `find` searches the full in-memory register, replacing the previous query without saving or reloading
+  the file; use `list` to reload/reset the view. Zero matches show `0 student(s) listed!` and `No students found.`.
+* Supply at least one whitespace-separated keyword. Unicode spaces are supported, as are existing tab/newline
+  separators. Hidden format characters are rejected without changing the current view or selection.
 
 Examples:
 
 * `find John` returns `john` and `John Doe`
 * With the initial sample data, `find alex david` returns `Alex Yeoh` and `David Li`, with `2 student(s) listed!`.
+
+### Filtering students by level or subject: `filter`
+
+Format: `filter [l/LEVEL] [s/SUBJECT]`
+
+Supply at least one criterion, with each lowercase prefix at most once, in either order.
+Level accepts the same canonical values and aliases as `level`, such as `p1`, `sec4`, `s4`, and `jc2`.
+Subject matches the **entire label**, ignoring case and normalizing Unicode (NFKC) and repeated spaces:
+`s/h2 math` matches `H2 Math`, while `s/Math` does not. Both criteria must match when supplied together (AND).
+Students with an unset or unreadable requested field do not match.
+
+* `filter l/sec4` lists Secondary 4 students.
+* `filter s/H2 Math` lists students studying H2 Math.
+* `filter l/jc2 s/H2 Math` lists only JC 2 students studying H2 Math.
+
+Each filter starts from the full in-memory register and replaces the previous search/filter. Results retain
+stored order and are renumbered from 1; selection clears. Feedback is `N student(s) listed!`; zero matches
+show `0 student(s) listed!` and `No students found.`. Use `list` to reload and restore the full register.
+Filtering neither changes nor saves student records and does not restrict the consolidated weekly schedule.
+Use the displayed result row for subsequent indexed commands.
+
+Unknown/repeated prefixes, bare text before criteria, blank/invalid values and control characters are rejected
+without changing the view or selection. For example, `filter` reports
+`Error: Supply at least one filter criterion: l/LEVEL or s/SUBJECT.`; `filter l/p1 l/p2` reports
+`Error: Parameter l/ may be specified only once.`. Level and subject values use their existing validation rules.
 
 ### Deleting a student: `delete`
 
@@ -645,6 +672,7 @@ Action     | Format, Examples
 **Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Set guardian contact** | `guardian INDEX g/PHONE`<br> e.g., `guardian 1 g/+65 9123 4567`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
+**Filter** | `filter [l/LEVEL] [s/SUBJECT]`<br> e.g., `filter l/sec4 s/Math`
 **List**   | `list`
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
 **View timetable** | `timetable [d/DAY]`<br> e.g., `timetable d/Mon`

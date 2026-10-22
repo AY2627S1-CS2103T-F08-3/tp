@@ -32,6 +32,11 @@ public final class StudentParameters {
         return parseRequired(input, true, labels);
     }
 
+    /** Parses optional named values, rejecting unknown prefixes, repeated prefixes and bare preambles. */
+    public static Map<String, String> parseOptional(String input, String... labels) throws ParseException {
+        return parseParameters(input, false, false, labels);
+    }
+
     /**
      * Parses one positional index followed by required single-token parameters, preserving raw field values.
      */
@@ -64,6 +69,11 @@ public final class StudentParameters {
 
     private static Map<String, String> parseRequired(String input, boolean singleToken, String... labels)
             throws ParseException {
+        return parseParameters(input, singleToken, true, labels);
+    }
+
+    private static Map<String, String> parseParameters(String input, boolean singleToken, boolean required,
+            String... labels) throws ParseException {
         requireNonNull(input);
         Map<String, List<String>> values = new LinkedHashMap<>();
         for (String label : labels) {
@@ -108,7 +118,10 @@ public final class StudentParameters {
             String prefix = label.substring(0, 2);
             List<String> occurrences = values.get(prefix);
             if (occurrences.isEmpty()) {
-                throw new ParseException("Error: Missing required parameter: " + label + ".");
+                if (required) {
+                    throw new ParseException("Error: Missing required parameter: " + label + ".");
+                }
+                continue;
             }
             if (occurrences.size() > 1) {
                 throw new ParseException("Error: Parameter " + prefix + " may be specified only once.");

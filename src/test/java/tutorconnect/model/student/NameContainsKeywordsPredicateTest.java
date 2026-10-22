@@ -73,6 +73,15 @@ public class NameContainsKeywordsPredicateTest {
     }
 
     @Test
+    public void test_partialNormalizedNames_matchesAnyKeyword() {
+        Student student = new StudentBuilder().withName("José Alice Tan").build();
+        assertTrue(new NameContainsKeywordsPredicate(List.of("LIc")).test(student));
+        assertTrue(new NameContainsKeywordsPredicate(List.of("missing", "ｊｏｓｅ\u0301")).test(student));
+        assertFalse(new NameContainsKeywordsPredicate(List.of("Jose")).test(student));
+        assertFalse(new NameContainsKeywordsPredicate(List.of("  ")).test(student));
+    }
+
+    @Test
     public void toStringMethod() {
         List<String> keywords = List.of("keyword1", "keyword2");
         NameContainsKeywordsPredicate predicate = new NameContainsKeywordsPredicate(keywords);
