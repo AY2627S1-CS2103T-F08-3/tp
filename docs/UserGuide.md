@@ -421,6 +421,63 @@ To check persistence, set a subject, close and reopen the app, then select the s
 appear unchanged on the card and in the details panel. Entering an equivalent value such as `h2   MATH`
 after saving `H2 Math` reports no change and keeps `H2 Math` as the display value.
 
+### Keeping a student's note (story 13): `note` and `clearnote`
+
+Format: `note INDEX m/NOTE` and `clearnote INDEX`
+
+Keeps one freeform note per student, such as `weak in calculus, short attention span`, so you can read it before
+the next lesson. `note` sets the note, or replaces the current one. `clearnote` removes it. `INDEX` is the
+**currently displayed**, 1-based index, so after `find Betsy` the index `1` is the first matching student.
+
+Examples:
+* `note 1 m/Weak in calculus; needs more practice on integration`
+* `note 2 m/Short attention span - keep exercises under 10 minutes`
+* `clearnote 1`
+
+The note is everything after `m/`. It can hold ordinary punctuation and symbols, including slashes, so
+`he/she`, `and/or`, `w/ parent` and `speed in m/s` are all fine. Only the text between the index and `m/` is
+checked: anything other than the index there is an error.
+
+* The note is normalized first: Unicode NFKC, trimmed, and repeated spaces collapsed. Compatibility characters
+  are replaced by their plain forms, so `x²` is stored as `x2` and full-width letters become ordinary letters.
+* It must have **1 to 500 characters** after that. Control characters, zero-width and other invisible format
+  characters, and line breaks are rejected, because the note is a single line.
+* Capital letters are kept as typed. Two notes are the same only if they match exactly, so `weak in calculus`
+  replaces `Weak in calculus`.
+* A student has at most one note. To remove it, use `clearnote`; `note 1 m/` with nothing after `m/` is an
+  invalid note, not a clear.
+
+The note appears as `Note: ...` in the selected-student details, wrapped over several lines if it is long (scroll
+the details panel to read all of it). A student with no note shows an em dash (`—`). Setting or clearing a note
+selects the student and refreshes the details; it does not change any other field. Deleting a student deletes
+their note, and editing a student's contact details keeps it.
+
+| Outcome | Message |
+| --- | --- |
+| Note set | `Note set for NAME.` |
+| Note replaced | `Note updated for NAME.` |
+| Same note again | `Note for NAME is already up to date.` |
+| Note cleared | `Note cleared for NAME.` |
+| `clearnote` on a student with no note | `NAME has no note to clear.` |
+| Unexpected text before `m/`, or after the index in `clearnote` | `Error: Unexpected text after command.` |
+| Another prefix before `m/`, e.g. `note 1 x/y m/text` | `Error: Unknown parameter: x/.` |
+| Missing `m/`, e.g. `note 1` | `Error: Missing required parameter: m/NOTE.` |
+| `clearnote` without an index | `Error: Missing required parameter: INDEX.` |
+| Invalid or missing index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Invalid note | `Error: Invalid note. Use 1-500 characters with no control characters or line breaks.` |
+| Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
+| Save failed | `Error: Changes could not be saved. No changes were made.` |
+
+Errors are reported in the order shown for `note`: unexpected text or an unknown prefix, then a missing `m/`,
+then the index syntax, then the note, then whether the row exists. So `note 0 m/text` reports the invalid index,
+while `note 99 m/` reports the invalid note. A failed command, including a failed save, changes nothing: the
+saved file, the student list, the filter and the selection all stay as they were. Setting the same note again
+or clearing an empty note saves nothing.
+
+The note is saved with the student as `"academicNote": "..."` in the data file and survives a restart. Files
+saved before notes existed load normally, with no note. If you edit the file by hand and the value is not a
+text, `note` treats it as no note and replaces it, and `clearnote` removes it. Back up the file before editing.
+
 ### Setting a student's hourly rate (F07): `rate`
 
 Format: `rate INDEX r/RATE`
@@ -633,5 +690,7 @@ Action     | Format, Examples
 **Schedule** | `schedule INDEX d/DAY t/TIME`<br> e.g., `schedule 1 d/Tuesday t/19:00`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
+**Set note** | `note INDEX m/NOTE`<br> e.g., `note 1 m/Weak in calculus`
+**Clear note** | `clearnote INDEX`<br> e.g., `clearnote 1`
 **Help**   | `help`
 **Exit**   | `exit`
