@@ -75,11 +75,6 @@ public class TutorConnectParser {
                     ? VisibleIndex.MESSAGE_INVALID : ListCommandParser.MESSAGE_PARAMETERS);
         }
 
-        // Note to developers: Change LOG_LEVEL in LogsCenter to enable lower level (i.e., FINE, FINER and lower)
-        // log messages such as the one below.
-        // Lower level log messages are used sparingly to minimize noise in the code.
-        logger.fine("Command word: " + commandWord + "; Arguments: " + arguments);
-
         return switch (commandWord) {
             case AddCommand.COMMAND_WORD -> new AddCommandParser().parse(arguments);
             case EditCommand.COMMAND_WORD -> new EditCommandParser().parse(arguments);
@@ -104,7 +99,7 @@ public class TutorConnectParser {
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
             case HelpCommand.COMMAND_WORD -> new HelpCommand();
             default -> {
-                logger.finer("This user input caused a ParseException: " + userInput);
+                logger.fine("Rejected an unknown command");
                 throw new ParseException(MESSAGE_UNKNOWN_COMMAND);
             }
         };
