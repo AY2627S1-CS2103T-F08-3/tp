@@ -566,6 +566,49 @@ If a save fails, check the data folder's permissions and free disk space before 
 Rates survive restart; existing JSON rates written as numbers or strings are accepted within the limits above,
 and are saved as exact two-decimal strings. Missing or null rates remain unset. Back up data before manual edits.
 
+### Recording a monthly payment status (story 11): `payment`
+
+Format: `payment INDEX m/YYYY-MM s/pending|completed`
+
+Records the student's manual payment status for one calendar month. `INDEX` targets the currently displayed,
+1-based student list, so a preceding `find` changes which student an index selects. Both lowercase prefixes are
+required exactly once and may appear in either order. Enter a real month as four year digits, a hyphen and a
+two-digit month. Statuses are lowercase `pending` or `completed`.
+
+Examples:
+
+* `payment 1 m/2026-10 s/pending` records an explicitly pending payment for October 2026.
+* `payment 1 s/completed m/2026-10` changes that month's status to completed.
+* Repeating the completed command reports that the status is already completed and does not save or change selection.
+* `find Casey` followed by `payment 1 m/2026-11 s/pending` targets the first displayed match.
+
+A missing month entry means **unrecorded**; it is different from a recorded `pending` status. Each student can
+have one status per month. Replacing a status affects only that month, and months and students are independent.
+The command is manual status tracking only; it does not create invoices or process payments. Payment history is
+stored with the student's UUID and survives edits and restart. Deleting the student deletes the attached history.
+Older records without payment history load with none recorded. Malformed stored payment history is rejected.
+
+On a real change, the student is selected and details refresh. An identical status is a successful no-change
+result with no save; errors and save failures preserve the existing selection and data.
+
+| Outcome | Message |
+| --- | --- |
+| First status | `Payment status set for NAME (PHONE) (YYYY-MM): pending.` |
+| Replacement | `Payment status updated for NAME (PHONE) (YYYY-MM): pending -> completed.` |
+| Same status | `Payment status for NAME (PHONE) (YYYY-MM) is already completed.` |
+| Missing month prefix | `Error: Missing required parameter: m/MONTH.` |
+| Missing status prefix | `Error: Missing required parameter: s/STATUS.` |
+| Invalid month | `Error: Invalid month. Enter a valid month in YYYY-MM format.` |
+| Invalid status | `Error: Invalid payment status. Use pending or completed.` |
+| Invalid index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| No displayed student | `Error: No student exists at index INDEX.` |
+| Save failure | `Error: Changes could not be saved. No changes were made.` |
+
+Unknown or repeated prefixes and unexpected text are reported before parameter values. The parser then checks index
+syntax, month, status, and finally whether a student exists at that displayed index. For example,
+`payment 99 m/2026-13 s/invalid` reports the invalid month before looking up student 99. A valid but missing
+displayed index reports the no-student error after the month and status pass validation.
+
 ### Scheduling a weekly lesson (F08): `schedule`
 
 Sets one recurring weekly lesson for the student at an index in the **currently displayed list**.
