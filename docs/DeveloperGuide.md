@@ -629,6 +629,31 @@ testers are expected to do more *exploratory* testing.
 
 ## Delete/list student integration (F02/F03)
 
+### Student discovery (stories 10 and 15)
+
+`find` uses `NameContainsKeywordsPredicate`: NFKC normalization via `StudentText`, followed by
+`Locale.ROOT` lowercase substring comparison. Whitespace-separated keywords are OR alternatives;
+accents are preserved. `filter` uses `StudentCriteriaPredicate` with optional typed `EducationLevel`
+and `Subject` criteria combined with AND. Their existing constructors/equality define alias and label
+normalization. Unset or unreadable requested fields do not match. `StudentParameters.parseOptional`
+reuses structural checks without relaxing any existing command's required parameters.
+
+<puml src="diagrams/StudentDiscoverySequenceDiagram.puml" width="900" />
+
+Both commands replace the model predicate over the full register, retain stored order, clear selection,
+and report the result count (including zero). Queries do not change records, so `LogicManager` does not
+save. `list` remains the reload/reset operation. Parse errors never publish a proposed model.
+`WeeklySchedule` observes the full register independently of the student-list predicate.
+
+Indexed commands resolve the displayed row to its UUID before mutation. If a successful level/subject
+update removes that row from the filter, `StudentFieldUpdate` clears selection and returns no row index;
+otherwise its existing selection policy is retained. This avoids publishing a hidden selected UUID or
+selecting the next student after the row disappears. Existing edit/reset and deletion behavior is retained.
+
+`StudentDiscoveryIntegrationTest` covers query replacement, no-save queries, JSON reload, every indexed
+mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
+rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
+
 * `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
   Decimal text is compared against list size before integer conversion, safely handling oversized indices.
 * Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,

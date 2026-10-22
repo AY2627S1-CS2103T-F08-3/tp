@@ -48,6 +48,19 @@ This project has three types of tests:
 
 ## F01–F08 acceptance
 
+Student discovery (F03, stories 10 and 15) adds focused `FindCommandParserTest`,
+`NameContainsKeywordsPredicateTest`, `FilterCommandParserTest`, `FilterCommandTest` and
+`StudentCriteriaPredicateTest` coverage. Run `StudentDiscoveryIntegrationTest` for real command parsing,
+full-register query replacement, all seven indexed mutation targets and persisted UUIDs, no-save queries,
+error preservation, and schedule independence. `StudentDiscoveryUiTest` runs with `F01_UI_TESTS=true`
+and verifies rendered result numbering, empty placeholders and selection through the command box.
+
+Manual discovery check: add three students, give rows 2 and 3 the same level, then `filter l/LEVEL`.
+The matching rows should be numbered 1 and 2 in stored order. Change the first displayed student's level
+to a different level: only that student changes, disappears from the current filter, and selection clears.
+Use a partial-name `find` to retrieve that student from the full register, then `list` to restore all rows.
+Check the weekly schedule remains independent throughout.
+
 Coordination is tracked in [acceptance issue #79](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues/79).
 Each owner remains responsible for their feature's tests and fixes. The final integrated acceptance snapshot
 is `f08-04-ui-schedule` at `93ad5cf0`, combining master `7b6cc481`, scheduling integration `9f7146e6`
