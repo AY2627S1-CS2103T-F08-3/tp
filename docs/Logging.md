@@ -29,3 +29,15 @@ This applies to contact commands (`add`, `edit`, `guardian`, `delete`) and other
 Logs can still contain UUIDs, file paths and storage exception causes, and older log files may contain
 raw commands. Treat them as personal data. `LogicManagerLoggingTest` covers saves, save failures,
 contact command completion, validation rejection and omission of contact values from command traces.
+
+## Student discovery
+
+`FindCommand`, `FilterCommand` and `ListCommand` log at `FINE` when they apply a view to the proposed
+model. Events include the result count (including zero), full-register scope and selection clearing.
+Filter events identify only whether level/subject criteria were supplied, never their values.
+The find/filter parsers log rejection categories: missing criteria, prohibited text, invalid parameter
+structure or invalid criterion values. They do not log the input or attach validation exceptions.
+
+These view events occur before publication; the shared `LogicManager` publication event remains the
+confirmation that the live model was updated. No per-student predicate logs are emitted.
+`StudentDiscoveryLoggingTest` checks zero/nonzero outcomes, rejection categories and omission of query values.
