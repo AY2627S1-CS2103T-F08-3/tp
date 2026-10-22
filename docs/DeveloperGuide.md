@@ -113,11 +113,26 @@ How the `Logic` component works:
 
 Here are the other classes in `Logic` (omitted from the class diagram above) that are used for parsing a user command:
 
-<puml src="diagrams/ParserClasses.puml" width="600"/>
+<puml src="diagrams/ParserClasses.puml" width="100%" alt="Contact parsers and their validation helpers"/>
 
-How the parsing works:
-* When called upon to parse a user command, the `TutorConnectParser` class creates an `XYZCommandParser` (`XYZ` is a placeholder for the specific command name, e.g., `AddCommandParser`). The parser uses the other classes shown above to parse the user command and create an `XYZCommand` object (e.g., `AddCommand`). The `TutorConnectParser` returns that object as a `Command` object.
-* All `XYZCommandParser` classes, such as `AddCommandParser` and `DeleteCommandParser`, implement the `Parser` interface so they can be treated similarly where appropriate, for example during testing.
+How contact parsing works:
+
+* `TutorConnectParser` dispatches `add`, `guardian`, `delete` and `edit` to the corresponding concrete
+  `Parser<T>`. Each returns its matching command; parsing does not save or mutate the model.
+* `AddCommandParser` and `GuardianCommandParser` use `StudentParameters` to validate parameter structure
+  while retaining raw values. `ParserUtil` creates validated contact values and arbitrary-size `Index` objects.
+* `DeleteCommandParser` normalizes its single positional argument through `StudentText`, checks missing
+  or multiple indices, then uses `ParserUtil.parseIndex`. Index syntax and row existence are separate checks:
+  command execution resolves the index against the currently displayed list using `VisibleIndexResolver`.
+* `EditCommandParser` checks raw controls before trimming, recognizes Unicode spaces, and rejects unknown
+  ASCII-letter prefixes and extra positional text. It retains `ArgumentTokenizer` / `ArgumentMultimap`
+  for optional fields and repeated tags. Repeated single-value prefixes precede index and field validation;
+  a lone blank `t/` clears tags. Prefix constants and the other command parsers are omitted for readability.
+* Once parsing succeeds, `LogicManager` executes the command on `Model.copyForCommand()`, saves changed
+  data, then calls `Model.publish()`. A parse, execution or save error leaves the live model and view intact.
+  Contact updates retain the student's UUID, insertion position and unrelated `StudentFields`, including
+  unknown nested JSON. Deletion removes the entire target record. These are execution/storage guarantees,
+  not responsibilities of the parser classes.
 
 ### Model component
 **API** : [`Model.java`](https://github.com/AY2627S1-CS2103T-F08-3/tp/tree/master/src/main/java/tutorconnect/model/Model.java)
@@ -506,7 +521,7 @@ These are product priorities, not release commitments. The initial MVP covers st
 
 **MSS**
 
-1. User requests to add a student, providing name, phone, parent contact, education level, subject and address.
+1. User requests to add a student, providing name, student phone and address.
 2. TutorConnect adds the student.
 
    Use case ends.
@@ -519,7 +534,7 @@ These are product priorities, not release commitments. The initial MVP covers st
 
       Use case resumes at step 1.
 
-* 1b. The student already exists (same name and parent contact).
+* 1b. The student already exists (same normalized name and student phone).
 
     * 1b1. TutorConnect shows a duplicate-student error message.
 
@@ -606,7 +621,7 @@ These are product priorities, not release commitments. The initial MVP covers st
 
       Use case resumes at step 2.
 
-* 3c. The edit would result in a duplicate student (same name and parent contact as an existing student).
+* 3c. The edit would result in a duplicate student (same normalized name and student phone as an existing student).
 
     * 3c1. TutorConnect shows a duplicate-student error message.
 
@@ -671,6 +686,27 @@ testers are expected to do more *exploratory* testing.
        Expected: The most recent window size and location are retained.
 
 1. _{ more test cases … }_
+
+### Contact editing and failure preservation
+
+Use a disposable data directory with an empty `persons` array in `data/addressbook.json`.
+
+1. Add `add n/Alex Tan p/81234567 a/21 Clementi Ave` and
+   `add n/Nur Aisyah p/92345678 a/8 Jalan Besar`. Set `guardian 2 g/91234567`.
+2. Run `find Nur`, then `edit 1 a/12/3 New Street`. Nur is the displayed target even though she was
+   second in the full register. The full register reappears, Nur stays selected and her guardian is retained.
+3. Run `find Nur`, select Nur's row, then `edit 1 a/21 Clementi x/accidental`.
+   Expect `Error: Unknown parameter: x/.` with the saved address, filtered list and selection unchanged.
+   `edit 1 extra n/Nur` reports `Error: Unexpected text after command.` with the same preservation.
+4. Run `edit 1 a/12/3 New Street`. This equivalent edit retains the filtered view and selection without
+   saving. `edit 1 n/Alex Tan p/81234567` is rejected as a duplicate of the hidden Alex record.
+   `edit 999999999999999999999 n/Nur` reports a missing row without crashing or changing state.
+5. Exit and reopen from the same directory. Verify both students, Nur's updated address and her guardian.
+   Run `find Nur`, `delete 1`, then `list`. Only Alex remains, numbered 1; Nur's complete profile is removed.
+6. For storage failures, use the automated failure-injection tests rather than changing a real data
+   folder's permissions. `ContactExtensionIntegrationTest` verifies nested unknown fields across updates,
+   reload and deletion, and unchanged bytes/filter/selection when atomic replacement fails.
+   `EditStudentUiTest` verifies rejected and successful edits through the real JavaFX command box.
 
 ### Deleting a student
 
@@ -784,17 +820,17 @@ selecting the next student after the row disappears. Existing edit/reset and del
 mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
 rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
 
-* `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+- `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
   Decimal text is compared against list size before integer conversion, safely handling oversized indices.
-* Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+- Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
   including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
   Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
-* List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+- List reads and validates saved records into the proposed model, resets the filter, and clears selection.
   It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
-* The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+- The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
   `StudentListPanel.selectStudent` refreshes cells so row numbering follows the updated positions.
   The empty register shows a placeholder; clearing selection resets the details panel.
-* Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+- Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
   metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
 
 Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,

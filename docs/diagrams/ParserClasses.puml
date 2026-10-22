@@ -3,36 +3,72 @@
 skinparam arrowThickness 1.1
 skinparam arrowColor LOGIC_COLOR_T4
 skinparam classBackgroundColor LOGIC_COLOR
+skinparam classFontSize 14
+skinparam classAttributeFontColor white
+hide empty members
+show members
 
-Class "{abstract}\nCommand" as Command
-Class XYZCommand
+title Contact command parsing
+caption Selected dependencies; other commands, value types and prefix constants are omitted.
 
-package "Parser classes"{
-Class "<<interface>>\nParser" as Parser
-Class TutorConnectParser
-Class XYZCommandParser
-Class CliSyntax
-Class ParserUtil
-Class ArgumentMultimap
-Class ArgumentTokenizer
-Class Prefix
+class TutorConnectParser {
+  +parseCommand(input): Command
+}
+interface Parser {
+  +parse(args): T
 }
 
-Class HiddenOutside #FFFFFF
-HiddenOutside ..> TutorConnectParser
+together {
+  class AddCommandParser
+  class GuardianCommandParser
+  class DeleteCommandParser
+  class EditCommandParser
+}
 
-TutorConnectParser .down.> XYZCommandParser: <<create>>
+class StudentParameters {
+  +parse(input, labels)
+  +parseIndexedValues(input, labels)
+}
+class ArgumentTokenizer
+class ArgumentMultimap
+class ParserUtil {
+  +parseIndex(text): Index
+  +parseName(text): Name
+  +parsePhone(text): Phone
+  +parseAddress(text): Address
+  +parseGuardianPhone(text): GuardianPhone
+}
+class "StudentText\n(commons.util)" as StudentText
+class "Index\n(commons.core.index)" as Index
 
-XYZCommandParser ..> XYZCommand : <<create>>
-TutorConnectParser ..> Command : <<use>>
-XYZCommandParser .up.|> Parser
-XYZCommandParser ..> ArgumentMultimap
-XYZCommandParser ..> ArgumentTokenizer
-ArgumentTokenizer .left.> ArgumentMultimap
-XYZCommandParser ..> CliSyntax
-CliSyntax ..> Prefix
-XYZCommandParser ..> ParserUtil
-ParserUtil .down.> Prefix
-ArgumentTokenizer .down.> Prefix
-XYZCommand -up-|> Command
+TutorConnectParser ..> AddCommandParser : <<create>>
+TutorConnectParser ..> GuardianCommandParser : <<create>>
+TutorConnectParser ..> DeleteCommandParser : <<create>>
+TutorConnectParser ..> EditCommandParser : <<create>>
+
+AddCommandParser ..|> Parser
+GuardianCommandParser ..|> Parser
+DeleteCommandParser ..|> Parser
+EditCommandParser ..|> Parser
+
+AddCommandParser ..> StudentParameters
+GuardianCommandParser ..> StudentParameters
+AddCommandParser ..> ParserUtil
+GuardianCommandParser ..> ParserUtil
+DeleteCommandParser ..> ParserUtil
+EditCommandParser ..> ParserUtil
+ParserUtil ..> Index : <<create>>
+
+GuardianCommandParser ..> StudentText
+DeleteCommandParser ..> StudentText
+EditCommandParser ..> StudentText : reject raw controls
+EditCommandParser ..> ArgumentTokenizer
+EditCommandParser ..> ArgumentMultimap
+ArgumentTokenizer ..> ArgumentMultimap : <<create>>
+
+note bottom of EditCommandParser
+  Check controls, unknown prefixes and
+  positional text before field validation.
+  Repeated tag prefixes remain supported.
+end note
 @enduml
