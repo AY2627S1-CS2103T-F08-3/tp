@@ -14,6 +14,7 @@ import tutorconnect.logic.commands.Command;
 import tutorconnect.logic.commands.DeleteCommand;
 import tutorconnect.logic.commands.EditCommand;
 import tutorconnect.logic.commands.ExitCommand;
+import tutorconnect.logic.commands.FilterCommand;
 import tutorconnect.logic.commands.FindCommand;
 import tutorconnect.logic.commands.GuardianCommand;
 import tutorconnect.logic.commands.HelpCommand;
@@ -77,6 +78,7 @@ public class TutorConnectParser {
             case LevelCommand.COMMAND_WORD -> new LevelCommandParser().parse(arguments);
             case ClearCommand.COMMAND_WORD -> new ClearCommand();
             case FindCommand.COMMAND_WORD -> new FindCommandParser().parse(arguments);
+            case FilterCommand.COMMAND_WORD -> new FilterCommandParser().parse(arguments);
             case ListCommand.COMMAND_WORD -> new ListCommandParser().parse(arguments);
             case ScheduleCommand.COMMAND_WORD -> new ScheduleCommandParser().parse(arguments);
             case ExitCommand.COMMAND_WORD -> new ExitCommand();
