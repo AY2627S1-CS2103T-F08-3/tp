@@ -334,6 +334,7 @@ Unknown optional JSON fields preserved across contact commands | #150
 `note INDEX m/NOTE` and `clearnote INDEX` (story 13) | #151, DG #158
 `timetable [d/DAY]` daily/weekly view (story 14) | #148
 `unschedule INDEX` removes a weekly slot only | #155
+UI class diagram and scheduling Developer Guide sections | #159
 User Guide alignment and fork-based workflow docs | #127, #129
 
 The data file stays at `data/addressbook.json` with its `persons` key, so v1.3 data loads unchanged.
@@ -342,7 +343,7 @@ The data file stays at `data/addressbook.json` with its `persons` key, so v1.3 d
 
 Item | Result
 --- | ---
-Source | team master `df3494c8911306dbcc552b8c92618509cebcc62f` (includes #155, excludes open PRs)
+Source | team master `45cf8cf8a6a4b75dcfa1caafad8848dee470149c` (includes #159) and `df3494c8911306dbcc552b8c92618509cebcc62f`; #159 changed docs only and both built byte-identical JARs. Open PRs are excluded
 Toolchain | macOS 26 (Darwin 25.6), Zulu Java 25.0.3 FX, Gradle wrapper
 Checks | `F06_UI_TESTS=true python3 .agents/skills/test-ui/scripts/run-tp-tests.py --repo .`: **561 tests, 0 failures, errors or skips** with F01/F06/F08 desktop tests, Checkstyle, coverage, `shadowJar`, JAR verification, `.github/run-checks.sh` and `git diff --check`
 Artifact | `build/libs/tutorconnect.jar`, 12,584,447 bytes, SHA-256 `6b6137a94bcf235c9b3bcb6278f97a931b571069f337abb76e406f33f7ecda4f`
@@ -354,8 +355,8 @@ not match a JAR built from a later commit.
 
 ### Final integration and release checklist
 
-1. Review and merge the remaining v1.4 PRs manually; decide whether open PRs such as #153 (assessments) and
-   #159 (scheduling UML/DG) are in this release. Master's DG already describes assessment history from #158,
+1. Review and merge the remaining v1.4 PRs manually; decide whether open PRs such as #153 (assessments)
+   are in this release. Master's DG already describes assessment history from #158,
    while the commands are only in #153. Merge #153 or adjust that DG section before tagging.
 2. Sync: `git fetch team`, fast-forward local `master` to `team/master`, and push it to your fork.
 3. From a clean checkout of that commit, run the full desktop-enabled checks:
@@ -376,5 +377,5 @@ not match a JAR built from a later commit.
    `timetable d/Funday` (error, view unchanged). Close and relaunch; `list` must show the same data.
 6. Publish release `v1.4` on the team repository from that exact commit, attach `tutorconnect.jar` and its
    checksum, and use the notes from #139 updated with the final SHA, test totals and any PRs merged after
-   `df3494c8`. Mention that the JAR name changed from `addressbook.jar` and the data path did not.
+   `45cf8cf8`. Mention that the JAR name changed from `addressbook.jar` and the data path did not.
 7. Close #139 after the release is published; until then, final release verification is pending.
