@@ -65,6 +65,12 @@ Wait for the JavaFX window, then enter commands in its command box. The terminal
 is for startup and logs, not student commands. Close the window or enter `exit`
 in the app to quit. A desktop display is required; Linux CI uses Xvfb.
 
+`./gradlew run` and `./gradlew test` run with Java assertions enabled (`-ea`), as
+set in `build.gradle`. `AssertionsEnabledTest` fails if tests ever run without
+them. When launching from IntelliJ IDEA, add `-ea` under **Run > Edit
+Configurations > Modify options > Add VM options**. `java -jar` leaves assertions
+off; use `java -ea -jar build/libs/tutorconnect.jar` when developing.
+
 To build and launch a standalone executable JAR:
 
 ```sh
