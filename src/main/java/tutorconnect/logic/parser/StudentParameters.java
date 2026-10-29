@@ -49,7 +49,7 @@ public final class StudentParameters {
         return parseIndexedRequired(input, false, labels);
     }
 
-    private static IndexedParameters parseIndexedRequired(String input, boolean singleToken, String... labels)
+    private static IndexedParameters parseIndexedRequired(String input, boolean isSingleToken, String... labels)
             throws ParseException {
         String leading = input.replaceFirst("^\\p{Zs}+", "");
         Matcher firstToken = Pattern.compile("^([^\\s\\p{Zs}]+)", Pattern.UNICODE_CHARACTER_CLASS).matcher(leading);
@@ -59,7 +59,7 @@ public final class StudentParameters {
             index = firstToken.group(1);
             remaining = leading.substring(firstToken.end());
         }
-        return new IndexedParameters(index, parseRequired(remaining, singleToken, labels));
+        return new IndexedParameters(index, parseRequired(remaining, isSingleToken, labels));
     }
 
     /**
@@ -67,12 +67,12 @@ public final class StudentParameters {
      */
     public record IndexedParameters(String index, Map<String, String> values) {}
 
-    private static Map<String, String> parseRequired(String input, boolean singleToken, String... labels)
+    private static Map<String, String> parseRequired(String input, boolean isSingleToken, String... labels)
             throws ParseException {
-        return parseParameters(input, singleToken, true, labels);
+        return parseParameters(input, isSingleToken, true, labels);
     }
 
-    private static Map<String, String> parseParameters(String input, boolean singleToken, boolean required,
+    private static Map<String, String> parseParameters(String input, boolean isSingleToken, boolean isRequired,
             String... labels) throws ParseException {
         requireNonNull(input);
         Map<String, List<String>> values = new LinkedHashMap<>();
@@ -104,7 +104,7 @@ public final class StudentParameters {
         } else {
             values.get(previous).add(input.substring(start));
         }
-        if (singleToken) {
+        if (isSingleToken) {
             for (List<String> occurrences : values.values()) {
                 for (String value : occurrences) {
                     if (value.replaceAll("^\\p{Zs}+|\\p{Zs}+$", "").split("\\p{Zs}+").length > 1) {
@@ -118,7 +118,7 @@ public final class StudentParameters {
             String prefix = label.substring(0, 2);
             List<String> occurrences = values.get(prefix);
             if (occurrences.isEmpty()) {
-                if (required) {
+                if (isRequired) {
                     throw new ParseException("Error: Missing required parameter: " + label + ".");
                 }
                 continue;

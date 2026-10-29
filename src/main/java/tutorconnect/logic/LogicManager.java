@@ -24,13 +24,7 @@ import tutorconnect.storage.Storage;
  * The main LogicManager of the app.
  */
 public class LogicManager implements Logic {
-    public static final String FILE_OPS_ERROR_FORMAT = "Could not save data due to the following error: %s";
     public static final String MESSAGE_SAVE_FAILURE = "Error: Changes could not be saved. No changes were made.";
-
-    public static final String FILE_OPS_PERMISSION_ERROR_FORMAT =
-            "Could not save data to file %s due to insufficient permissions to write to the file or the folder.";
-    public static final String MESSAGE_ATOMIC_SAVE_FAILURE =
-            "Error: Changes could not be saved. No changes were made.";
 
     private final Logger logger = LogsCenter.getLogger(LogicManager.class);
 
@@ -52,25 +46,13 @@ public class LogicManager implements Logic {
     @Override
     public CommandResult execute(String commandText) throws CommandException, ParseException {
         logger.fine("Command received");
-
-        Command command;
-        try {
-            command = tutorConnectParser.parseCommand(commandText);
-        } catch (ParseException exception) {
-            logger.fine("Command rejected during parsing; model unchanged");
-            throw exception;
-        }
+        Command command = parse(commandText);
         String commandName = command.getClass().getSimpleName();
         logger.fine("Parsed " + commandName + "; executing against a staged copy of the model");
+
         Model proposed = model.copyForCommand();
         if (command instanceof ListCommand) {
-            try {
-                storage.readStudentDirectory().ifPresent(proposed::setStudentDirectory);
-            } catch (DataLoadingException exception) {
-                logger.log(Level.WARNING, "Could not reload student data for list; keeping the current register",
-                        exception);
-                throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
-            }
+            reloadSavedStudents(proposed);
         }
         CommandResult commandResult;
         try {
@@ -79,24 +61,48 @@ public class LogicManager implements Logic {
             logger.fine(commandName + " rejected during execution; staged changes discarded");
             throw exception;
         }
-
-        boolean isChanged = !(command instanceof ListCommand)
-                && !model.getStudentDirectory().equals(proposed.getStudentDirectory());
-        if (isChanged) {
-            try {
-                storage.saveStudentDirectory(proposed.getStudentDirectory());
-            } catch (IOException ioe) {
-                logger.log(Level.WARNING, commandName + " could not be saved; staged changes were discarded", ioe);
-                throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
-            }
-            logger.info(commandName + " saved " + proposed.getStudentDirectory().getStudentList().size()
-                    + " student(s)");
-        } else {
-            logger.fine(commandName + " left student data unchanged; nothing was saved");
+        if (!(command instanceof ListCommand)) {
+            saveIfChanged(commandName, proposed);
         }
         model.publish(proposed);
         logger.fine(commandName + " completed; staged model published");
         return commandResult;
+    }
+
+    private Command parse(String commandText) throws ParseException {
+        try {
+            return tutorConnectParser.parseCommand(commandText);
+        } catch (ParseException exception) {
+            logger.fine("Command rejected during parsing; model unchanged");
+            throw exception;
+        }
+    }
+
+    /** Replaces the staged register with the saved one, which {@code list} shows; a missing file keeps it. */
+    private void reloadSavedStudents(Model proposed) throws CommandException {
+        try {
+            storage.readStudentDirectory().ifPresent(proposed::setStudentDirectory);
+        } catch (DataLoadingException exception) {
+            logger.log(Level.WARNING, "Could not reload student data for list; keeping the current register",
+                    exception);
+            throw new CommandException(ListCommand.MESSAGE_LOAD_FAILURE, exception);
+        }
+    }
+
+    /** Saves the staged register before it is published, unless the command left the student data unchanged. */
+    private void saveIfChanged(String commandName, Model proposed) throws CommandException {
+        if (model.getStudentDirectory().equals(proposed.getStudentDirectory())) {
+            logger.fine(commandName + " left student data unchanged; nothing was saved");
+            return;
+        }
+        try {
+            storage.saveStudentDirectory(proposed.getStudentDirectory());
+        } catch (IOException ioe) {
+            logger.log(Level.WARNING, commandName + " could not be saved; staged changes were discarded", ioe);
+            throw new CommandException(MESSAGE_SAVE_FAILURE, ioe);
+        }
+        logger.info(commandName + " saved " + proposed.getStudentDirectory().getStudentList().size()
+                + " student(s)");
     }
 
     @Override

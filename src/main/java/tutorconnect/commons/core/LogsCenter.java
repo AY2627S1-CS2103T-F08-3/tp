@@ -66,11 +66,11 @@ public class LogsCenter {
     }
 
     /**
-     * Creates a logger named 'ab3', containing a {@code ConsoleHandler} and a {@code FileHandler}.
+     * Creates a logger named 'tutorconnect', containing a {@code ConsoleHandler} and a {@code FileHandler}.
      * Sets it as the {@code baseLogger}, to be used as the parent logger of all other loggers.
      */
     private static void setBaseLogger() {
-        baseLogger = Logger.getLogger("ab3");
+        baseLogger = Logger.getLogger("tutorconnect");
         baseLogger.setUseParentHandlers(false);
         removeHandlers(baseLogger);
         // set the level of the baseLogger, which will be inherited by other loggers
@@ -90,8 +90,9 @@ public class LogsCenter {
             fileHandler.setFormatter(new SimpleFormatter());
             fileHandler.setLevel(Level.ALL);
             baseLogger.addHandler(fileHandler);
-        } catch (IOException e) {
-            logger.warning("Error adding file handler for logger.");
+        } catch (IOException | SecurityException e) {
+            // The class logger does not exist yet, so report through the base logger's console handler.
+            baseLogger.warning("Could not write the log file " + LOG_FILE + "; logging to the console only.");
         }
     }
 

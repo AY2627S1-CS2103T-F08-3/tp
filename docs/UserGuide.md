@@ -72,8 +72,8 @@ It combines typed commands with a graphical student register and details panel.
   An `INDEX` is the current displayed row number, starting at 1, not a stored student ID. After `find`, use the
   filtered row numbers. Signs, decimals and leading zeroes such as `01` are not valid indices.
 
-* Extraneous parameters for commands that take no parameters, such as `help`, `exit`, and `clear`, are ignored.<br>
-  For example, `help 123` is interpreted as `help`.
+* Extra text after `help` and `exit` is ignored; for example, `help 123` is interpreted as `help`.
+  `list` and `clear` refuse extra text instead, so that a mistyped `clear 1` does not delete every student.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
@@ -108,7 +108,7 @@ Copy that address into your browser to read the guide. You can also use the Help
 Format: `help`
 
 
-### Adding a student (F01): `add`
+### Adding a student: `add`
 
 Format: `add n/NAME p/PHONE a/ADDRESS`
 
@@ -150,7 +150,7 @@ if you are unsure whether the student already exists. The name field is not guar
 legal-name convention (for example, `/` and digits are not accepted). Phone support is limited to the
 Singapore formats above; contacts requiring international or multiple numbers are outside current support.
 
-F01 errors are reported in this order: unknown command; unexpected text/unknown parameter; missing/repeated
+Errors are reported in this order: unknown command; unexpected text/unknown parameter; missing/repeated
 parameter (name, phone, address order); invalid name, phone, address; duplicate; save failure.
 
 | Condition | Message |
@@ -211,9 +211,17 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 * Changing the name/phone to match both fields of another student is rejected, including students hidden by a filter.
   Sharing only a name or only a phone is accepted; unlike `add`, `edit` does not append a shared-phone warning.
 
-On success, feedback is `Student updated: NAME.`, and the details panel shows the updated values. No fields supplied reports `At least one field to edit must be provided.`
-A repeated single-value prefix reports `Multiple values specified for the following single-valued field(s): ...`.
-A duplicate reports `Error: This student already exists with the same name and phone.` Invalid indices and save failures use the
+On success, feedback is `Student updated: NAME.`, and the details panel shows the updated values.
+
+| Condition | Message |
+| --- | --- |
+| No field supplied, e.g. `edit 1` | `Error: Supply at least one field to edit: n/NAME, p/PHONE, e/EMAIL, a/ADDRESS or t/TAG.` |
+| Repeated `n/`, `p/`, `e/` or `a/` | `Error: Parameter p/ may be specified only once.` (naming the first repeated prefix in that order) |
+| Invalid email | `Error: Invalid email. Use an address such as alex.tan@example.com, with no spaces.` |
+| Invalid tag | `Error: Invalid tag. Use letters or digits only, with no spaces or punctuation.` |
+| Duplicate | `Error: This student already exists with the same name and phone.` |
+
+Invalid names, phones and addresses use the same messages as `add`. Invalid indices and save failures use the
 standard messages shown in the other command sections.
 
 `edit` rejects control characters and line breaks before trimming values. Unknown whitespace-delimited
@@ -232,7 +240,7 @@ Examples:
 *  `edit 1 p/91234567 e/johndoe@example.com` Edits the phone number and email address of the 1st student to be `91234567` and `johndoe@example.com` respectively.
 *  `edit 2 n/Betsy Crower t/` Edits the name of the 2nd student to be `Betsy Crower` and clears all existing tags.
 
-### Setting a guardian contact (F04): `guardian`
+### Setting a guardian contact: `guardian`
 
 Format: `guardian INDEX g/PHONE`
 
@@ -252,7 +260,7 @@ Use eight Singapore digits starting with **6, 8 or 9**, optionally preceded by `
 hyphens may separate digit groups. Values undergo Unicode NFKC normalization, trimming and repeated-space
 collapse; controls and line breaks are not allowed. The saved and displayed form has no spaces, e.g.
 `+6591234567`. International numbers, extensions, multiple guardian numbers, names and relationships are
-not supported in this MVP. There is no clear-guardian command; a blank value does not remove the number.
+not supported. There is no clear-guardian command; a blank value does not remove the number.
 
 Different students may share a guardian number (for example, siblings). A guardian number may also equal
 the student's own phone number. Both cases are accepted without a duplicate warning.
@@ -287,7 +295,7 @@ When manually editing JSON, use a canonical string such as `"guardianPhone": "+6
 Missing or `null` guardian properties load as unset for compatibility with older data. Invalid guardian
 values prevent the file from loading; back up the file before editing it and prefer the command above.
 
-### Setting a student's education level (F05): `level`
+### Setting a student's education level: `level`
 
 Format: `level INDEX l/LEVEL`
 
@@ -417,7 +425,7 @@ There is no confirmation or undo.
 The proposed register is saved before changing the displayed records. Failed deletion
 preserves the profile, stored data, results, and selection.
 
-### Setting a student's subject (F06): `subject`
+### Setting a student's subject: `subject`
 
 Format: `subject INDEX s/SUBJECT`
 
@@ -482,7 +490,7 @@ To check persistence, set a subject, close and reopen the app, then select the s
 appear unchanged on the card and in the details panel. Entering an equivalent value such as `h2   MATH`
 after saving `H2 Math` reports no change and keeps `H2 Math` as the display value.
 
-### Keeping a student's note (story 13): `note` and `clearnote`
+### Keeping a student's note: `note` and `clearnote`
 
 Format: `note INDEX m/NOTE` and `clearnote INDEX`
 
@@ -523,8 +531,8 @@ their note, and editing a student's contact details keeps it.
 | Unexpected text before `m/`, or after the index in `clearnote` | `Error: Unexpected text after command.` |
 | Another prefix before `m/`, e.g. `note 1 x/y m/text` | `Error: Unknown parameter: x/.` |
 | Missing `m/`, e.g. `note 1` | `Error: Missing required parameter: m/NOTE.` |
-| `clearnote` without an index | `Error: Missing required parameter: INDEX.` |
-| Invalid or missing index syntax | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Missing index, e.g. `note m/text` or `clearnote` | `Error: Missing required parameter: INDEX.` |
+| Invalid index syntax, e.g. `note 0 m/text` | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
 | Invalid note | `Error: Invalid note. Use 1-500 characters with no control characters or line breaks.` |
 | Row does not exist (including oversized integers) | `Error: No student exists at index INDEX.` |
 | Save failed | `Error: Changes could not be saved. No changes were made.` |
@@ -539,7 +547,7 @@ The note is saved with the student as `"academicNote": "..."` in the data file a
 saved before notes existed load normally, with no note. If you edit the file by hand and the value is not a
 text, `note` treats it as no note and replaces it, and `clearnote` removes it. Back up the file before editing.
 
-### Setting a student's hourly rate (F07): `rate`
+### Setting a student's hourly rate: `rate`
 
 Format: `rate INDEX r/RATE`
 
@@ -578,7 +586,8 @@ and `80.00` produce a no-change message, perform no save and preserve the curren
 | Repeated prefix, e.g. `rate 1 r/40 r/50` | `Error: Parameter r/ may be specified only once.` |
 | Extra text before the prefix, e.g. `rate 1 extra r/40` | `Error: Unexpected text after command.` |
 | Missing prefix, e.g. `rate 1` | `Error: Missing required parameter: r/RATE.` |
-| Invalid/missing index with a prefix, e.g. `rate 01 r/40` or `rate r/40` | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
+| Missing index, e.g. `rate r/40` | `Error: Missing required parameter: INDEX.` |
+| Invalid index, e.g. `rate 01 r/40` | `Error: Invalid index. Enter a positive whole number without leading zeroes.` |
 | Invalid rate | `Error: Invalid rate. Enter an SGD amount from 1.00 to 1000.00 with at most two decimal places and no currency symbol.` |
 | No displayed row (including an empty list or oversized index) | `Error: No student exists at index INDEX.` |
 | Save failure | `Error: Changes could not be saved. No changes were made.` |
@@ -594,7 +603,7 @@ If a save fails, check the data folder's permissions and free disk space before 
 Rates survive restart; existing JSON rates written as numbers or strings are accepted within the limits above,
 and are saved as exact two-decimal strings. Missing or null rates remain unset. Back up data before manual edits.
 
-### Recording a monthly payment status (story 11): `payment`
+### Recording a monthly payment status: `payment`
 
 Format: `payment INDEX m/YYYY-MM s/pending|completed`
 
@@ -659,7 +668,7 @@ If there are no recorded payments, or no rows match the optional status, the com
 `No recorded payments for YYYY-MM.` The selected-student details panel shows payment months chronologically;
 students with no history show an em dash.
 
-### Scheduling a weekly lesson (F08): `schedule`
+### Scheduling a weekly lesson: `schedule`
 
 Sets one recurring weekly lesson for the student at an index in the **currently displayed list**.
 
@@ -709,6 +718,27 @@ Structural errors are reported before values. For example, omitting `d/` reports
 `Error: Unknown parameter: x/.` Extra unprefixed tokens report `Error: Unexpected text after command.`
 Values are checked in order: index syntax, day, time, then whether the displayed row exists.
 
+### Removing a weekly lesson: `unschedule`
+
+Format: `unschedule INDEX`. For example, `unschedule 1` removes the weekly slot of the first student
+in the currently displayed list, including after `find`. It does not delete the student or change
+their name, contacts, other optional fields, internal identity or position in the register.
+
+Success reports `Weekly lesson removed for NAME: DAY TIME.`, selects the student, clears their slot
+to an em dash and removes their schedule entry immediately. The removal persists across restart.
+If no slot exists, `No weekly lesson is scheduled for NAME.` is a successful no-change result:
+no save and no selection change. Different students sharing a slot remain unaffected.
+
+Supply one positive displayed index without leading zeroes. A missing index reports
+`Error: Missing required parameter: INDEX.`; zero, negative or malformed indices report
+`Error: Invalid index. Enter a positive whole number without leading zeroes.`
+An oversized or out-of-range valid index reports `Error: No student exists at index INDEX.`
+Unknown prefixes report `Error: Unknown parameter: PREFIX.`; extra bare text and controls report
+`Error: Unexpected text after command.` Structure is checked before index syntax and existence.
+On a save failure, `Error: Changes could not be saved. No changes were made.` preserves the previous
+complete slot, file bytes, student list, filter, selection and details. Retry after resolving the
+storage problem. Use `schedule` to assign a slot again; there is no undo history.
+
 ### Viewing a daily or weekly timetable: `timetable`
 
 Use `timetable` for the full week or `timetable d/DAY` for one weekday in the existing schedule panel.
@@ -725,7 +755,7 @@ or save student data. Slot changes, student renaming and deletion update the cur
 The selected day remains active until another timetable command; restarting opens the full week.
 This is a recurring teaching timetable, not dated bookings, travel planning or conflict detection.
 
-### Recording exam and test results (story 12): `assess`, `assessments` and `unassess`
+### Recording exam and test results: `assess`, `assessments` and `unassess`
 
 Formats: `assess INDEX d/DATE t/TITLE g/GRADE`, `assessments INDEX` and `unassess INDEX i/RECORD`
 
@@ -801,6 +831,7 @@ the saved file, the student list, the filter and the selection all stay as they 
 list can no longer be read (for example an impossible date, a duplicate, or an extra property), the commands
 report it and leave the file untouched rather than overwrite your data: correct or remove the entry, then
 restart. Back up the file before editing.
+
 ### Clearing all entries: `clear`
 
 Permanently removes **all students and their optional fields**, including students hidden by a filter and their
@@ -808,31 +839,12 @@ weekly-schedule entries. There is no confirmation or undo. Back up the data file
 
 Format: `clear`
 
-Normal success feedback is `Address book has been cleared!`. A save failure reports
+Normal success feedback is `All students have been cleared!`. Extra text, such as
+`clear 1`, is refused with `Error: Clear does not accept parameters.` and deletes nothing. A save failure reports
 `Error: Changes could not be saved. No changes were made.`
 
 Successful clearing also clears the selected row and details. A failed save preserves the register,
 filter, selection and details. You do not need to run `list` before `clear`.
-
-### Removing a weekly lesson: `unschedule`
-
-Format: `unschedule INDEX`. For example, `unschedule 1` removes the weekly slot of the first student
-in the currently displayed list, including after `find`. It does not delete the student or change
-their name, contacts, other optional fields, internal identity or position in the register.
-
-Success reports `Weekly lesson removed for NAME: DAY TIME.`, selects the student, clears their slot
-to an em dash and removes their schedule entry immediately. The removal persists across restart.
-If no slot exists, `No weekly lesson is scheduled for NAME.` is a successful no-change result:
-no save and no selection change. Different students sharing a slot remain unaffected.
-
-Supply one positive displayed index without leading zeroes. Missing, zero, negative or malformed
-indices report `Error: Invalid index. Enter a positive whole number without leading zeroes.`
-An oversized or out-of-range valid index reports `Error: No student exists at index INDEX.`
-Unknown prefixes report `Error: Unknown parameter: PREFIX.`; extra bare text and controls report
-`Error: Unexpected text after command.` Structure is checked before index syntax and existence.
-On a save failure, `Error: Changes could not be saved. No changes were made.` preserves the previous
-complete slot, file bytes, student list, filter, selection and details. Retry after resolving the
-storage problem. Use `schedule` to assign a slot again; there is no undo history.
 
 ### Exiting the program: `exit`
 
@@ -929,7 +941,7 @@ Action     | Format, Examples
 **Add student** | `add n/NAME p/PHONE a/ADDRESS` <br> e.g., `add n/James Ho p/81224444 a/123, Clementi Rd, 1234665`
 **Clear**  | `clear`
 **Delete** | `delete INDEX`<br> e.g., `delete 3`
-**Edit**   | `edit INDEX [n/NAME] [p/PHONE_NUMBER] [e/EMAIL] [a/ADDRESS] [t/TAG]... `<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
+**Edit**   | `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]...`<br> e.g.,`edit 2 n/James Lee e/jameslee@example.com`
 **Set education level** | `level INDEX l/LEVEL`<br> e.g., `level 1 l/Secondary 4`
 **Set guardian contact** | `guardian INDEX g/PHONE`<br> e.g., `guardian 1 g/+65 9123 4567`
 **Find**   | `find KEYWORD [MORE_KEYWORDS]`<br> e.g., `find James Jake`
@@ -943,8 +955,8 @@ Action     | Format, Examples
 **Remove assessment** | `unassess INDEX i/RECORD`<br> e.g., `unassess 1 i/2`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
-**Record monthly payment status** | `payment INDEX m/YYYY-MM s/pending|completed`<br> e.g., `payment 1 m/2026-10 s/pending`
-**List monthly payment statuses** | `payments m/YYYY-MM [s/pending|completed]`<br> e.g., `payments m/2026-10 s/completed`
+**Record monthly payment status** | `payment INDEX m/YYYY-MM s/pending\|completed`<br> e.g., `payment 1 m/2026-10 s/pending`
+**List monthly payment statuses** | `payments m/YYYY-MM [s/pending\|completed]`<br> e.g., `payments m/2026-10 s/completed`
 **Set note** | `note INDEX m/NOTE`<br> e.g., `note 1 m/Weak in calculus`
 **Clear note** | `clearnote INDEX`<br> e.g., `clearnote 1`
 **Help**   | `help`

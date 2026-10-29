@@ -13,7 +13,7 @@ import tutorconnect.commons.util.ToStringBuilder;
 import tutorconnect.model.tag.Tag;
 
 /**
- * Represents a Student in the address book.
+ * Represents a Student in the student directory.
  * Guarantees: required details are present and validated, optional details are explicitly unset or validated,
  * and the object is immutable.
  */

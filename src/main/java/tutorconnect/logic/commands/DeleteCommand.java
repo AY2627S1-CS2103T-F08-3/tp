@@ -11,7 +11,7 @@ import tutorconnect.model.Model;
 import tutorconnect.model.student.Student;
 
 /**
- * Deletes a student identified using its displayed index from the address book.
+ * Deletes a student identified using its displayed index from the student directory.
  */
 public class DeleteCommand extends Command {
 

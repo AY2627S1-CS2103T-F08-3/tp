@@ -191,7 +191,7 @@ public class ParserUtilTest {
         String tagTooLong = longestTag + "a";
         assertEquals(new Tag(longestTag), ParserUtil.parseTag(longestTag));
         assertThrows(ParseException.class, ParserUtil.MESSAGE_TAG_TOO_LONG, () -> ParserUtil.parseTag(tagTooLong));
-        assertThrows(ParseException.class, Tag.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseTag("bad tag"));
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_INVALID_TAG, () -> ParserUtil.parseTag("bad tag"));
     }
 
     @Test

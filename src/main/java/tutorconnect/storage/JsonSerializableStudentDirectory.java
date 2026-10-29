@@ -49,7 +49,7 @@ class JsonSerializableStudentDirectory {
     }
 
     /**
-     * Converts this address book into the model's {@code StudentDirectory} object.
+     * Converts this student directory into the model's {@code StudentDirectory} object.
      *
      * @throws IllegalValueException if there were any data constraints violated.
      */

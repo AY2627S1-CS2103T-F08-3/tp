@@ -78,7 +78,7 @@ public class MainWindow extends UiPart<Stage> {
     private StudentDetailsPanel studentDetailsPanel;
     private WeeklySchedulePanel weeklySchedulePanel;
     private CommandBox commandBox;
-    private boolean executingCommand;
+    private boolean isExecutingCommand;
 
     @FXML
     private ScrollPane commandRail;
@@ -205,7 +205,7 @@ public class MainWindow extends UiPart<Stage> {
         studentDetailsPanel = new StudentDetailsPanel();
         studentDetailsPlaceholder.getChildren().add(studentDetailsPanel);
         studentListPanel = new StudentListPanel(logic.getFilteredStudentList(), student -> {
-            if (!executingCommand) {
+            if (!isExecutingCommand) {
                 logic.selectStudent(student == null ? null : student.getId());
                 studentDetailsPanel.showStudent(student);
             }
@@ -448,7 +448,7 @@ public class MainWindow extends UiPart<Stage> {
      * @see tutorconnect.logic.Logic#execute(String)
      */
     private CommandResult executeCommand(String commandText) throws CommandException, ParseException {
-        executingCommand = true;
+        isExecutingCommand = true;
         try {
             CommandResult commandResult = logic.execute(commandText);
             commandResult.getTimetableView().ifPresent(view -> weeklySchedulePanel.showDay(view.day()));
@@ -473,7 +473,7 @@ public class MainWindow extends UiPart<Stage> {
             resultDisplay.setFeedbackToUser(e.getMessage());
             throw e;
         } finally {
-            executingCommand = false;
+            isExecutingCommand = false;
         }
     }
 }

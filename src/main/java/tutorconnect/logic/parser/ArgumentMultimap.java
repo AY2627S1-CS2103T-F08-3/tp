@@ -63,16 +63,17 @@ public class ArgumentMultimap {
     }
 
     /**
-     * Throws a {@code ParseException} if any of the prefixes given in {@code prefixes} appeared more than
-     * once among the arguments.
+     * Throws a {@code ParseException} naming the first of {@code prefixes}, in the given order, that appeared
+     * more than once among the arguments.
      */
     public void verifyNoDuplicatePrefixesFor(Prefix... prefixes) throws ParseException {
-        Prefix[] duplicatedPrefixes = Stream.of(prefixes).distinct()
+        Optional<Prefix> duplicatedPrefix = Stream.of(prefixes)
                 .filter(prefix -> argMultimap.containsKey(prefix) && argMultimap.get(prefix).size() > 1)
-                .toArray(Prefix[]::new);
+                .findFirst();
 
-        if (duplicatedPrefixes.length > 0) {
-            throw new ParseException(Messages.getErrorMessageForDuplicatePrefixes(duplicatedPrefixes));
+        if (duplicatedPrefix.isPresent()) {
+            throw new ParseException(String.format(Messages.MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE,
+                    duplicatedPrefix.get()));
         }
     }
 }
