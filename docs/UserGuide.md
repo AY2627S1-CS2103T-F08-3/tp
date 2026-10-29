@@ -335,8 +335,9 @@ Format: `find KEYWORD [MORE_KEYWORDS]`
 * Results retain insertion order, are renumbered from 1, and clear selection. Feedback is `N student(s) listed!`.
   Each `find` searches the full in-memory register, replacing the previous query without saving or reloading
   the file; use `list` to reload/reset the view. Zero matches show `0 student(s) listed!` and `No students found.`.
-* Supply at least one whitespace-separated keyword. Unicode spaces are supported, as are existing tab/newline
-  separators. Hidden format characters are rejected without changing the current view or selection.
+* Supply at least one whitespace-separated keyword; `find` alone reports `Error: Missing required parameter: KEYWORD.`
+  Unicode spaces are supported, as are existing tab/newline separators. Hidden format characters report
+  `Error: Unexpected text after command.` Both errors leave the current view and selection unchanged.
 
 Examples:
 
