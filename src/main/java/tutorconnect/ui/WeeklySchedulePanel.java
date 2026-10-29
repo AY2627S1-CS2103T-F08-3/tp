@@ -68,6 +68,12 @@ public class WeeklySchedulePanel extends VBox {
     }
 
     private static class ScheduleCell extends ListCell<Student> {
+        ScheduleCell() {
+            setWrapText(true);
+            // Let the virtualized list size rows to its viewport, not the unwrapped text.
+            setPrefWidth(0);
+        }
+
         @Override
         protected void updateItem(Student student, boolean empty) {
             super.updateItem(student, empty);
