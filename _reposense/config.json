@@ -1,0 +1,37 @@
+{
+  "authors": [
+    {
+      "gitId": "Antz5lyfe",
+      "displayName": "Anton Ang Jia Jun",
+      "emails": ["antonang04@gmail.com"],
+      "authorNames": ["Anton Ang Jia Jun", "Antz4lyfe"]
+    },
+    {
+      "gitId": "keyfurrr67",
+      "displayName": "Kiefer Lau",
+      "emails": ["kieferlau@gmail.com"],
+      "authorNames": ["kiefer"]
+    },
+    {
+      "gitId": "YUJ1N06",
+      "displayName": "Eugene",
+      "emails": ["chaneugene06@gmail.com"],
+      "authorNames": ["Eugene"]
+    },
+    {
+      "gitId": "JimiBong",
+      "displayName": "Jimi Bong",
+      "emails": [
+        "238704011+JimiBong@users.noreply.github.com",
+        "173172853+careful-carrots@users.noreply.github.com"
+      ],
+      "authorNames": ["Bong Wee Sern, Jimi", "Jimi Bong", "Jimi"]
+    },
+    {
+      "gitId": "ap-was-here",
+      "displayName": "Aishwarai Pratiksha",
+      "emails": ["thepolicearecomingdawg@gmail.com"],
+      "authorNames": ["Pratiksha"]
+    }
+  ]
+}
