@@ -5,56 +5,58 @@
 
 # About Us
 
-We are a team based in the [School of Computing, National University of Singapore](http://www.comp.nus.edu.sg).
+We are a team based in the [School of Computing, National University of Singapore](https://www.comp.nus.edu.sg).
 
-You can contact the TutorConnect team through our [GitHub issue tracker](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues).
+Contact the TutorConnect team through our [GitHub issue tracker](https://github.com/AY2627S1-CS2103T-F08-3/tp/issues).
 
 ## Project team
 
-### Anton
+### Anton Ang Jia Jun
 
 <img src="images/antz5lyfe.png" width="200px">
 
-[[homepage](https://github.com/Antz5lyfe)]
 [[github](https://github.com/Antz5lyfe)]
-[[portfolio](https://github.com/Antz5lyfe)]
+[[portfolio](team/antz5lyfe.md)]
 
-* Role: Member
-* Responsibilities: Happy to be here
+* Role: Developer
+* Responsibilities: Weekly scheduling, contact editing and hourly rates
 
 ### Kiefer Lau
 
 <img src="images/keyfurrr67.png" width="200px">
 
 [[github](https://github.com/keyfurrr67)]
+[[portfolio](team/keyfurrr67.md)]
 
 * Role: Developer
-* Responsibilities: Dev Ops + Threading
+* Responsibilities: Education levels, subjects and academic records
 
 ### Eugene
 
 <img src="images/yuj1n06.png" width="200px">
 
 [[github](https://github.com/YUJ1N06)]
+[[portfolio](team/yuj1n06.md)]
 
-* Role: CFO
-* Responsibilities: Finances
+* Role: Developer
+* Responsibilities: Shared infrastructure, persistence, scheduling integration and builds
 
 ### Jimi Bong
 
 <img src="images/jimibong.png" width="200px">
 
 [[github](https://github.com/JimiBong)]
+[[portfolio](team/jimibong.md)]
 
 * Role: Developer
-* Responsibilities: Testing and code quality
+* Responsibilities: Student deletion and discovery, integration testing and release readiness
 
 ### Aishwarai Pratiksha
 
 <img src="images/ap-was-here.png" width="200px">
 
-[[github](http://github.com/ap-was-here)]
-
+[[github](https://github.com/ap-was-here)]
+[[portfolio](team/ap-was-here.md)]
 
 * Role: Developer
-* Responsibilities: General
+* Responsibilities: Guardian contacts, subject verification and monthly payments
