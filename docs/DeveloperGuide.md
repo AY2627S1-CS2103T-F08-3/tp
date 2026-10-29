@@ -723,35 +723,46 @@ These are product priorities, not release commitments. The initial MVP covers st
 
       Use case resumes at step 2.
 
-## Non-Functional Requirements
+### Non-Functional Requirements
 
-### Operating Environment & Portability
-1. **Platform Independence**: Should work on any mainstream operating system (Windows 10/11, macOS 12+, Ubuntu 20.04 LTS or later) that has Java `17` or higher installed.
-2. **Portability**: Should run out-of-the-box as a single, standalone executable `.jar` file without requiring an installer or external configuration tools.
-3. **Architecture Constraint**: Must not depend on any remote server, third-party backend API, or cloud infrastructure; all application logic and data processing must execute locally on the user's host machine.
+**Operating environment and portability**
 
-### Performance & Scalability
-4. **Capacity**: Should be capable of holding up to 1,000 student and parent contact profiles without noticeable degradation in performance.
-5. **Responsiveness**: Any command execution (including searches, filters, and batch updates) should return feedback to the user interface within 1.0 second under normal operating conditions on a standard personal computer.
-6. **Startup Time**: Should launch to a fully responsive, interactive GUI ready to receive commands within 3.0 seconds of invocation.
+1. Should work on any _mainstream OS_ (Windows, macOS, Linux) that has Java `25` installed. Only Java 25 is
+   supported; the packaged classes target Java 25 and cannot run on older runtimes.
+2. Should run as a single executable JAR (`tutorconnect.jar`, under 100 MB) launched with `java -jar`, without an
+   installer, administrator rights or other files.
+3. Should work from any folder the user can write to. The data file (`data/addressbook.json`), preferences and log
+   are created relative to the folder the app is launched from; a write-protected folder is not supported.
+4. Must not depend on a remote server, cloud service or network connection; all features work offline.
 
-### Usability & Interaction
-7. **CLI Preference**: A user with an above-average typing speed (greater than 60 words per minute) should be able to accomplish everyday contact and scheduling management tasks faster using CLI commands than through GUI navigation (mouse clicks).
-8. **Learnability**: A novice tutor who has basic keyboard familiarity should be able to execute core commands (add, list, find, delete) within 15 minutes of referring to the User Guide.
-9. **GUI Clarity**: The graphical user interface should display all vital student contact details and tags legibly across standard display resolutions ranging from $1280 \times 720$ to $1920 \times 1080$.
+**Performance and capacity**
 
-### Reliability & Data Integrity
-10. **Data Persistence & Format**: User data must be stored locally in an unencrypted, human-editable text file (e.g., JSON). If the file is modified externally and becomes corrupted, the application should fail safely, notify the user, and start with an empty or backup state rather than crash unexpectedly.
-11. **Fault Tolerance**: The application should gracefully handle invalid CLI inputs and malformed flags by presenting clear, actionable error messages without crashing or terminating the session.
-12. **No Relational DBMS**: Must not depend on a heavyweight external relational database management system (e.g., PostgreSQL, MySQL); local file I/O must suffice for all data persistence.
+5. Should hold at least 1,000 students, each with a weekly slot, note, 100 assessment records and 24 months of
+   payment statuses, with each command responding within 1 second on a typical laptop.
+6. Should show an interactive window within 5 seconds of launch on a typical laptop with an SSD.
 
-### Privacy & Confidentiality
-13. **Data Security**: Because TutorConnect stores sensitive student and parent contact details (e.g., home addresses, mobile numbers, hourly tutoring fees), no tracking telemetry, analytics, or user data should ever be transmitted outside the local machine.
+**Usability**
 
-### Glossary
+7. A user who types at 60 words per minute or more should complete common tasks (add, find, schedule, note)
+   faster with commands than with a mouse.
+8. Every failed command should show one error message that names the problem and leave the data, list, filter
+   and selection unchanged.
+9. The main window should remain usable, without overlapping or clipped text, at resolutions from 1280×720 to
+   1920×1080 and at 100% to 150% display scaling.
 
-* **Mainstream OS**: Windows, Linux, Unix, or macOS
-* **Private contact detail**: A contact detail that is not meant to be shared with others
+**Data integrity and storage**
+
+10. Data is stored locally in one human-editable JSON file without a database. Each change is written to a
+    temporary file and atomically replaces the previous file, so a crash or failed save never leaves a partly
+    written file.
+11. A command that does not change data (a query or a no-change update) must not rewrite the data file.
+12. Files written by earlier TutorConnect versions must still load, and fields a version does not recognise must
+    be kept when it saves.
+
+**Privacy**
+
+13. Student and guardian contact details, rates and academic records never leave the user's computer; the app
+    sends no telemetry or network requests.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -961,21 +972,32 @@ Team size: 5. These are fixes for known feature flaws that we plan to make after
 
 ## **Glossary**
 
-* **AB3**: The Address Book level 3 starter project that TutorConnect extends.
+* **AB3**: AddressBook-Level3, the SE-EDU starter project that TutorConnect extends.
+* **Assessment record**: One dated test or exam result (date, title and grade) in a student's assessment history.
 * **Brownfield project**: A project that extends an existing codebase rather than starting from scratch.
 * **CLI (Command-Line Interface)**: A text-based interface where users interact with the application by entering commands.
 * **DevOps**: Development and operational activities such as repository management, build setup, and project tooling.
+* **Data file**: The JSON file (`data/addressbook.json` in the launch folder) that stores all students.
+* **Displayed index**: The number shown beside a student in the current list. Commands use it to pick a student; it
+  changes after `find`, `filter`, `list` or a deletion.
 * **Feature specification**: A description of a feature's purpose, commands, inputs, validation, errors, outputs, and expected behaviour.
 * **Greenfield project**: A project developed from new requirements without relying on an existing product design.
-* **Lesson slot**: A scheduled lesson time associated with a student.
+* **Lesson slot** (weekly slot): A student's one recurring weekly lesson, stored as a day of the week and a 24-hour
+  start time. Different students may share a slot.
 * **Local storage**: Data stored on the user's own computer rather than on an external server.
+* **Mainstream OS**: Windows, Linux or macOS.
 * **Logic component**: The part of the application that processes commands and applies application rules.
 * **Model component**: The part of the application that represents and manages domain data such as students and lesson details.
 * **MVP (Minimum Viable Product)**: The smallest usable version containing the essential features needed by the target user.
+* **No-change result**: A successful command whose value already matches the stored one; it does not save the file.
+* **Note**: One freeform text remark (up to 500 characters) attached to a student.
+* **Optional field**: A student value other than name, phone and address (guardian phone, level, subject, rate,
+  weekly slot, note, assessments, payments). An unset optional field is shown as an em dash (—).
 * **Parent contact**: The parent or guardian's contact information associated with a student.
 * **Payment status**: A manually recorded pending or completed state for one student and calendar month; no entry means unrecorded.
 * **Persona**: A representative user profile used to guide product and feature decisions.
 * **Recurring lesson slot**: A lesson slot that repeats on a regular schedule, such as every Monday at 4 p.m.
 * **Storage component**: The part of the application that saves and loads data.
+* **Timetable**: The schedule panel listing every scheduled student by day and time, for the whole week or one day.
 * **UI component**: The part of the application responsible for user interaction and displayed output.
 * **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
