@@ -25,8 +25,10 @@ import javafx.stage.Stage;
 import tutorconnect.commons.core.GuiSettings;
 import tutorconnect.model.ReadOnlyUserPrefs;
 import tutorconnect.model.UserPrefs;
+import tutorconnect.model.student.EducationLevel;
 import tutorconnect.model.student.Phone;
 import tutorconnect.model.student.Student;
+import tutorconnect.model.student.Subject;
 import tutorconnect.storage.JsonStudentDirectoryStorage;
 import tutorconnect.storage.JsonUserPrefsStorage;
 import tutorconnect.storage.StorageManager;
@@ -56,9 +58,15 @@ public class TutorConnectAppTest {
             for (Student student : samples) {
                 assertTrue(Phone.isValidPhone(student.getPhone().value));
                 assertTrue(student.getPhone().value.startsWith("+65"));
-                assertTrue(student.getStudentFields().toStorage().isEmpty());
                 assertFalse(student.getTags().isEmpty());
             }
+            assertEquals(List.of("Secondary 4", "Primary 6", "Secondary 4", "JC 1", "Primary 3", "unset"),
+                    samples.stream().map(student -> student.getStudentFields().get(EducationLevel.FIELD)
+                            .map(level -> level.value).orElse("unset")).toList());
+            assertEquals(List.of("Mathematics", "Science", "English", "Mathematics", "English", "unset"),
+                    samples.stream().map(student -> student.getStudentFields().get(Subject.FIELD)
+                            .map(subject -> subject.value).orElse("unset")).toList());
+            assertTrue(samples.getLast().getStudentFields().toStorage().isEmpty());
             assertTrue(Files.exists(directory.resolve("preferences.json")));
             assertFalse(Files.exists(directory.resolve("addressbook.json")));
             app.stop();
