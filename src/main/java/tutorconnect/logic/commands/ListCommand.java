@@ -9,7 +9,7 @@ import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.model.Model;
 
 /**
- * Lists all students in the address book to the user.
+ * Lists all students in the student directory to the user.
  */
 public class ListCommand extends Command {
 

@@ -38,6 +38,10 @@ public class ParserUtil {
             + " characters, with at most " + MAX_EMAIL_LOCAL_PART_LENGTH + " before the @.";
     public static final String MESSAGE_TAG_TOO_LONG = "Error: Invalid tag. Use at most " + MAX_TAG_LENGTH
             + " letters or digits.";
+    public static final String MESSAGE_INVALID_EMAIL = "Error: Invalid email. Use an address such as "
+            + "alex.tan@example.com, with no spaces.";
+    public static final String MESSAGE_INVALID_TAG = "Error: Invalid tag. Use letters or digits only, "
+            + "with no spaces or punctuation.";
     private static final Pattern VISIBLE_INDEX_PATTERN = Pattern.compile("[1-9][0-9]*");
     private static final Pattern HOURLY_RATE_INPUT_PATTERN =
             Pattern.compile("(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,2})?");
@@ -142,7 +146,7 @@ public class ParserUtil {
         requireNonNull(email);
         String trimmedEmail = email.trim();
         if (!Email.isValidEmail(trimmedEmail)) {
-            throw new ParseException(Email.MESSAGE_CONSTRAINTS);
+            throw new ParseException(MESSAGE_INVALID_EMAIL);
         }
         if (trimmedEmail.length() > MAX_EMAIL_LENGTH
                 || trimmedEmail.indexOf('@') > MAX_EMAIL_LOCAL_PART_LENGTH) {
@@ -161,7 +165,7 @@ public class ParserUtil {
         requireNonNull(tag);
         String trimmedTag = tag.trim();
         if (!Tag.isValidTagName(trimmedTag)) {
-            throw new ParseException(Tag.MESSAGE_CONSTRAINTS);
+            throw new ParseException(MESSAGE_INVALID_TAG);
         }
         if (trimmedTag.length() > MAX_TAG_LENGTH) {
             throw new ParseException(MESSAGE_TAG_TOO_LONG);

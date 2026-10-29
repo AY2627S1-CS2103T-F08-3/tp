@@ -28,7 +28,7 @@ import tutorconnect.model.student.Student;
 import tutorconnect.model.tag.Tag;
 
 /**
- * Edits the details of an existing student in the address book.
+ * Edits the details of an existing student in the student directory.
  */
 public class EditCommand extends Command {
 
@@ -48,7 +48,8 @@ public class EditCommand extends Command {
             + PREFIX_EMAIL + "johndoe@example.com";
 
     public static final String MESSAGE_EDIT_STUDENT_SUCCESS = "Student updated: %1$s.";
-    public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
+    public static final String MESSAGE_NOT_EDITED = "Error: Supply at least one field to edit: "
+            + "n/NAME, p/PHONE, e/EMAIL, a/ADDRESS or t/TAG.";
     public static final String MESSAGE_DUPLICATE_STUDENT = AddCommand.MESSAGE_DUPLICATE_STUDENT;
 
     private final Index index;

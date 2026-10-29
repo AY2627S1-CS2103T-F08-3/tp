@@ -4,7 +4,7 @@ import javafx.collections.ObservableList;
 import tutorconnect.model.student.Student;
 
 /**
- * Unmodifiable view of an address book
+ * Unmodifiable view of an student directory
  */
 public interface ReadOnlyStudentDirectory {
 

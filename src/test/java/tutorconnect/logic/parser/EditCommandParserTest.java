@@ -21,8 +21,7 @@ import static tutorconnect.logic.commands.CommandTestUtil.VALID_PHONE_AMY;
 import static tutorconnect.logic.commands.CommandTestUtil.VALID_PHONE_BOB;
 import static tutorconnect.logic.commands.CommandTestUtil.VALID_TAG_FRIEND;
 import static tutorconnect.logic.commands.CommandTestUtil.VALID_TAG_HUSBAND;
-import static tutorconnect.logic.parser.CliSyntax.PREFIX_ADDRESS;
-import static tutorconnect.logic.parser.CliSyntax.PREFIX_EMAIL;
+import static tutorconnect.logic.parser.CliSyntax.PREFIX_NAME;
 import static tutorconnect.logic.parser.CliSyntax.PREFIX_PHONE;
 import static tutorconnect.logic.parser.CliSyntax.PREFIX_TAG;
 import static tutorconnect.logic.parser.CommandParserTestUtil.assertParseFailure;
@@ -38,10 +37,8 @@ import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.EditCommand;
 import tutorconnect.logic.commands.EditCommand.EditStudentDescriptor;
 import tutorconnect.model.student.Address;
-import tutorconnect.model.student.Email;
 import tutorconnect.model.student.Name;
 import tutorconnect.model.student.Phone;
-import tutorconnect.model.tag.Tag;
 import tutorconnect.testutil.EditStudentDescriptorBuilder;
 
 public class EditCommandParserTest {
@@ -101,18 +98,19 @@ public class EditCommandParserTest {
     public void parse_invalidValue_failure() {
         assertParseFailure(parser, "1" + INVALID_NAME_DESC, Name.MESSAGE_CONSTRAINTS); // invalid name
         assertParseFailure(parser, "1" + INVALID_PHONE_DESC, Phone.MESSAGE_CONSTRAINTS); // invalid phone
-        assertParseFailure(parser, "1" + INVALID_EMAIL_DESC, Email.MESSAGE_CONSTRAINTS); // invalid email
+        assertParseFailure(parser, "1" + INVALID_EMAIL_DESC, ParserUtil.MESSAGE_INVALID_EMAIL); // invalid email
         assertParseFailure(parser, "1" + INVALID_ADDRESS_DESC, Address.MESSAGE_CONSTRAINTS); // invalid address
-        assertParseFailure(parser, "1" + INVALID_TAG_DESC, Tag.MESSAGE_CONSTRAINTS); // invalid tag
+        assertParseFailure(parser, "1" + INVALID_TAG_DESC, ParserUtil.MESSAGE_INVALID_TAG); // invalid tag
 
         // invalid phone followed by valid email
         assertParseFailure(parser, "1" + INVALID_PHONE_DESC + EMAIL_DESC_AMY, Phone.MESSAGE_CONSTRAINTS);
 
         // while parsing {@code PREFIX_TAG} alone will reset the tags of the {@code Student} being edited,
         // parsing it together with a valid tag results in error
-        assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_DESC_HUSBAND + TAG_EMPTY, Tag.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_EMPTY + TAG_DESC_HUSBAND, Tag.MESSAGE_CONSTRAINTS);
-        assertParseFailure(parser, "1" + TAG_EMPTY + TAG_DESC_FRIEND + TAG_DESC_HUSBAND, Tag.MESSAGE_CONSTRAINTS);
+        String invalidTag = ParserUtil.MESSAGE_INVALID_TAG;
+        assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_DESC_HUSBAND + TAG_EMPTY, invalidTag);
+        assertParseFailure(parser, "1" + TAG_DESC_FRIEND + TAG_EMPTY + TAG_DESC_HUSBAND, invalidTag);
+        assertParseFailure(parser, "1" + TAG_EMPTY + TAG_DESC_FRIEND + TAG_DESC_HUSBAND, invalidTag);
 
         // multiple invalid values, but only the first invalid value is captured
         assertParseFailure(parser, "1" + INVALID_NAME_DESC + INVALID_EMAIL_DESC + VALID_ADDRESS_AMY + VALID_PHONE_AMY,
@@ -188,12 +186,12 @@ public class EditCommandParserTest {
         Index targetIndex = INDEX_FIRST_STUDENT;
         String userInput = targetIndex.getOneBased() + INVALID_PHONE_DESC + PHONE_DESC_BOB;
 
-        assertParseFailure(parser, userInput, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+        assertParseFailure(parser, userInput, onlyOnce(PREFIX_PHONE));
 
         // invalid followed by valid
         userInput = targetIndex.getOneBased() + PHONE_DESC_BOB + INVALID_PHONE_DESC;
 
-        assertParseFailure(parser, userInput, Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+        assertParseFailure(parser, userInput, onlyOnce(PREFIX_PHONE));
 
         // multiple valid fields repeated
         userInput = targetIndex.getOneBased() + PHONE_DESC_AMY + ADDRESS_DESC_AMY + EMAIL_DESC_AMY
@@ -201,14 +199,14 @@ public class EditCommandParserTest {
                 + PHONE_DESC_BOB + ADDRESS_DESC_BOB + EMAIL_DESC_BOB + TAG_DESC_HUSBAND;
 
         assertParseFailure(parser, userInput,
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS));
+                onlyOnce(PREFIX_PHONE));
 
         // multiple invalid values
         userInput = targetIndex.getOneBased() + INVALID_PHONE_DESC + INVALID_ADDRESS_DESC + INVALID_EMAIL_DESC
                 + INVALID_PHONE_DESC + INVALID_ADDRESS_DESC + INVALID_EMAIL_DESC;
 
         assertParseFailure(parser, userInput,
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE, PREFIX_EMAIL, PREFIX_ADDRESS));
+                onlyOnce(PREFIX_PHONE));
     }
 
     @Test
@@ -238,7 +236,7 @@ public class EditCommandParserTest {
         assertParseFailure(parser, "0 p/bad x/value", "Error: Unknown parameter: x/.");
         assertParseFailure(parser, "0 extra n/Alex", StudentParameters.UNEXPECTED_TEXT);
         assertParseFailure(parser, "0 p/bad p/81234567",
-                Messages.getErrorMessageForDuplicatePrefixes(PREFIX_PHONE));
+                onlyOnce(PREFIX_PHONE));
         assertParseFailure(parser, "1 n/", Name.MESSAGE_CONSTRAINTS);
         assertParseFailure(parser, "1 p/", Phone.MESSAGE_CONSTRAINTS);
     }
@@ -251,5 +249,15 @@ public class EditCommandParserTest {
         String huge = "9".repeat(100);
         assertParseSuccess(parser, huge + " n/Alex", new EditCommand(Index.fromOneBased(huge),
                 new EditStudentDescriptorBuilder().withName("Alex").build()));
+    }
+
+    @Test
+    public void parse_repeatedFieldsInOtherOrder_reportsFirstRepeatedPrefix() {
+        assertParseFailure(parser, "1" + EMAIL_DESC_AMY + EMAIL_DESC_BOB + NAME_DESC_AMY + NAME_DESC_AMY,
+                onlyOnce(PREFIX_NAME));
+    }
+
+    private static String onlyOnce(Prefix prefix) {
+        return String.format(Messages.MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE, prefix);
     }
 }

@@ -14,7 +14,7 @@ import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.model.student.Student;
 
 /**
- * Represents the in-memory model of the address book data.
+ * Represents the in-memory model of the student directory data.
  */
 public class ModelManager implements Model {
     private static final Logger logger = LogsCenter.getLogger(ModelManager.class);
@@ -31,7 +31,7 @@ public class ModelManager implements Model {
     public ModelManager(ReadOnlyStudentDirectory studentDirectory, ReadOnlyUserPrefs userPrefs) {
         requireAllNonNull(studentDirectory, userPrefs);
 
-        logger.fine("Initializing with address book: " + studentDirectory + " and user prefs " + userPrefs);
+        logger.fine("Initializing with student directory: " + studentDirectory + " and user prefs " + userPrefs);
 
         this.studentDirectory = new StudentDirectory(studentDirectory);
         this.userPrefs = new UserPrefs(userPrefs);

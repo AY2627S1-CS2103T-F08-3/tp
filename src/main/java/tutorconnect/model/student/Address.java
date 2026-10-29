@@ -6,7 +6,7 @@ import static tutorconnect.commons.util.AppUtil.checkArgument;
 import tutorconnect.commons.util.StudentText;
 
 /**
- * Represents a Student's address in the address book.
+ * Represents a Student's address in the student directory.
  * Guarantees: immutable; is valid as declared in {@link #isValidAddress(String)}
  */
 public class Address {

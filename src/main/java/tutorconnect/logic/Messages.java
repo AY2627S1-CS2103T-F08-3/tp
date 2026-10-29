@@ -1,11 +1,5 @@
 package tutorconnect.logic;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import tutorconnect.logic.parser.Prefix;
-
 /**
  * Container for user visible messages.
  */
@@ -16,8 +10,6 @@ public class Messages {
     public static final String MESSAGE_INVALID_STUDENT_DISPLAYED_INDEX =
             "Error: No student exists at index %1$s.";
     public static final String MESSAGE_STUDENTS_LISTED_OVERVIEW = "%1$d student(s) listed!";
-    public static final String MESSAGE_DUPLICATE_FIELDS =
-                "Multiple values specified for the following single-valued field(s): ";
     public static final String MESSAGE_UNKNOWN_PARAMETER = "Error: Unknown parameter: %1$s.";
     public static final String MESSAGE_MISSING_REQUIRED_PARAMETER = "Error: Missing required parameter: %1$s.";
     public static final String MESSAGE_PARAMETER_SPECIFIED_ONLY_ONCE =
@@ -34,17 +26,4 @@ public class Messages {
                 ? sentence.substring(0, sentence.length() - 1)
                 : sentence;
     }
-
-    /**
-     * Returns an error message indicating the duplicate prefixes.
-     */
-    public static String getErrorMessageForDuplicatePrefixes(Prefix... duplicatePrefixes) {
-        assert duplicatePrefixes.length > 0;
-
-        Set<String> duplicateFields =
-                Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
-
-        return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
-    }
-
 }

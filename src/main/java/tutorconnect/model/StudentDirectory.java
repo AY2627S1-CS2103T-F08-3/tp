@@ -49,7 +49,7 @@ public class StudentDirectory implements ReadOnlyStudentDirectory {
     //// student-level operations
 
     /**
-     * Returns true if a student with the same identity as {@code student} exists in the address book.
+     * Returns true if a student with the same identity as {@code student} exists in the student directory.
      */
     public boolean hasStudent(Student student) {
         requireNonNull(student);
@@ -57,8 +57,8 @@ public class StudentDirectory implements ReadOnlyStudentDirectory {
     }
 
     /**
-     * Adds a student to the address book.
-     * The student must not already exist in the address book.
+     * Adds a student to the student directory.
+     * The student must not already exist in the student directory.
      */
     public void addStudent(Student p) {
         students.add(p);
@@ -66,7 +66,7 @@ public class StudentDirectory implements ReadOnlyStudentDirectory {
 
     /**
      * Replaces the given student {@code target} in the list with {@code editedStudent}.
-     * {@code target} must exist in the address book.
+     * {@code target} must exist in the student directory.
      * The student identity of {@code editedStudent} must not be the same as another existing student in the address
      * book.
      */
@@ -78,7 +78,7 @@ public class StudentDirectory implements ReadOnlyStudentDirectory {
 
     /**
      * Removes {@code key} from this {@code StudentDirectory}.
-     * {@code key} must exist in the address book.
+     * {@code key} must exist in the student directory.
      */
     public void removeStudent(Student key) {
         students.remove(key);

@@ -8,7 +8,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -122,68 +121,82 @@ class JsonAdaptedStudent {
      * @throws IllegalValueException if there were any data constraints violated in the adapted student.
      */
     public Student toModelType() throws IllegalValueException {
-        final List<Tag> studentTags = new ArrayList<>();
+        final Set<Tag> modelTags = toModelTags();
+        final Name modelName = toModelName();
+        final Phone modelPhone = toModelPhone();
+        final Email modelEmail = toModelEmail();
+        final Address modelAddress = toModelAddress();
+        final StudentFields fields = toModelFields();
+        final UUID modelId = toModelId(modelName, modelPhone);
+        return new Student(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags, fields);
+    }
+
+    private Set<Tag> toModelTags() throws IllegalValueException {
+        final Set<Tag> modelTags = new HashSet<>();
         for (JsonAdaptedTag tag : tags) {
             if (tag == null) {
                 throw new IllegalValueException("Tags must not contain null entries.");
             }
-            studentTags.add(tag.toModelType());
+            modelTags.add(tag.toModelType());
         }
+        return modelTags;
+    }
 
-        if (name == null) {
-            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Name.class.getSimpleName()));
-        }
+    private Name toModelName() throws IllegalValueException {
+        requirePresent(name, Name.class);
         if (!Name.isValidName(name)) {
             throw new IllegalValueException(Name.MESSAGE_CONSTRAINTS);
         }
-        final Name modelName = new Name(name);
+        return new Name(name);
+    }
 
-        if (phone == null) {
-            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Phone.class.getSimpleName()));
-        }
+    private Phone toModelPhone() throws IllegalValueException {
+        requirePresent(phone, Phone.class);
         if (!Phone.isValidPhone(phone)) {
             throw new IllegalValueException(Phone.MESSAGE_CONSTRAINTS);
         }
-        final Phone modelPhone = new Phone(phone);
+        return new Phone(phone);
+    }
 
-        if (email != null && !Email.isValidEmail(email)) {
+    private Email toModelEmail() throws IllegalValueException {
+        if (email == null) {
+            return Email.unset();
+        }
+        if (!Email.isValidEmail(email)) {
             throw new IllegalValueException(Email.MESSAGE_CONSTRAINTS);
         }
-        final Email modelEmail = email == null ? Email.unset() : new Email(email);
+        return new Email(email);
+    }
 
-        if (address == null) {
-            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, Address.class.getSimpleName()));
-        }
+    private Address toModelAddress() throws IllegalValueException {
+        requirePresent(address, Address.class);
         if (!Address.isValidAddress(address)) {
             throw new IllegalValueException(Address.MESSAGE_CONSTRAINTS);
         }
-        final Address modelAddress = new Address(address);
+        return new Address(address);
+    }
 
-        final Set<Tag> modelTags = new HashSet<>(studentTags);
-        Optional<GuardianPhone> modelGuardianPhone = Optional.empty();
+    private static void requirePresent(String value, Class<?> fieldType) throws IllegalValueException {
+        if (value == null) {
+            throw new IllegalValueException(String.format(MISSING_FIELD_MESSAGE_FORMAT, fieldType.getSimpleName()));
+        }
+    }
+
+    /** Returns the optional fields, with the guardian phone and hourly rate checked and the weekly slot validated. */
+    private StudentFields toModelFields() throws IllegalValueException {
+        StudentFields fields = new StudentFields(optionalFields);
         if (guardianPhone != null) {
             if (!GuardianPhone.isValid(guardianPhone)) {
                 throw new IllegalValueException(GuardianPhone.MESSAGE_CONSTRAINTS);
             }
-            modelGuardianPhone = Optional.of(new GuardianPhone(guardianPhone));
+            fields = fields.with(GuardianPhone.FIELD, new GuardianPhone(guardianPhone));
         }
-
-        Optional<HourlyRate> modelHourlyRate = Optional.empty();
         if (hourlyRate != null) {
             try {
-                modelHourlyRate = Optional.of(new HourlyRate(new BigDecimal(hourlyRate)));
+                fields = fields.with(HourlyRate.FIELD, new HourlyRate(new BigDecimal(hourlyRate)));
             } catch (IllegalArgumentException exception) {
                 throw new IllegalValueException(HourlyRate.MESSAGE_CONSTRAINTS);
             }
-        }
-
-        final UUID modelId = toModelId(modelName, modelPhone);
-        StudentFields fields = new StudentFields(optionalFields);
-        if (modelGuardianPhone.isPresent()) {
-            fields = fields.with(GuardianPhone.FIELD, modelGuardianPhone.get());
-        }
-        if (modelHourlyRate.isPresent()) {
-            fields = fields.with(HourlyRate.FIELD, modelHourlyRate.get());
         }
         try {
             // Validate the owner's complete value before publishing a loaded record.
@@ -191,7 +204,7 @@ class JsonAdaptedStudent {
         } catch (IllegalArgumentException e) {
             throw new IllegalValueException(e.getMessage());
         }
-        return new Student(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags, fields);
+        return fields;
     }
 
     /** Restores a canonical UUID, or derives a stable identity for legacy records without an ID. */

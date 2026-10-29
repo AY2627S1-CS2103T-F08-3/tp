@@ -205,7 +205,7 @@ Classes used by multiple components are in the `tutorconnect.commons` package.
 
 This section describes some noteworthy details on how certain features are implemented.
 
-### F01: Add Student
+### Adding a student
 
 `TutorConnectParser` recognizes the case-sensitive command, then `StudentParameters` checks parameter
 boundaries, unknown/unexpected input and required/duplicate parameters. It retains raw values so controls
@@ -257,7 +257,7 @@ Unreadable in-memory level/subject values retain the existing repair-as-unset be
 validates stored fields before publication. `ClearCommand` clears its staged selection before publication,
 so an already-saved empty register never attempts to select a removed UUID.
 
-### Story 11: Monthly payment status
+### Monthly payment status
 
 `PaymentHistory` is the optional `StudentField` value stored under the `payments` JSON key. Each student record
 already carries a stable UUID, so its sorted `YYYY-MM` to `pending|completed` map represents one status per
@@ -286,7 +286,7 @@ The User Guide documents both commands, error precedence, transitions, no-change
 restart examples. Tests cover strict month/status parsing, reordered prefixes, index errors, malformed persisted
 maps, legacy records, reload, unrelated-field preservation, deletion and save failure.
 
-### F08: Weekly Lesson Scheduling
+### Weekly lesson scheduling
 
 `WeeklySlot` is immutable: it requires a `DayOfWeek` and a minute-precision `LocalTime` together.
 `WeeklySlotField` implements F01's `StudentField<WeeklySlot>` with the reserved key `weeklySlot`.
@@ -337,7 +337,7 @@ Repeated equivalent commands preserve selection, scrolling and existing details 
 Verification covers field validation, codec/parser/command behavior, persistence and staged failures,
 summary ordering, and the actual JavaFX command box. See [the acceptance run and commands](Testing.md).
 
-### Academic records: notes and assessments (stories 12 and 13)
+### Academic records: notes and assessments
 
 <puml src="diagrams/AcademicRecordsClassDiagram.puml" width="450" />
 
@@ -405,7 +405,7 @@ The level, subject, guardian, rate and schedule commands each replace only their
 * *Strict history decoding.* Refusing to touch an unreadable history trades convenience for never silently
   losing a hand-built list.
 
-### Student discovery (stories 10 and 15)
+### Student discovery: find and filter
 
 `find` uses `NameContainsKeywordsPredicate`: NFKC normalization via `StudentText`, followed by
 `Locale.ROOT` lowercase substring comparison. Whitespace-separated keywords are OR alternatives;
@@ -430,7 +430,7 @@ selecting the next student after the row disappears. Existing edit/reset and del
 mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
 rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
 
-### Delete and list (F02/F03)
+### Delete and list
 
 - `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
   Decimal text is compared against list size before integer conversion, safely handling oversized indices.

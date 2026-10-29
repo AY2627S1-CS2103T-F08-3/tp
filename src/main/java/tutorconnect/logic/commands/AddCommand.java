@@ -12,7 +12,7 @@ import tutorconnect.model.Model;
 import tutorconnect.model.student.Student;
 
 /**
- * Adds a student to the address book.
+ * Adds a student to the student directory.
  */
 public class AddCommand extends Command {
 
@@ -51,11 +51,11 @@ public class AddCommand extends Command {
             throw new CommandException(MESSAGE_DUPLICATE_STUDENT);
         }
 
-        boolean sharedPhone = model.getStudentDirectory().getStudentList().stream()
+        boolean isPhoneShared = model.getStudentDirectory().getStudentList().stream()
                 .anyMatch(student -> student.getPhone().equals(toAdd.getPhone()));
         model.addStudent(toAdd);
         String message = Messages.formatSentence(MESSAGE_SUCCESS, toAdd.getName());
-        return new CommandResult(message + (sharedPhone ? " " + MESSAGE_SHARED_PHONE : ""));
+        return new CommandResult(message + (isPhoneShared ? " " + MESSAGE_SHARED_PHONE : ""));
     }
 
     @Override
