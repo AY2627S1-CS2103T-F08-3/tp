@@ -6,12 +6,12 @@ import tutorconnect.model.Model;
 import tutorconnect.model.StudentDirectory;
 
 /**
- * Clears the address book.
+ * Removes every student from TutorConnect.
  */
 public class ClearCommand extends Command {
 
     public static final String COMMAND_WORD = "clear";
-    public static final String MESSAGE_SUCCESS = "Address book has been cleared!";
+    public static final String MESSAGE_SUCCESS = "All students have been cleared!";
 
 
     @Override

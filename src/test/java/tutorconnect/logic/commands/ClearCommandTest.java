@@ -1,5 +1,6 @@
 package tutorconnect.logic.commands;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static tutorconnect.logic.commands.CommandTestUtil.assertCommandSuccess;
 import static tutorconnect.testutil.TypicalStudents.getTypicalStudentDirectory;
 
@@ -11,6 +12,11 @@ import tutorconnect.model.StudentDirectory;
 import tutorconnect.model.UserPrefs;
 
 public class ClearCommandTest {
+
+    @Test
+    public void message_namesStudentsNotAnAddressBook() {
+        assertEquals("All students have been cleared!", ClearCommand.MESSAGE_SUCCESS);
+    }
 
     @Test
     public void execute_emptyStudentDirectory_success() {
