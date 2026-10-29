@@ -6,6 +6,8 @@ plugins {
     id 'jacoco'
 }
 
+version = '1.5.0-ea'
+
 application {
     mainClass = 'tutorconnect.TutorConnectLauncher'
 }
@@ -87,6 +89,10 @@ dependencies {
 
 shadowJar {
     archiveFileName = 'tutorconnect.jar'
+    manifest {
+        attributes 'Implementation-Title': 'TutorConnect',
+                'Implementation-Version': project.version
+    }
 }
 
 // Keep the thin JAR distinct from the executable fat JAR when the project name matches.
@@ -100,11 +106,15 @@ tasks.register('verifyShadowJar') {
     dependsOn tasks.named('shadowJar')
     inputs.file(tasks.named('shadowJar').flatMap { it.archiveFile })
     inputs.property('mainClass', application.mainClass)
+    inputs.property('releaseVersion', project.version.toString())
     doLast {
         new java.util.jar.JarFile(inputs.files.singleFile).withCloseable { jar ->
             String launcher = inputs.properties.mainClass
             if (jar.manifest?.mainAttributes?.getValue('Main-Class') != launcher) {
                 throw new GradleException('The executable JAR has an incorrect Main-Class manifest entry.')
+            }
+            if (jar.manifest.mainAttributes.getValue('Implementation-Version') != inputs.properties.releaseVersion) {
+                throw new GradleException('The executable JAR has incorrect release version metadata.')
             }
             [launcher.replace('.', '/') + '.class', 'view/MainWindow.fxml',
              'view/StudentListPanel.fxml', 'view/DarkTheme.css'].each { entry ->
