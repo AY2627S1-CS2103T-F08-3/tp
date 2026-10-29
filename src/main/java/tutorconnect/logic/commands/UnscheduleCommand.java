@@ -5,6 +5,7 @@ import static java.util.Objects.requireNonNull;
 import java.util.logging.Logger;
 
 import tutorconnect.commons.core.LogsCenter;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.logic.parser.VisibleIndex;
 import tutorconnect.model.Model;
@@ -27,7 +28,8 @@ public class UnscheduleCommand extends Command {
         var slot = WeeklySlotField.get(target);
         if (slot.isEmpty()) {
             logger.fine("No weekly slot to remove for student " + target.getId());
-            return new CommandResult("No weekly lesson is scheduled for " + target.getName() + ".");
+            return new CommandResult(
+                    Messages.formatSentence("No weekly lesson is scheduled for %s.", target.getName()));
         }
         model.setStudent(target, target.withStudentFields(target.getStudentFields().without(WeeklySlotField.INSTANCE)));
         logger.fine("Removed weekly slot for student " + target.getId());

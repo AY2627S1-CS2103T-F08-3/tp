@@ -27,6 +27,17 @@ public class Messages {
     public static final String MESSAGE_UNEXPECTED_TEXT = "Error: Unexpected text after command.";
 
     /**
+     * Formats a sentence that ends with a full stop, keeping only one when the last value already ends with one.
+     * For example, a student named {@code Tan Jr.} gives {@code Student added: Tan Jr.} rather than {@code Jr..}.
+     */
+    public static String formatSentence(String template, Object... values) {
+        String sentence = String.format(template, values);
+        return sentence.endsWith("..") && !sentence.endsWith("...")
+                ? sentence.substring(0, sentence.length() - 1)
+                : sentence;
+    }
+
+    /**
      * Returns an error message indicating the duplicate prefixes.
      */
     public static String getErrorMessageForDuplicatePrefixes(Prefix... duplicatePrefixes) {

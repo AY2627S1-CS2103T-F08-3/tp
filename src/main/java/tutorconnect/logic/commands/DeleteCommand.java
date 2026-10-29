@@ -4,6 +4,7 @@ import static java.util.Objects.requireNonNull;
 
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.logic.parser.VisibleIndex;
 import tutorconnect.model.Model;
@@ -45,7 +46,7 @@ public class DeleteCommand extends Command {
         requireNonNull(model);
         Student studentToDelete = resolveTarget(model);
         model.deleteStudent(studentToDelete);
-        return new CommandResult(String.format(MESSAGE_DELETE_STUDENT_SUCCESS, studentToDelete.getName()),
+        return new CommandResult(Messages.formatSentence(MESSAGE_DELETE_STUDENT_SUCCESS, studentToDelete.getName()),
                 CommandResult.SelectionAction.PRESERVE);
     }
 

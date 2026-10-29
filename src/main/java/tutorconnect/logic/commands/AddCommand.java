@@ -6,6 +6,7 @@ import static tutorconnect.logic.parser.CliSyntax.PREFIX_NAME;
 import static tutorconnect.logic.parser.CliSyntax.PREFIX_PHONE;
 
 import tutorconnect.commons.util.ToStringBuilder;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.Student;
@@ -53,7 +54,7 @@ public class AddCommand extends Command {
         boolean sharedPhone = model.getStudentDirectory().getStudentList().stream()
                 .anyMatch(student -> student.getPhone().equals(toAdd.getPhone()));
         model.addStudent(toAdd);
-        String message = String.format(MESSAGE_SUCCESS, toAdd.getName());
+        String message = Messages.formatSentence(MESSAGE_SUCCESS, toAdd.getName());
         return new CommandResult(message + (sharedPhone ? " " + MESSAGE_SHARED_PHONE : ""));
     }
 
