@@ -911,6 +911,8 @@ Action     | Format, Examples
 **Remove assessment** | `unassess INDEX i/RECORD`<br> e.g., `unassess 1 i/2`
 **Set subject** | `subject INDEX s/SUBJECT`<br> e.g., `subject 1 s/H2 Math`
 **Set hourly rate** | `rate INDEX r/RATE`<br> e.g., `rate 1 r/80.50`
+**Record monthly payment status** | `payment INDEX m/YYYY-MM s/pending|completed`<br> e.g., `payment 1 m/2026-10 s/pending`
+**List monthly payment statuses** | `payments m/YYYY-MM [s/pending|completed]`<br> e.g., `payments m/2026-10 s/completed`
 **Set note** | `note INDEX m/NOTE`<br> e.g., `note 1 m/Weak in calculus`
 **Clear note** | `clearnote INDEX`<br> e.g., `clearnote 1`
 **Help**   | `help`
