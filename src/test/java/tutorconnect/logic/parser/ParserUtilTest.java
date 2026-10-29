@@ -147,6 +147,22 @@ public class ParserUtilTest {
     }
 
     @Test
+    public void parseEmail_lengthLimits_enforced() throws Exception {
+        String longestLocalPart = "a".repeat(ParserUtil.MAX_EMAIL_LOCAL_PART_LENGTH) + "@example.com";
+        String longestEmail = "a".repeat(ParserUtil.MAX_EMAIL_LOCAL_PART_LENGTH) + "@"
+                + "b".repeat(ParserUtil.MAX_EMAIL_LENGTH - ParserUtil.MAX_EMAIL_LOCAL_PART_LENGTH - 5) + ".com";
+        assertEquals(ParserUtil.MAX_EMAIL_LENGTH, longestEmail.length());
+        assertEquals(new Email(longestLocalPart), ParserUtil.parseEmail(longestLocalPart));
+        assertEquals(new Email(longestEmail), ParserUtil.parseEmail(longestEmail));
+
+        String localPartTooLong = "a".repeat(ParserUtil.MAX_EMAIL_LOCAL_PART_LENGTH + 1) + "@example.com";
+        String emailTooLong = longestEmail + "m";
+        String message = ParserUtil.MESSAGE_EMAIL_TOO_LONG;
+        assertThrows(ParseException.class, message, () -> ParserUtil.parseEmail(localPartTooLong));
+        assertThrows(ParseException.class, message, () -> ParserUtil.parseEmail(emailTooLong));
+    }
+
+    @Test
     public void parseTag_null_throwsNullPointerException() {
         assertThrows(NullPointerException.class, () -> ParserUtil.parseTag(null));
     }
@@ -167,6 +183,15 @@ public class ParserUtilTest {
         String tagWithWhitespace = WHITESPACE + VALID_TAG_1 + WHITESPACE;
         Tag expectedTag = new Tag(VALID_TAG_1);
         assertEquals(expectedTag, ParserUtil.parseTag(tagWithWhitespace));
+    }
+
+    @Test
+    public void parseTag_lengthLimit_enforced() throws Exception {
+        String longestTag = "a".repeat(ParserUtil.MAX_TAG_LENGTH);
+        String tagTooLong = longestTag + "a";
+        assertEquals(new Tag(longestTag), ParserUtil.parseTag(longestTag));
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_TAG_TOO_LONG, () -> ParserUtil.parseTag(tagTooLong));
+        assertThrows(ParseException.class, Tag.MESSAGE_CONSTRAINTS, () -> ParserUtil.parseTag("bad tag"));
     }
 
     @Test
