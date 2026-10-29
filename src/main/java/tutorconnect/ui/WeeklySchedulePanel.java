@@ -34,6 +34,8 @@ public class WeeklySchedulePanel extends VBox {
     private final FilteredList<Student> visibleSchedule;
     private final Label heading = new Label("Weekly schedule");
     private final Label emptyMessage = new Label("No weekly lessons scheduled.");
+    private final ListView<Student> rows;
+    private int firstShownRow;
     /**
      * Creates a summary without a separate selection or calendar state.
      */
@@ -47,7 +49,7 @@ public class WeeklySchedulePanel extends VBox {
         heading.getStyleClass().add("cell_big_label");
         heading.getStyleClass().add("timetable-heading");
         emptyMessage.getStyleClass().add("timetable-empty");
-        ListView<Student> rows = new ListView<>(visibleSchedule);
+        rows = new ListView<>(visibleSchedule);
         rows.setId("weeklyScheduleList");
         rows.setPlaceholder(emptyMessage);
         rows.setFocusTraversable(false);
@@ -66,6 +68,20 @@ public class WeeklySchedulePanel extends VBox {
         emptyMessage.setText(day.isPresent() ? "No lessons scheduled for " + name + "."
                 : "No weekly lessons scheduled.");
         logger.fine("Showing " + heading.getText() + " with " + visibleSchedule.size() + " lesson(s)");
+    }
+
+    /** Returns the timetable's list, the node that receives keyboard focus for this panel. */
+    ListView<Student> getRowsView() {
+        return rows;
+    }
+
+    /** Scrolls the timetable by {@code delta} rows; used for keyboard scrolling because rows are not selectable. */
+    void scrollBy(int delta) {
+        if (visibleSchedule.isEmpty()) {
+            return;
+        }
+        firstShownRow = Math.max(0, Math.min(visibleSchedule.size() - 1, firstShownRow + delta));
+        rows.scrollTo(firstShownRow);
     }
 
     /**

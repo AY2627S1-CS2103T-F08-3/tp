@@ -66,7 +66,6 @@
             <VBox spacing="2">
               <Label styleClass="overline" text="● YOUR STUDENT REGISTER" />
               <Label styleClass="page-title" text="Student directory" />
-              <Label styleClass="page-subtitle" wrapText="true" text="Everything is a command away. Start typing; no clicking needed." />
             </VBox>
 
             <StackPane fx:id="commandBoxPlaceholder" styleClass="command-card" />
@@ -106,7 +105,7 @@
 
         <right>
           <VBox fx:id="sideArea" styleClass="side-area" spacing="14" prefWidth="330" minWidth="250" maxWidth="360">
-            <VBox styleClass="profile-card" VBox.vgrow="ALWAYS">
+            <VBox fx:id="profileCard" styleClass="profile-card" VBox.vgrow="ALWAYS">
               <HBox alignment="CENTER_LEFT">
                 <Label styleClass="overline" text="STUDENT PROFILE" />
                 <Region HBox.hgrow="ALWAYS" />

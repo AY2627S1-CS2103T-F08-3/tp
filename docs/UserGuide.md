@@ -86,17 +86,19 @@ typing, e.g. `schedule INDEX d/DAY t/TIME`, and lists the matching command words
 Key | What it does
 --- | ---
 <kbd>Enter</kbd> | Runs the command in the command bar.
-<kbd>Tab</kbd> | Completes the command word, e.g. `sch` becomes `schedule `. With several matches (`pay`), it completes as far as they agree.
-<kbd>↑</kbd> / <kbd>↓</kbd> | Brings back earlier commands from this session, e.g. to fix a mistyped one. <kbd>↓</kbd> past the newest returns to what you were typing.
-<kbd>Esc</kbd> | Clears the command bar.
-<kbd>Ctrl</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd> (<kbd>⌘</kbd> on macOS) | Selects the previous or next student in the list and shows their profile. This does not change the list or its numbering.
-<kbd>Page Up</kbd> / <kbd>Page Down</kbd> | Scrolls the selected student's profile.
-<kbd>Ctrl</kbd>+<kbd>L</kbd> (<kbd>⌘</kbd>+<kbd>L</kbd> on macOS) | Returns to the command bar. Typing a letter anywhere in the window also goes straight to the command bar.
+<kbd>Tab</kbd> | In the command bar, completes the command word, e.g. `sch` becomes `schedule `. With several matches (`pay`), it completes as far as they agree. In any other panel, returns to the command bar.
+<kbd>Shift</kbd>+<kbd>Tab</kbd> | Moves to the next panel, in the order: command bar, command list (left), student list, student profile, weekly schedule, then back to the command bar. The panel that has focus is outlined in green.
+<kbd>↑</kbd> / <kbd>↓</kbd> | In the command bar, brings back earlier commands from this session, e.g. to fix a mistyped one; <kbd>↓</kbd> past the newest returns to what you were typing. In the student list, selects the previous or next student. In the command list, profile or schedule, scrolls the panel.
+<kbd>Page Up</kbd> / <kbd>Page Down</kbd> | Scrolls the panel that has focus by a page. From the command bar, scrolls the student profile.
+<kbd>Esc</kbd> | Clears the command bar, or returns to it from another panel.
+<kbd>Ctrl</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd> (<kbd>⌘</kbd> on macOS) | Selects the previous or next student from anywhere and shows their profile. This does not change the list or its numbering.
+<kbd>Ctrl</kbd>+<kbd>L</kbd> (<kbd>⌘</kbd>+<kbd>L</kbd> on macOS) | Returns to the command bar. Typing a letter in any panel also goes straight to the command bar.
 <kbd>F1</kbd> | Opens the help window.
 
 Error messages appear in red in the result area, and warnings in amber. Command history is kept only while the app is
 open. Completion and hints never change what a command does; the command is checked only when you press
-<kbd>Enter</kbd>.
+<kbd>Enter</kbd>. The command list on the left is shown only in windows at least 1100 pixels wide; when it is hidden,
+<kbd>Shift</kbd>+<kbd>Tab</kbd> skips it.
 
 ### Viewing help: `help`
 

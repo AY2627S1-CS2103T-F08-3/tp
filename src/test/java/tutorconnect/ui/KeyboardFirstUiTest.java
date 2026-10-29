@@ -20,6 +20,7 @@ import javafx.event.ActionEvent;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.input.KeyCode;
@@ -119,6 +120,53 @@ public class KeyboardFirstUiTest {
         });
     }
 
+    @Test
+    public void shiftTab_cyclesPanelsWhichScrollAndReturnToCommandBar() throws Exception {
+        onFxThread(stage -> {
+            TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+            ScrollPane rail = (ScrollPane) stage.getScene().lookup(".rail-scroll");
+            @SuppressWarnings("unchecked")
+            ListView<Student> rows = (ListView<Student>) stage.getScene().lookup("#studentListView");
+            ScrollPane profile = (ScrollPane) stage.getScene().lookup(".profile-scroll");
+            Node timetable = stage.getScene().lookup("#weeklyScheduleList");
+            Node commandCard = input.getParent().getParent().getParent();
+            assertTrue(commandCard.getStyleClass().contains(MainWindow.FOCUSED_PANEL_STYLE_CLASS));
+
+            input.setText("sch");
+            press(input, KeyCode.TAB, false);
+            assertEquals("schedule ", input.getText());
+            assertEquals(input, stage.getScene().getFocusOwner());
+
+            pressShiftTab(stage);
+            assertEquals(rail, stage.getScene().getFocusOwner());
+            assertTrue(rail.getStyleClass().contains(MainWindow.FOCUSED_PANEL_STYLE_CLASS));
+            assertFalse(commandCard.getStyleClass().contains(MainWindow.FOCUSED_PANEL_STYLE_CLASS));
+            rail.applyCss();
+            rail.layout();
+            press(rail, KeyCode.DOWN, false);
+            assertTrue(rail.getVvalue() > 0);
+
+            pressShiftTab(stage);
+            assertEquals(rows, stage.getScene().getFocusOwner());
+            pressShiftTab(stage);
+            assertEquals(profile, stage.getScene().getFocusOwner());
+            pressShiftTab(stage);
+            assertEquals(timetable, stage.getScene().getFocusOwner());
+            pressShiftTab(stage);
+            assertEquals(input, stage.getScene().getFocusOwner());
+            assertEquals("schedule ", input.getText());
+
+            pressShiftTab(stage);
+            press(rail, KeyCode.ESCAPE, false);
+            assertEquals(input, stage.getScene().getFocusOwner());
+            pressShiftTab(stage);
+            pressShiftTab(stage);
+            press(rows, KeyCode.TAB, false);
+            assertEquals(input, stage.getScene().getFocusOwner());
+            assertTrue(commandCard.getStyleClass().contains(MainWindow.FOCUSED_PANEL_STYLE_CLASS));
+        });
+    }
+
     private void onFxThread(UiCheck check) throws Exception {
         FutureTask<Void> task = new FutureTask<>(() -> {
             ModelManager model = new ModelManager(SampleDataUtil.getSampleStudentDirectory(), new UserPrefs());
@@ -143,6 +191,11 @@ public class KeyboardFirstUiTest {
     private static void press(Node target, KeyCode code, boolean isShortcut) {
         target.fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", code, false, isShortcut && !IS_MAC, false,
                 isShortcut && IS_MAC));
+    }
+
+    private static void pressShiftTab(Stage stage) {
+        stage.getScene().getFocusOwner().fireEvent(new KeyEvent(KeyEvent.KEY_PRESSED, "", "", KeyCode.TAB, true,
+                false, false, false));
     }
 
     private static void enter(TextField input, String command) {
