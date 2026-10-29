@@ -5,32 +5,70 @@ skinparam arrowColor STORAGE_COLOR
 skinparam classBackgroundColor STORAGE_COLOR
 
 package Storage as StoragePackage {
-
-Class "<<interface>>\nStorage" as Storage
-Class StorageManager
-
-package "UserPrefs Storage" #F4F6F6{
-Class JsonUserPrefsStorage
+  Class "<<interface>>\nStorage" as Storage
+  Class StorageManager
+  Class JsonStudentDirectoryStorage {
+    filePath: Path
+    writer: AtomicJsonFile
+  }
+  Class AtomicJsonFile {
+    write(Path, String)
+  }
+  Class JsonSerializableStudentDirectory {
+    persons: List<JsonAdaptedStudent>
+  }
+  Class JsonAdaptedStudent {
+    optionalFields: Map<String, JsonNode>
+    guardianPhone: String?
+    hourlyRate: String?
+    readOptionalField(key, value)
+    writeOptionalFields()
+  }
+  Class JsonAdaptedTag
+  Class JsonUserPrefsStorage
 }
 
-package "AddressBook Storage" #F4F6F6{
-Class JsonAddressBookStorage
-Class JsonSerializableAddressBook
-Class JsonAdaptedPerson
-Class JsonAdaptedTag
+package Model as ModelPackage {
+  Class Student {
+    id: UUID
+  }
+  Class StudentFields {
+    values: Map<String, JsonNode>\n(other optional fields)
+    get(StudentField)
+    with(StudentField, value)
+  }
+  Class "<<interface>>\nStudentField<T>" as StudentField {
+    key(): String
+    decode(JsonNode): T
+    encode(T): JsonNode
+  }
+  Class PaymentHistory {
+    FIELD key: payments
+    statuses: Map<YearMonth, PaymentStatus>
+  }
+  Class GuardianPhone
+  Class HourlyRate
 }
 
-}
-
-Class HiddenOutside #FFFFFF
-HiddenOutside ..> Storage
-
-StorageManager .up.|> Storage
-StorageManager -down-> "1" JsonUserPrefsStorage
-StorageManager -down-> "1" JsonAddressBookStorage
-
-JsonAddressBookStorage ..> JsonSerializableAddressBook
-JsonSerializableAddressBook --> "*" JsonAdaptedPerson
-JsonAdaptedPerson --> "*" JsonAdaptedTag
+StorageManager ..|> Storage
+StorageManager --> JsonUserPrefsStorage
+StorageManager --> JsonStudentDirectoryStorage
+JsonStudentDirectoryStorage --> JsonSerializableStudentDirectory
+JsonStudentDirectoryStorage *--> AtomicJsonFile
+JsonSerializableStudentDirectory --> "*" JsonAdaptedStudent
+JsonAdaptedStudent --> "*" JsonAdaptedTag
+JsonAdaptedStudent ..> Student : restores
+JsonAdaptedStudent ..> StudentFields : captures optional fields
+Student *--> StudentFields
+StudentFields ..> StudentField : decodes / encodes by key
+PaymentHistory ..> StudentField : FIELD codec
+StudentField ..> JsonAdaptedStudent : JSON value
+JsonAdaptedStudent ..> GuardianPhone : explicit legacy property
+JsonAdaptedStudent ..> HourlyRate : explicit legacy property
+note right of PaymentHistory
+  Optional per-student map:
+  YYYY-MM -> pending | completed
+  Missing key means no history.
+end note
 
 @enduml

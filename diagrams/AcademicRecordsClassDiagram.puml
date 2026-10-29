@@ -1,0 +1,37 @@
+@startuml
+!include style.puml
+skinparam arrowThickness 1.1
+skinparam arrowColor MODEL_COLOR
+skinparam classBackgroundColor MODEL_COLOR
+
+Package Model <<Rectangle>>{
+Class Student
+Class StudentFields
+Class "<<interface>>\nStudentField" as StudentField {
+  key(): String
+  decode(JsonNode)
+  encode(value)
+}
+Class AcademicNote {
+  value: String
+}
+Class AssessmentHistory
+Class AssessmentRecord {
+  date: LocalDate
+  title: String
+  grade: String
+}
+}
+
+Student *--> "1" StudentFields
+StudentFields ..> StudentField : reads and writes\nvalues through
+
+AcademicNote .up.|> StudentField : FIELD\nkey academicNote
+AssessmentHistory .up.|> StudentField : FIELD\nkey assessments
+
+StudentFields --> "0..1" AcademicNote : stored as text
+StudentFields --> "0..1" AssessmentHistory : stored as list
+AssessmentHistory *--> "0..100" AssessmentRecord : ordered by date
+
+AcademicNote -[hidden]right-> AssessmentHistory
+@enduml

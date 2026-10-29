@@ -11,10 +11,21 @@ Class UiManager
 Class MainWindow
 Class HelpWindow
 Class ResultDisplay
-Class PersonListPanel
-Class PersonCard
+Class StudentListPanel
+Class StudentCard
+Class StudentDetailsPanel
+Class WeeklySchedulePanel
 Class StatusBarFooter
 Class CommandBox
+Class CommandHistory
+Class CommandGuide
+Class CommandReferencePanel
+Class DetailRow
+}
+
+package JavaFX <<Rectangle>> {
+Class VBox #6E6E6E
+Class Label #6E6E6E
 }
 
 package Model <<Rectangle>> {
@@ -22,7 +33,9 @@ Class HiddenModel #FFFFFF
 }
 
 package Logic <<Rectangle>> {
-Class HiddenLogic #FFFFFF
+Class "<<interface>>\nLogic" as LogicApi LOGIC_COLOR
+Class CommandResult LOGIC_COLOR
+Class TimetableView LOGIC_COLOR
 }
 
 Class HiddenOutside #FFFFFF
@@ -30,28 +43,44 @@ HiddenOutside ..> Ui
 
 UiManager .left.|> Ui
 UiManager -down-> "1" MainWindow
-MainWindow *-down->  "1" CommandBox
+MainWindow *-down-> "1" CommandBox
 MainWindow *-down-> "1" ResultDisplay
-MainWindow *-down-> "1" PersonListPanel
+MainWindow *-down-> "1" StudentListPanel
+MainWindow *-down-> "1" StudentDetailsPanel
+MainWindow *-down-> "1" WeeklySchedulePanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
+MainWindow *-down-> "1" CommandReferencePanel
+CommandBox *-down-> "1" CommandHistory
+CommandBox ..> CommandGuide : completion,\nhints
+CommandReferencePanel ..> CommandGuide : lists formats
+StudentDetailsPanel *-down-> "*" DetailRow
 
-PersonListPanel -down-> "*" PersonCard
+StudentListPanel -down-> "*" StudentCard
 
 MainWindow -left-|> UiPart
-
 ResultDisplay --|> UiPart
 CommandBox --|> UiPart
-PersonListPanel --|> UiPart
-PersonCard --|> UiPart
+StudentListPanel --|> UiPart
+StudentCard --|> UiPart
 StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
+StudentDetailsPanel --|> VBox
+WeeklySchedulePanel --|> VBox
+CommandReferencePanel --|> VBox
+DetailRow --|> Label
 
-PersonCard ..> Model
-UiManager -right-> Logic
-MainWindow -left-> Logic
+StudentCard ..> Model
+StudentDetailsPanel ..> Model
+WeeklySchedulePanel ..> Model
 
-PersonListPanel -[hidden]left- HelpWindow
+UiManager -right-> LogicApi
+MainWindow -right-> LogicApi
+MainWindow ..> CommandResult
+CommandResult --> "0..1" TimetableView
+MainWindow ..> TimetableView : passes day to\nWeeklySchedulePanel
+
+StudentListPanel -[hidden]left- HelpWindow
 HelpWindow -[hidden]left- CommandBox
 CommandBox -[hidden]left- ResultDisplay
 ResultDisplay -[hidden]left- StatusBarFooter

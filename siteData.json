@@ -7,11 +7,24 @@
       "headings": {
         "about-us": "About Us",
         "project-team": "Project team",
-        "anton": "Anton",
+        "anton-ang-jia-jun": "Anton Ang Jia Jun",
         "kiefer-lau": "Kiefer Lau",
         "eugene": "Eugene",
         "jimi-bong": "Jimi Bong",
         "aishwarai-pratiksha": "Aishwarai Pratiksha"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "BugTriage.md",
+      "title": "Bug triage and prevention",
+      "headings": {
+        "bug-triage-and-prevention": "Bug triage and prevention",
+        "classify-by-user-impact": "Classify by user impact",
+        "review-matrix": "Review matrix",
+        "tutorconnect-decisions-that-remain-open-to-review": "TutorConnect decisions that remain open to review",
+        "evidence-in-this-hardening-change": "Evidence in this hardening change",
+        "pr-completion-record": "PR completion record"
       },
       "headingKeywords": {}
     },
@@ -28,6 +41,7 @@
       "title": "DevOps guide",
       "headings": {
         "devops-guide": "DevOps guide",
+        "contributing-with-a-fork": "Contributing with a fork",
         "build-automation": "Build automation",
         "continuous-integration-ci": "Continuous integration (CI)",
         "code-coverage": "Code coverage",
@@ -40,7 +54,7 @@
       "src": "DeveloperGuide.md",
       "title": "Developer Guide",
       "headings": {
-        "ab-3-developer-guide": "AB-3 Developer Guide",
+        "tutorconnect-developer-guide": "TutorConnect Developer Guide",
         "acknowledgements": "Acknowledgements",
         "setting-up-getting-started": "Setting up, getting started",
         "design": "Design",
@@ -52,27 +66,33 @@
         "common-classes": "Common classes",
         "implementation": "Implementation",
         "f01-add-student": "F01: Add Student",
+        "shared-single-field-updates": "Shared single-field updates",
+        "story-11-monthly-payment-status": "Story 11: Monthly payment status",
         "f08-weekly-lesson-scheduling": "F08: Weekly Lesson Scheduling",
+        "academic-records-notes-and-assessments-stories-12-and-13": "Academic records: notes and assessments (stories 12 and 13)",
+        "student-discovery-stories-10-and-15": "Student discovery (stories 10 and 15)",
+        "delete-and-list-f02-f03": "Delete and list (F02/F03)",
         "proposed-undo-redo-feature": "[Proposed] Undo/redo feature",
-        "proposed-data-archiving": "[Proposed] Data archiving",
         "documentation-logging-testing-dev-ops": "Documentation, logging, testing, dev-ops",
         "appendix-requirements": "Appendix: Requirements",
         "product-scope": "Product scope",
         "user-stories": "User stories",
         "use-cases": "Use cases",
         "non-functional-requirements": "Non-Functional Requirements",
-        "operating-environment-and-amp-portability": "Operating Environment &amp; Portability",
-        "performance-and-amp-scalability": "Performance &amp; Scalability",
-        "usability-and-amp-interaction": "Usability &amp; Interaction",
-        "reliability-and-amp-data-integrity": "Reliability &amp; Data Integrity",
-        "privacy-and-amp-confidentiality": "Privacy &amp; Confidentiality",
-        "glossary": "Glossary",
         "appendix-instructions-for-manual-testing": "Appendix: Instructions for manual testing",
         "launch-and-shutdown": "Launch and shutdown",
-        "deleting-a-person": "Deleting a person",
+        "setting-up-test-data": "Setting up test data",
+        "adding-a-student": "Adding a student",
+        "setting-guardian-level-subject-and-rate": "Setting guardian, level, subject and rate",
+        "finding-and-filtering-students": "Finding and filtering students",
+        "weekly-scheduling-and-timetable": "Weekly scheduling and timetable",
+        "notes-and-assessment-results": "Notes and assessment results",
+        "monthly-payments": "Monthly payments",
+        "deleting-a-student": "Deleting a student",
         "saving-data": "Saving data",
-        "glossary-2": "Glossary",
-        "delete-list-student-integration-f02-f03": "Delete/list student integration (F02/F03)"
+        "clearing-all-data": "Clearing all data",
+        "appendix-planned-enhancements": "Appendix: Planned Enhancements",
+        "glossary": "Glossary"
       },
       "headingKeywords": {}
     },
@@ -100,7 +120,9 @@
       "src": "Logging.md",
       "title": "Logging guide",
       "headings": {
-        "logging-guide": "Logging guide"
+        "logging-guide": "Logging guide",
+        "what-tutorconnect-logs": "What TutorConnect logs",
+        "student-discovery": "Student discovery"
       },
       "headingKeywords": {}
     },
@@ -110,6 +132,7 @@
       "headings": {
         "setting-up-and-getting-started": "Setting up and getting started",
         "setting-up-the-project-on-your-computer": "Setting up the project on your computer",
+        "building-and-running-from-a-terminal": "Building and running from a terminal",
         "before-writing-code": "Before writing code"
       },
       "headingKeywords": {}
@@ -121,7 +144,15 @@
         "testing-guide": "Testing guide",
         "running-tests": "Running tests",
         "types-of-tests": "Types of tests",
-        "f01-f08-acceptance": "F01–F08 acceptance"
+        "f01-f08-acceptance": "F01–F08 acceptance",
+        "f08-v1-3-release-handoff-15-october-2026": "F08 v1.3 release handoff (15 October 2026)",
+        "bug-triage-and-regression-review": "Bug triage and regression review",
+        "f04-guardian-contact-acceptance-v1-3": "F04 guardian contact acceptance (v1.3)",
+        "tutorconnect-naming-refactor-verification-16-october-2026": "TutorConnect naming-refactor verification (16 October 2026)",
+        "v1-4-release-handoff-22-october-2026": "v1.4 release handoff (22 October 2026)",
+        "changes-since-v1-3": "Changes since v1.3",
+        "release-candidate-checked-on-22-october-2026": "Release candidate checked on 22 October 2026",
+        "final-integration-and-release-checklist": "Final integration and release checklist"
       },
       "headingKeywords": {}
     },
@@ -129,23 +160,33 @@
       "src": "UserGuide.md",
       "title": "User Guide",
       "headings": {
-        "ab-3-user-guide": "AB-3 User Guide",
+        "tutorconnect-user-guide": "TutorConnect User Guide",
         "quick-start": "Quick start",
         "features": "Features",
+        "working-from-the-keyboard": "Working from the keyboard",
         "viewing-help-help": "Viewing help: help",
         "adding-a-student-f01-add": "Adding a student (F01): add",
         "listing-students-list": "Listing students: list",
-        "editing-a-person-edit": "Editing a person: edit",
+        "editing-a-student-edit": "Editing a student: edit",
+        "setting-a-guardian-contact-f04-guardian": "Setting a guardian contact (F04): guardian",
         "setting-a-student-s-education-level-f05-level": "Setting a student's education level (F05): level",
-        "locating-persons-by-name-find": "Locating persons by name: find",
+        "locating-students-by-name-find": "Locating students by name: find",
+        "filtering-students-by-level-or-subject-filter": "Filtering students by level or subject: filter",
         "deleting-a-student-delete": "Deleting a student: delete",
         "setting-a-student-s-subject-f06-subject": "Setting a student's subject (F06): subject",
+        "keeping-a-student-s-note-story-13-note-and-clearnote": "Keeping a student's note (story 13): note and clearnote",
+        "setting-a-student-s-hourly-rate-f07-rate": "Setting a student's hourly rate (F07): rate",
+        "recording-a-monthly-payment-status-story-11-payment": "Recording a monthly payment status (story 11): payment",
+        "reviewing-monthly-payment-statuses-payments": "Reviewing monthly payment statuses: payments",
         "scheduling-a-weekly-lesson-f08-schedule": "Scheduling a weekly lesson (F08): schedule",
+        "viewing-a-daily-or-weekly-timetable-timetable": "Viewing a daily or weekly timetable: timetable",
+        "recording-exam-and-test-results-story-12-assess-assessments-and-unassess": "Recording exam and test results (story 12): assess, assessments and unassess",
         "clearing-all-entries-clear": "Clearing all entries: clear",
+        "removing-a-weekly-lesson-unschedule": "Removing a weekly lesson: unschedule",
         "exiting-the-program-exit": "Exiting the program: exit",
         "saving-the-data": "Saving the data",
         "editing-the-data-file": "Editing the data file",
-        "archiving-data-files-coming-in-v2-0": "Archiving data files [coming in v2.0]",
+        "features-not-included-in-this-release": "Features not included in this release",
         "faq": "FAQ",
         "known-issues": "Known issues",
         "command-summary": "Command summary"
@@ -161,10 +202,57 @@
       "headingKeywords": {}
     },
     {
-      "src": "team/johndoe.md",
-      "title": "John Doe's Project Portfolio Page",
+      "src": "team/antz5lyfe.md",
+      "title": "Anton Ang Jia Jun's Project Portfolio",
       "headings": {
-        "project-addressbook-level-3": "Project: AddressBook Level 3"
+        "anton-ang-jia-jun-s-project-portfolio": "Anton Ang Jia Jun's Project Portfolio",
+        "project-tutorconnect": "Project: TutorConnect",
+        "delivered-contributions": "Delivered contributions",
+        "v1-5-status": "v1.5 status"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "team/ap-was-here.md",
+      "title": "Aishwarai Pratiksha's Project Portfolio",
+      "headings": {
+        "aishwarai-pratiksha-s-project-portfolio": "Aishwarai Pratiksha's Project Portfolio",
+        "project-tutorconnect": "Project: TutorConnect",
+        "delivered-contributions": "Delivered contributions",
+        "v1-5-status": "v1.5 status"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "team/jimibong.md",
+      "title": "Jimi Bong's Project Portfolio",
+      "headings": {
+        "jimi-bong-s-project-portfolio": "Jimi Bong's Project Portfolio",
+        "project-tutorconnect": "Project: TutorConnect",
+        "delivered-contributions": "Delivered contributions",
+        "v1-5-status": "v1.5 status"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "team/keyfurrr67.md",
+      "title": "Kiefer Lau's Project Portfolio",
+      "headings": {
+        "kiefer-lau-s-project-portfolio": "Kiefer Lau's Project Portfolio",
+        "project-tutorconnect": "Project: TutorConnect",
+        "delivered-contributions": "Delivered contributions",
+        "v1-5-status": "v1.5 status"
+      },
+      "headingKeywords": {}
+    },
+    {
+      "src": "team/yuj1n06.md",
+      "title": "Eugene's Project Portfolio",
+      "headings": {
+        "eugene-s-project-portfolio": "Eugene's Project Portfolio",
+        "project-tutorconnect": "Project: TutorConnect",
+        "delivered-contributions": "Delivered contributions",
+        "v1-5-status": "v1.5 status"
       },
       "headingKeywords": {}
     }

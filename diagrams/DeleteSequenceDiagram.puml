@@ -4,7 +4,7 @@ skinparam ArrowFontStyle plain
 
 box Logic LOGIC_COLOR_T1
 participant ":LogicManager" as LogicManager LOGIC_COLOR
-participant ":AddressBookParser" as AddressBookParser LOGIC_COLOR
+participant ":TutorConnectParser" as TutorConnectParser LOGIC_COLOR
 participant ":DeleteCommandParser" as DeleteCommandParser LOGIC_COLOR
 participant "d:DeleteCommand" as DeleteCommand LOGIC_COLOR
 participant "r:CommandResult" as CommandResult LOGIC_COLOR
@@ -12,22 +12,23 @@ end box
 
 box Model MODEL_COLOR_T1
 participant "m:Model" as Model MODEL_COLOR
+participant "p:Model" as Proposed MODEL_COLOR
 end box
 
 [-> LogicManager : execute("delete 1")
 activate LogicManager
 
-LogicManager -> AddressBookParser : parseCommand("delete 1")
-activate AddressBookParser
+LogicManager -> TutorConnectParser : parseCommand("delete 1")
+activate TutorConnectParser
 
 create DeleteCommandParser
-AddressBookParser -> DeleteCommandParser
+TutorConnectParser -> DeleteCommandParser
 activate DeleteCommandParser
 
-DeleteCommandParser --> AddressBookParser
+DeleteCommandParser --> TutorConnectParser
 deactivate DeleteCommandParser
 
-AddressBookParser -> DeleteCommandParser : parse("1")
+TutorConnectParser -> DeleteCommandParser : parse("1")
 activate DeleteCommandParser
 
 create DeleteCommand
@@ -37,23 +38,34 @@ activate DeleteCommand
 DeleteCommand --> DeleteCommandParser :
 deactivate DeleteCommand
 
-DeleteCommandParser --> AddressBookParser : d
+DeleteCommandParser --> TutorConnectParser : d
 deactivate DeleteCommandParser
 'Hidden arrow to position the destroy marker below the end of the activation bar.
-DeleteCommandParser -[hidden]-> AddressBookParser
+DeleteCommandParser -[hidden]-> TutorConnectParser
 destroy DeleteCommandParser
 
-AddressBookParser --> LogicManager : d
-deactivate AddressBookParser
+TutorConnectParser --> LogicManager : d
+deactivate TutorConnectParser
 
-LogicManager -> DeleteCommand : execute(m)
+LogicManager -> Model : copyForCommand()
+activate Model
+create Proposed
+Model -> Proposed
+Model --> LogicManager : p
+deactivate Model
+
+LogicManager -> DeleteCommand : execute(p)
 activate DeleteCommand
 
-DeleteCommand -> Model : deletePerson(1)
-activate Model
+DeleteCommand -> Proposed : getFilteredStudentList()
+activate Proposed
+Proposed --> DeleteCommand : displayed list
+deactivate Proposed
 
-Model --> DeleteCommand
-deactivate Model
+DeleteCommand -> Proposed : deleteStudent(target)
+activate Proposed
+Proposed --> DeleteCommand
+deactivate Proposed
 
 create CommandResult
 DeleteCommand -> CommandResult
@@ -64,6 +76,13 @@ deactivate CommandResult
 
 DeleteCommand --> LogicManager : r
 deactivate DeleteCommand
+
+LogicManager -> LogicManager : save p's data to Storage
+
+LogicManager -> Model : publish(p)
+activate Model
+Model --> LogicManager
+deactivate Model
 
 [<--LogicManager
 deactivate LogicManager
