@@ -65,6 +65,10 @@ public class ModelManager implements Model {
     @Override
     public void setStudentDirectory(ReadOnlyStudentDirectory studentDirectory) {
         this.studentDirectory.resetData(studentDirectory);
+        if (selectedStudentId != null
+                && filteredStudents.stream().noneMatch(student -> student.getId().equals(selectedStudentId))) {
+            selectedStudentId = null;
+        }
     }
 
     @Override
