@@ -860,8 +860,10 @@ Prefer the application's field commands if unsure about a value's restrictions.
 
 **Caution:**
 Invalid edits can cause data loss. If the file cannot be loaded at startup, the app starts with an empty
-register; the original file is not automatically repaired or backed up. The next successful data-changing
-command can replace that file. Stop and restore your backup before modifying the empty register.<br>
+register and shows a warning in the result box. It first copies the unreadable file beside it as
+`addressbook.json.unreadable-YYYYMMDD-HHMMSS.bak`, but does not repair it. The next successful data-changing
+command replaces `data/addressbook.json`, so close the app, fix the file or restore that copy (rename it back to
+`addressbook.json`), and relaunch before making changes.<br>
 If `list` cannot reload the file while the app is running, it reports a load error and preserves the current
 in-memory list, filter, selection, and file bytes. Restore or correct the file before retrying. This is not
 automatic recovery of corrupted data. Only edit values you understand and verify the loaded result.

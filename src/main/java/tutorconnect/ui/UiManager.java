@@ -25,6 +25,7 @@ public class UiManager implements Ui {
 
     private Logic logic;
     private Path dataFilePath;
+    private String startupMessage;
     private MainWindow mainWindow;
 
     /**
@@ -32,8 +33,17 @@ public class UiManager implements Ui {
      * to show in the status bar.
      */
     public UiManager(Logic logic, Path dataFilePath) {
+        this(logic, dataFilePath, null);
+    }
+
+    /**
+     * Creates a {@code UiManager} that also shows {@code startupMessage}, if not {@code null}, in the result box
+     * once the window opens.
+     */
+    public UiManager(Logic logic, Path dataFilePath, String startupMessage) {
         this.logic = logic;
         this.dataFilePath = dataFilePath;
+        this.startupMessage = startupMessage;
     }
 
     @Override
@@ -47,6 +57,9 @@ public class UiManager implements Ui {
             mainWindow = new MainWindow(primaryStage, logic, dataFilePath);
             mainWindow.show(); //This should be called before creating other UI parts
             mainWindow.fillInnerParts();
+            if (startupMessage != null) {
+                mainWindow.showFeedback(startupMessage);
+            }
 
         } catch (Throwable e) {
             logger.severe(StringUtil.getDetails(e));

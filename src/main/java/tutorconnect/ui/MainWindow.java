@@ -189,6 +189,11 @@ public class MainWindow extends UiPart<Stage> {
         return studentListPanel;
     }
 
+    /** Shows a message in the result box without running a command, e.g. a startup warning. */
+    void showFeedback(String feedback) {
+        resultDisplay.setFeedbackToUser(feedback);
+    }
+
     /**
      * Executes the command and returns the result.
      *
