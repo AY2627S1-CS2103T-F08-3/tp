@@ -81,7 +81,9 @@ public interface Model {
 
     /** Publishes a complete, already-saved state. */
     default void publish(Model proposed) {
-        if (!getStudentDirectory().equals(proposed.getStudentDirectory())) {
+        boolean sameIds = getStudentDirectory().getStudentList().stream().map(Student::getId).toList()
+                .equals(proposed.getStudentDirectory().getStudentList().stream().map(Student::getId).toList());
+        if (!sameIds || !getStudentDirectory().equals(proposed.getStudentDirectory())) {
             setStudentDirectory(proposed.getStudentDirectory());
         }
         updateFilteredStudentList(proposed.getStudentPredicate());

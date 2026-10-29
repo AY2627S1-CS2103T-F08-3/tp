@@ -80,7 +80,7 @@ public class UniqueStudentList implements Iterable<Student> {
 
     public void setStudents(UniqueStudentList replacement) {
         requireNonNull(replacement);
-        internalList.setAll(replacement.internalList);
+        internalList.setAll(List.copyOf(replacement.internalList));
     }
 
     /**
@@ -89,11 +89,13 @@ public class UniqueStudentList implements Iterable<Student> {
      */
     public void setStudents(List<Student> students) {
         requireAllNonNull(students);
-        if (!studentsAreUnique(students)) {
+        // The supplied list may be this list's own unmodifiable view or a sublist of it.
+        List<Student> snapshot = List.copyOf(students);
+        if (!studentsAreUnique(snapshot)) {
             throw new DuplicateStudentException();
         }
 
-        internalList.setAll(students);
+        internalList.setAll(snapshot);
     }
 
     /**
