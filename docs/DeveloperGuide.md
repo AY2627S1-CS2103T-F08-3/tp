@@ -1148,12 +1148,14 @@ The remaining sections start from these three students, numbered 1-3, unless sta
 
 1. Corrupted data file
 
-   1. With the app closed, copy `data/addressbook.json` to a backup, then change one student's `"phone"` value to
-      `"12"` and launch.<br>
-      Expected: The app starts with an empty list; `list` reports `Error: Student list could not be loaded.`
+   1. With the app closed, change one student's `"phone"` value in `data/addressbook.json` to `"12"` and launch.<br>
+      Expected: The app starts with an empty list, and the result box shows a warning that the file could not be
+      read. The `data` folder now also holds an exact copy named `addressbook.json.unreadable-YYYYMMDD-HHMMSS.bak`.
+      `list` reports `Error: Student list could not be loaded.`
 
-   1. Do **not** add anything now. Any data-changing command replaces the file and the other students are lost
-      (issue #191). Close the app and restore the backup instead.
+   1. Test case: `add n/Cara p/83456789 a/3 St`, then close the app.<br>
+      Expected: `data/addressbook.json` now holds only Cara, and the `.bak` copy is unchanged. Rename the copy to
+      `addressbook.json`, fix the phone value and relaunch: the original students are back.
 
 ### Clearing all data
 
@@ -1162,24 +1164,10 @@ The remaining sections start from these three students, numbered 1-3, unless sta
 
 ## **Appendix: Planned Enhancements**
 
-Team size: 5. These are fixes for known feature flaws that we plan to make after v1.5.
+Team size: 5.
 
-1. **Warn before overwriting an unreadable data file.** Currently, if the data file cannot be read at startup the app
-   silently starts empty, and the next change replaces the file, losing every record (#191). We plan to show
-   `Warning: data/addressbook.json could not be read; TutorConnect started with an empty list. The file will be
-   kept as addressbook.json.bak before the next save.` in the result box, and to copy the unreadable file to
-   `addressbook.json.bak` before the first save.
-1. **Make `edit` messages consistent.** `edit` currently reports `Edited student: NAME; Phone: ...; Email: ;
-   Address: ...; Tags: ` with empty AB3 fields (#192), and a duplicate edit reports `This student already exists in
-   the address book.` (#193). We plan to report `Student updated: NAME.` and the same duplicate error as `add`:
-   `Error: This student already exists with the same name and phone.`
-1. **Give `find` a one-line error.** `find` with no keyword currently prints a multi-line usage block (#194). We plan
-   to show `Error: Missing required parameter: KEYWORD.`, matching the other commands.
-1. **Remove remaining AB3 wording.** `clear` and `exit` currently report `Address book has been cleared!` and
-   `Exiting Address Book as requested ...` (#195). We plan to show `All students have been cleared.` and
-   `Exiting TutorConnect.`
-1. **Avoid a double full stop after names ending in `.`.** For example `Student added: O'Brien-Smith Jr..` (#196).
-   We plan to omit the closing full stop when the name already ends with one.
+There are no planned enhancements at present. The feature flaws found in alpha testing (#191 to #196), such as the
+silent replacement of an unreadable data file and the remaining AB3 messages, were fixed in v1.5.
 
 --------------------------------------------------------------------------------------------------------------------
 
