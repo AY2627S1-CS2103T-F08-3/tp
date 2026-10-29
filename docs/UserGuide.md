@@ -868,8 +868,10 @@ in-memory list, filter, selection, and file bytes. Restore or correct the file b
 automatic recovery of corrupted data. Only edit values you understand and verify the loaded result.
 </box>
 
-There is no automatic backup, archive or undo command in this version. With the app closed, copy
-`data/addressbook.json` to a safe location yourself. This guide does not promise a future release date for those features.
+### Features not included in this release
+
+TutorConnect does not provide automatic backups, archiving, or undo. These capabilities are not promised
+for a future release. With the app closed, copy `data/addressbook.json` to a safe location yourself.
 
 --------------------------------------------------------------------------------------------------------------------
 
