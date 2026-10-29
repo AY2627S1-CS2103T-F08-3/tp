@@ -13,12 +13,9 @@ import tutorconnect.model.student.exceptions.StudentNotFoundException;
 
 /**
  * A list of students that enforces uniqueness between its elements and does not allow nulls.
- * A student is considered unique by comparing using {@code Student#isSameStudent(Student)}. As such, adding and
- * updating of
- * students uses Student#isSameStudent(Student) for equality so as to ensure that the student being added or updated is
- * unique in terms of identity in the UniqueStudentList. However, the removal of a student uses
- * Student#equals(Object) so
- * as to ensure that the student with exactly the same fields will be removed.
+ * Adding and updating reject a student with the same UUID or matching contact identity, as defined by
+ * {@code Student#isSameStudent(Student)}. Removal uses {@code Student#equals(Object)} so that only the student
+ * with exactly the same fields will be removed.
  *
  * Supports a minimal set of list operations.
  *
@@ -44,7 +41,7 @@ public class UniqueStudentList implements Iterable<Student> {
      */
     public void add(Student toAdd) {
         requireNonNull(toAdd);
-        if (contains(toAdd)) {
+        if (containsExcept(toAdd, -1)) {
             throw new DuplicateStudentException();
         }
         internalList.add(toAdd);
@@ -63,7 +60,7 @@ public class UniqueStudentList implements Iterable<Student> {
             throw new StudentNotFoundException();
         }
 
-        if (!target.isSameStudent(editedStudent) && contains(editedStudent)) {
+        if (containsExcept(editedStudent, index)) {
             throw new DuplicateStudentException();
         }
 
@@ -141,11 +138,25 @@ public class UniqueStudentList implements Iterable<Student> {
     private boolean studentsAreUnique(List<Student> students) {
         for (int i = 0; i < students.size() - 1; i++) {
             for (int j = i + 1; j < students.size(); j++) {
-                if (students.get(i).isSameStudent(students.get(j))) {
+                if (hasSameIdentity(students.get(i), students.get(j))) {
                     return false;
                 }
             }
         }
         return true;
+    }
+
+    /** Checks every row except the one being replaced, so ID-preserving edits remain valid. */
+    private boolean containsExcept(Student toCheck, int excludedIndex) {
+        for (int i = 0; i < internalList.size(); i++) {
+            if (i != excludedIndex && hasSameIdentity(toCheck, internalList.get(i))) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static boolean hasSameIdentity(Student first, Student second) {
+        return first.getId().equals(second.getId()) || first.isSameStudent(second);
     }
 }
