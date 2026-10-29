@@ -18,6 +18,11 @@ public class FilterCommandParser implements Parser<FilterCommand> {
 
     @Override
     public FilterCommand parse(String arguments) throws ParseException {
+        Map<String, String> values = parseParameters(arguments);
+        return new FilterCommand(parseCriteria(values));
+    }
+
+    private Map<String, String> parseParameters(String arguments) throws ParseException {
         if (StudentText.hasProhibitedCharacters(arguments)) {
             logger.fine("Criteria query rejected: prohibited text");
             throw new ParseException(StudentParameters.UNEXPECTED_TEXT);
@@ -33,10 +38,14 @@ public class FilterCommandParser implements Parser<FilterCommand> {
             logger.fine("Criteria query rejected: missing criteria");
             throw new ParseException(FilterCommand.MESSAGE_MISSING_CRITERIA);
         }
+        return values;
+    }
+
+    private StudentCriteriaPredicate parseCriteria(Map<String, String> values) throws ParseException {
         try {
             Optional<EducationLevel> level = Optional.ofNullable(values.get("l/")).map(EducationLevel::new);
             Optional<Subject> subject = Optional.ofNullable(values.get("s/")).map(Subject::new);
-            return new FilterCommand(new StudentCriteriaPredicate(level, subject));
+            return new StudentCriteriaPredicate(level, subject);
         } catch (IllegalArgumentException e) {
             logger.fine("Criteria query rejected: invalid criterion value");
             throw new ParseException(e.getMessage(), e);

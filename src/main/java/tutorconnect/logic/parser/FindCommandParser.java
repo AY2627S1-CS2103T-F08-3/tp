@@ -29,14 +29,7 @@ public class FindCommandParser implements Parser<FindCommand> {
      * @throws ParseException if the user input does not conform to the expected format
      */
     public FindCommand parse(String args) throws ParseException {
-        String trimmedArgs;
-        try {
-            // Keep legacy whitespace separators, then apply the same normalization as stored names.
-            trimmedArgs = StudentText.normalize(args.replaceAll("\\s+", " "));
-        } catch (IllegalArgumentException e) {
-            logger.fine("Name query rejected: prohibited text");
-            throw new ParseException(StudentParameters.UNEXPECTED_TEXT, e);
-        }
+        String trimmedArgs = normalizeKeywords(args);
         if (trimmedArgs.isEmpty()) {
             logger.fine("Name query rejected: missing keywords");
             throw new ParseException(String.format(MESSAGE_MISSING_REQUIRED_PARAMETER, KEYWORD_PARAMETER));
@@ -52,6 +45,16 @@ public class FindCommandParser implements Parser<FindCommand> {
         }
 
         return new FindCommand(new NameContainsKeywordsPredicate(List.of(nameKeywords)));
+    }
+
+    private String normalizeKeywords(String args) throws ParseException {
+        try {
+            // Keep legacy whitespace separators, then apply the same normalization as stored names.
+            return StudentText.normalize(args.replaceAll("\\s+", " "));
+        } catch (IllegalArgumentException e) {
+            logger.fine("Name query rejected: prohibited text");
+            throw new ParseException(StudentParameters.UNEXPECTED_TEXT, e);
+        }
     }
 
 }
