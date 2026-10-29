@@ -23,7 +23,12 @@ It combines typed commands with a graphical student register and details panel.
 
 1. Copy the file to the folder you want to use as the _home folder_ for TutorConnect.
 
+   The home folder must be writable so TutorConnect can create and update its data files.
+
 1. Open a terminal, `cd` to the folder containing the JAR file, and run `java -jar tutorconnect.jar`.<br>
+   Double-clicking the JAR might not work on some systems; launch it from the terminal with Java 25 instead.
+   On macOS, fullscreen mode can cause unexpected behavior with secondary dialogs such as Help. Exit fullscreen
+   before opening Help if you encounter this issue.<br>
    The application opens with a command box, a feedback area, a student register on the left, and selected-student
    details and a weekly schedule on the right. Scroll the details panel to see all fields.
    If no data file exists, the register initially contains sample students.
