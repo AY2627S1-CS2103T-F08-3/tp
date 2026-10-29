@@ -5,7 +5,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import tutorconnect.logic.parser.Prefix;
-import tutorconnect.model.student.Student;
 
 /**
  * Container for user visible messages.
@@ -47,23 +46,6 @@ public class Messages {
                 Stream.of(duplicatePrefixes).map(Prefix::toString).collect(Collectors.toSet());
 
         return MESSAGE_DUPLICATE_FIELDS + String.join(" ", duplicateFields);
-    }
-
-    /**
-     * Formats the {@code student} for display to the user.
-     */
-    public static String format(Student student) {
-        final StringBuilder builder = new StringBuilder();
-        builder.append(student.getName())
-                .append("; Phone: ")
-                .append(student.getPhone())
-                .append("; Email: ")
-                .append(student.getEmail())
-                .append("; Address: ")
-                .append(student.getAddress())
-                .append("; Tags: ");
-        student.getTags().forEach(builder::append);
-        return builder.toString();
     }
 
 }

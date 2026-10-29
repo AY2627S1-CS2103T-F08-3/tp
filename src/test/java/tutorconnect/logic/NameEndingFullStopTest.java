@@ -35,6 +35,7 @@ public class NameEndingFullStopTest {
                 logic.execute("unschedule 1").getFeedbackToUser());
         assertEquals("Error: No assessment record 1 for O'Brien-Smith Jr.",
                 assertThrows(CommandException.class, () -> logic.execute("unassess 1 i/1")).getMessage());
+        assertEquals("Student updated: O'Brien-Smith Jr.", logic.execute("edit 1 a/3 Road").getFeedbackToUser());
         assertEquals("Student deleted: O'Brien-Smith Jr.", logic.execute("delete 1").getFeedbackToUser());
     }
 }

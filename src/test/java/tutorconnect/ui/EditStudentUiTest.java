@@ -79,7 +79,7 @@ public class EditStudentUiTest {
                 assertEquals(detailText, details.getChildren().stream().map(node -> ((Label) node).getText()).toList());
 
                 enter(input, "edit 1 a/12/3 New Street");
-                assertTrue(status.getText().startsWith("Edited student: Nur Aisyah"));
+                assertEquals("Student updated: Nur Aisyah.", status.getText());
                 assertEquals(1, rows.getSelectionModel().getSelectedIndex());
                 assertEquals(target.getId(), model.getSelectedStudentId());
                 assertSame(hidden, rows.getItems().getFirst());
