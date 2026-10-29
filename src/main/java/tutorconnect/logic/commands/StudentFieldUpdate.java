@@ -3,6 +3,7 @@ package tutorconnect.logic.commands;
 import java.util.Optional;
 
 import tutorconnect.commons.core.index.Index;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.Student;
@@ -19,13 +20,13 @@ final class StudentFieldUpdate {
         Optional<T> previous = currentValue(target, field);
         String name = target.getName().toString();
         if (previous.isPresent() && previous.get().equals(value)) {
-            return new CommandResult(String.format(noChangeMessage, name, previous.get()));
+            return new CommandResult(Messages.formatSentence(noChangeMessage, name, previous.get()));
         }
 
         model.setStudent(target, target.withStudentFields(target.getStudentFields().with(field, value)));
         String message = previous.isEmpty()
-                ? String.format(setMessage, name, value)
-                : String.format(updateMessage, name, previous.get(), value);
+                ? Messages.formatSentence(setMessage, name, value)
+                : Messages.formatSentence(updateMessage, name, previous.get(), value);
         if (model.getFilteredStudentList().stream().noneMatch(student -> student.getId().equals(target.getId()))) {
             // A changed level or subject can remove this row from the current discovery view.
             model.selectStudent(null);

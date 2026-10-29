@@ -8,6 +8,7 @@ import java.util.logging.Logger;
 import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.AssessmentHistory;
@@ -48,7 +49,7 @@ public class UnassessCommand extends Command {
 
         if (!record.isWithinSize(history.size())) {
             logger.fine("Student " + target.getId() + " has no assessment record " + record.getOneBasedString());
-            throw new CommandException(String.format(MESSAGE_NO_RECORD, name, record.getOneBasedString()));
+            throw new CommandException(Messages.formatSentence(MESSAGE_NO_RECORD, name, record.getOneBasedString()));
         }
         AssessmentRecord removed = history.get(record.getZeroBasedExact());
         model.setStudent(target, AssessmentUpdate.withHistory(target, history.without(record.getZeroBasedExact())));

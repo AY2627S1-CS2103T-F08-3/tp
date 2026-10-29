@@ -10,6 +10,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.commons.core.index.Index;
 import tutorconnect.commons.util.ToStringBuilder;
+import tutorconnect.logic.Messages;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.model.Model;
 import tutorconnect.model.student.AcademicNote;
@@ -53,7 +54,7 @@ public class ClearNoteCommand extends Command {
         stored.remove(AcademicNote.FIELD.key());
         model.setStudent(target, target.withStudentFields(new StudentFields(stored)));
         logger.fine("Cleared the note of student " + target.getId());
-        return new CommandResult(String.format(MESSAGE_CLEARED, name), index.getOneBased());
+        return new CommandResult(Messages.formatSentence(MESSAGE_CLEARED, name), index.getOneBased());
     }
 
     private static boolean isReadable(Student student) {
