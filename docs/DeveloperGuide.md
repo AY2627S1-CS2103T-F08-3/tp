@@ -505,7 +505,7 @@ _{Explain here how the data archiving feature will be implemented}_
 
 **Target user profile**:
 
-TutorConnect targets freelance private home tutors who:
+TutorConnect targets freelance private home tutors (persona: a self-employed tutor teaching 15-20 students) who:
 
 * work independently, without administrative staff, and manage multiple students across Primary, Secondary and Junior College levels;
 * need to keep student and parent contact details organised alongside lesson schedules, subject syllabi and academic notes;
@@ -516,14 +516,30 @@ TutorConnect targets freelance private home tutors who:
 
 **Value proposition**:
 
-TutorConnect aims to help independent home tutors spend less time on routine administration by bringing student and parent contact details, recurring lesson schedules, subject syllabi and lightweight academic notes into one keyboard-first desktop application. Keeping these records together and available offline reduces the need to cross-reference messaging apps, calendars and spreadsheets, helping tutors find information and prepare for lessons more efficiently.
+TutorConnect helps independent home tutors manage student and parent contact details, lesson schedules and subject
+records in one keyboard-driven desktop application, so they no longer cross-reference messaging apps, calendars and
+spreadsheets.
+
+In v1.5 this means one offline register in which a tutor can:
+
+* record each student's contacts, guardian phone, education level, subject and hourly rate;
+* keep one recurring weekly lesson slot per student and view the whole week or one day as a timetable;
+* find students by partial name, or filter them by level and subject;
+* keep a freeform note and a dated history of test and exam results; and
+* mark each month's payment as pending or completed and list who still owes fees.
+
+**Out of scope**: generating invoices or processing payments, syncing between several tutors, and replacing a full
+calendar or learning-management system. Lesson durations, clash detection and more than one slot per student are
+deferred.
 
 
 ### User stories
 
 The following stories describe TutorConnect's requirements for a freelance tutor, including ideas that may not be implemented in the final product.
 Priorities follow the [team user-story register](https://docs.google.com/spreadsheets/d/1GyZpU64-x8papgY5nPyfu2VwB_hmP-6wA3xbr1CX16M/edit): High (must have) - `* * *`, Medium (nice to have) - `* *`.
-These are product priorities, not release commitments. The initial MVP covers stories 1-8; the remaining stories are retained for future consideration.
+These are product priorities, not release commitments. The MVP (release v1.3) delivered stories 1-8; v1.5 implements stories 1-15
+(edit, filter, payments, assessments, notes, timetable and partial-name search). Stories 16-31 are not implemented and
+are kept for future consideration.
 
 | ID | Priority | As a ... | I can ... | So that I can ... |
 |----|----------|----------|-----------|-------------------|
