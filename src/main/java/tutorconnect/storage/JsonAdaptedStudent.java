@@ -177,14 +177,7 @@ class JsonAdaptedStudent {
             }
         }
 
-        final UUID modelId;
-        try {
-            // Stable migration IDs even when an older file has not yet been saved by this version.
-            modelId = id == null ? UUID.nameUUIDFromBytes((modelName.fullName.toLowerCase(Locale.ROOT)
-                    + "\u0000" + modelPhone.value).getBytes(StandardCharsets.UTF_8)) : UUID.fromString(id);
-        } catch (IllegalArgumentException e) {
-            throw new IllegalValueException("Invalid student ID");
-        }
+        final UUID modelId = toModelId(modelName, modelPhone);
         StudentFields fields = new StudentFields(optionalFields);
         if (modelGuardianPhone.isPresent()) {
             fields = fields.with(GuardianPhone.FIELD, modelGuardianPhone.get());
@@ -199,6 +192,24 @@ class JsonAdaptedStudent {
             throw new IllegalValueException(e.getMessage());
         }
         return new Student(modelId, modelName, modelPhone, modelEmail, modelAddress, modelTags, fields);
+    }
+
+    /** Restores a canonical UUID, or derives a stable identity for legacy records without an ID. */
+    private UUID toModelId(Name modelName, Phone modelPhone) throws IllegalValueException {
+        if (id == null) {
+            return UUID.nameUUIDFromBytes((modelName.fullName.toLowerCase(Locale.ROOT)
+                    + "\u0000" + modelPhone.value).getBytes(StandardCharsets.UTF_8));
+        }
+        try {
+            UUID parsed = UUID.fromString(id);
+            // UUID.fromString also accepts abbreviated components; persisted identities must be complete.
+            if (!parsed.toString().equalsIgnoreCase(id)) {
+                throw new IllegalArgumentException("Noncanonical student ID");
+            }
+            return parsed;
+        } catch (IllegalArgumentException e) {
+            throw new IllegalValueException("Invalid student ID");
+        }
     }
 
 }
