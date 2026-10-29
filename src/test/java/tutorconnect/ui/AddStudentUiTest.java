@@ -83,7 +83,9 @@ public class AddStudentUiTest {
                 StudentDetailsPanel details = (StudentDetailsPanel) stage.getScene().lookup("#studentDetails");
                 List<String> text = details.getChildren().stream().map(node -> ((Label) node).getText()).toList();
                 assertTrue(text.contains("Phone: +6581234567"));
-                assertEquals(6, text.stream().filter(line -> line.endsWith("—")).count());
+                assertEquals(List.of("Guardian phone: —", "Education level: —", "Subject: —", "Note: —",
+                        "Hourly rate: —", "Weekly slot: —", "Payment history: —"),
+                        text.stream().filter(line -> line.endsWith("—")).toList());
                 Student selected = rows.getSelectionModel().getSelectedItem();
                 Label email = (Label) rows.lookup("#email");
                 assertFalse(email.isVisible());
