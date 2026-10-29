@@ -73,12 +73,13 @@ public class EditCommandParserTest {
     public void parse_missingParts_failure() {
         // no index specified
         assertParseFailure(parser, VALID_NAME_AMY, StudentParameters.UNEXPECTED_TEXT);
+        assertParseFailure(parser, NAME_DESC_AMY, ParserUtil.MESSAGE_MISSING_INDEX);
 
         // no field specified
         assertParseFailure(parser, "1", EditCommand.MESSAGE_NOT_EDITED);
 
         // no index and no field specified
-        assertParseFailure(parser, "", MESSAGE_INVALID_FORMAT);
+        assertParseFailure(parser, "", ParserUtil.MESSAGE_MISSING_INDEX);
     }
 
     @Test

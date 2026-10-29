@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import tutorconnect.logic.commands.exceptions.CommandException;
+import tutorconnect.logic.parser.ParserUtil;
 import tutorconnect.logic.parser.exceptions.ParseException;
 import tutorconnect.model.ModelManager;
 import tutorconnect.model.ReadOnlyStudentDirectory;
@@ -213,7 +214,7 @@ public class SubjectIntegrationTest {
         assertParseError(logic, "subject 1 l/Sec4", "Error: Unknown parameter: l/.");
         assertParseError(logic, "subject 1 foo s/Math", "Error: Unexpected text after command.");
         assertParseError(logic, "subject 0 s/Math", INVALID_INDEX);
-        assertParseError(logic, "subject s/Math", INVALID_INDEX);
+        assertParseError(logic, "subject s/Math", ParserUtil.MESSAGE_MISSING_INDEX);
         assertParseError(logic, "subject abc s/@", INVALID_INDEX);
         // Values are validated before the row is looked up, so a bad value wins over a missing student.
         assertParseError(logic, "subject 99 s/@", Subject.MESSAGE_CONSTRAINTS);

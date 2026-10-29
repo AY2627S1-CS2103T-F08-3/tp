@@ -13,8 +13,13 @@ import tutorconnect.logic.parser.exceptions.ParseException;
 
 class VisibleIndexTest {
     @Test
+    void parse_emptyValue_reportsMissingIndex() {
+        assertThrows(ParseException.class, ParserUtil.MESSAGE_MISSING_INDEX, () -> VisibleIndex.parse(""));
+    }
+
+    @Test
     void parse_invalidSyntax_rejected() {
-        for (String value : List.of("", "0", "01", "+1", "-1", "1.0", "1 2", "1\n", "a")) {
+        for (String value : List.of("0", "01", "+1", "-1", "1.0", "1 2", "1\n", "a")) {
             assertThrows(ParseException.class, VisibleIndex.MESSAGE_INVALID, () -> VisibleIndex.parse(value));
         }
     }

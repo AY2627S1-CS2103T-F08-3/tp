@@ -21,6 +21,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import tutorconnect.logic.commands.exceptions.CommandException;
+import tutorconnect.logic.parser.ParserUtil;
 import tutorconnect.logic.parser.exceptions.ParseException;
 import tutorconnect.model.ModelManager;
 import tutorconnect.model.ReadOnlyStudentDirectory;
@@ -209,7 +210,7 @@ public class LevelIntegrationTest {
         assertParseError(logic, "level 1 x/foo", "Error: Unknown parameter: x/.");
         assertParseError(logic, "level 1 foo l/Sec4", "Error: Unexpected text after command.");
         assertParseError(logic, "level 0 l/Sec4", INVALID_INDEX);
-        assertParseError(logic, "level l/Sec4", INVALID_INDEX);
+        assertParseError(logic, "level l/Sec4", ParserUtil.MESSAGE_MISSING_INDEX);
         assertParseError(logic, "level abc l/Bad", INVALID_INDEX);
         // Values are validated before the row is looked up, so a bad value wins over a missing student.
         assertParseError(logic, "level 99 l/Bad", EducationLevel.MESSAGE_CONSTRAINTS);

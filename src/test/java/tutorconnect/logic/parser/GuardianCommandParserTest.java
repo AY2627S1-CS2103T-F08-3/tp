@@ -56,7 +56,8 @@ public class GuardianCommandParserTest {
 
     @Test
     public void parse_invalidIndices_precedePhoneValidation() {
-        for (String index : new String[] {"", "0", "01", "-1", "+1", "1.5", "abc", "1\u200b"}) {
+        assertParseFailure(parser, "  g/bad", ParserUtil.MESSAGE_MISSING_INDEX);
+        for (String index : new String[] {"0", "01", "-1", "+1", "1.5", "abc", "1\u200b"}) {
             assertParseFailure(parser, " " + index + " g/bad", ParserUtil.MESSAGE_INVALID_INDEX);
         }
     }

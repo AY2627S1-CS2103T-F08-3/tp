@@ -19,6 +19,9 @@ public class PaymentCommandParser implements Parser<PaymentCommand> {
         StudentParameters.IndexedParameters parameters = StudentParameters.parseIndexed(args,
                 "m/MONTH", "s/STATUS");
         String rawIndex = StudentText.normalize(parameters.index());
+        if (rawIndex.isEmpty()) {
+            throw new ParseException(ParserUtil.MESSAGE_MISSING_INDEX);
+        }
         if (!rawIndex.matches("[1-9][0-9]*")) {
             throw new ParseException(VisibleIndex.MESSAGE_INVALID);
         }

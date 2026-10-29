@@ -59,7 +59,8 @@ public class ScheduleCommandParserTest {
 
     @Test
     public void parse_invalidIndexSyntax_precedesDayAndTime() {
-        for (String index : List.of("", "0", "01", "+1", "-1", "1.0", "x")) {
+        assertFailure("  t/24:00 d/Funday", ParserUtil.MESSAGE_MISSING_INDEX);
+        for (String index : List.of("0", "01", "+1", "-1", "1.0", "x")) {
             assertFailure(" " + index + " t/24:00 d/Funday", VisibleIndex.MESSAGE_INVALID);
         }
     }

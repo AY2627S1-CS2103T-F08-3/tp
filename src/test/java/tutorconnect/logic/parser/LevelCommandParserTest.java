@@ -63,9 +63,9 @@ public class LevelCommandParserTest {
 
     @Test
     public void parse_missingIndex_failure() {
-        assertParseFailure(parser, " l/Sec4", INVALID_INDEX);
-        assertParseFailure(parser, "l/Sec4", INVALID_INDEX);
-        assertParseFailure(parser, " l/", INVALID_INDEX);
+        assertParseFailure(parser, " l/Sec4", ParserUtil.MESSAGE_MISSING_INDEX);
+        assertParseFailure(parser, "l/Sec4", ParserUtil.MESSAGE_MISSING_INDEX);
+        assertParseFailure(parser, " l/", ParserUtil.MESSAGE_MISSING_INDEX);
     }
 
     @Test

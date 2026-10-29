@@ -96,7 +96,7 @@ public class AssessCommandParserTest {
 
     @Test
     public void parse_missingOrInvalidIndex_failure() {
-        assertParseFailure(parser, " d/2026-10-01 t/Quiz g/A", INVALID_INDEX);
+        assertParseFailure(parser, " d/2026-10-01 t/Quiz g/A", ParserUtil.MESSAGE_MISSING_INDEX);
         for (String index : new String[] {"0", "-1", "01", "abc", "1.5", "+1", "1e2", "1/2"}) {
             assertParseFailure(parser, " " + index + " d/2026-10-01 t/Quiz g/A", INVALID_INDEX);
         }

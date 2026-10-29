@@ -18,6 +18,9 @@ public final class VisibleIndex {
 
     /** Keeps decimal text so even arbitrarily large, syntactically valid indices are safe. */
     public static VisibleIndex parse(String value) throws ParseException {
+        if (value.isEmpty()) {
+            throw new ParseException(ParserUtil.MESSAGE_MISSING_INDEX);
+        }
         if (!value.matches("[1-9][0-9]*")) {
             throw new ParseException(MESSAGE_INVALID);
         }
