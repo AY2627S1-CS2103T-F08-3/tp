@@ -876,12 +876,17 @@ the new TutorConnect working directory, creating that folder if needed. Back up 
 file before replacing it, then start the app from that working directory. `preferences.json` is optional;
 omitting it uses default window settings and avoids copying off-screen coordinates between computers.
 
+**Q**: How do I clear a search or filter?<br>
+**A**: Run `list`. It shows the complete student register in insertion order and clears the current selection.
+Afterward, command indices refer to the full displayed list again.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## Known issues
 
 1. **When using multiple screens**, if you move the application to a secondary screen, and later switch to using only the primary screen, the GUI will open off-screen. The remedy is to delete the `preferences.json` file created by the application before running the application again.
 2. **If you minimize the Help Window** and then run the `help` command (or use the `Help` menu, or the keyboard shortcut `F1`) again, the original Help Window will remain minimized, and no new Help Window will appear. The remedy is to manually restore the minimized Help Window.
+3. **On macOS, fullscreen mode can affect secondary dialogs such as Help.** If a dialog behaves unexpectedly, leave fullscreen mode and open it again.
 
 --------------------------------------------------------------------------------------------------------------------
 
