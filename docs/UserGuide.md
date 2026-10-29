@@ -27,7 +27,6 @@ It combines typed commands with a graphical student register and details panel.
    The application opens with a command box, a feedback area, a student register on the left, and selected-student
    details and a weekly schedule on the right. Scroll the details panel to see all fields.
    If no data file exists, the register initially contains sample students.
-   The proposed dashboard mockup used elsewhere in the project is not the current application interface.
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
    Some example commands you can try:
