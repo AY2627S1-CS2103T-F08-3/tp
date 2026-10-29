@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -21,6 +22,7 @@ import org.junit.jupiter.api.condition.EnabledIfEnvironmentVariable;
 import org.junit.jupiter.api.io.TempDir;
 
 import javafx.application.Platform;
+import javafx.scene.control.TextArea;
 import javafx.stage.Stage;
 import tutorconnect.commons.core.GuiSettings;
 import tutorconnect.model.ReadOnlyUserPrefs;
@@ -115,6 +117,48 @@ public class TutorConnectAppTest {
             assertEquals(new UserPrefs(), app.model.getUserPrefs());
             app.stop();
             assertEquals(invalid, Files.readString(directory.resolve("addressbook.json")));
+            return null;
+        });
+    }
+
+    @Test
+    public void start_unreadableData_warnsAndKeepsCopyAfterNextSave() throws Exception {
+        String unreadable = "{\"persons\":[{\"name\":\"Amy\",\"phone\":\"+6581234567\",\"address\":\"1 St\"},"
+                + "{\"name\":\"Ben\",\"phone\":\"12\",\"address\":\"2 St\"}]}";
+        Files.writeString(directory.resolve("addressbook.json"), unreadable);
+        onFxThread(() -> {
+            TutorConnectApp app = app();
+            app.init();
+            List<Path> backups;
+            try (var files = Files.list(directory)) {
+                backups = files.filter(file -> file.getFileName().toString().endsWith(".bak")).toList();
+            }
+            assertEquals(1, backups.size());
+            assertEquals(unreadable, Files.readString(backups.getFirst()));
+            String warning = app.getStartupWarning();
+            assertTrue(warning.startsWith("Warning: "));
+            assertTrue(warning.contains(backups.getFirst().getFileName().toString()));
+            Stage stage = new Stage();
+            try {
+                app.start(stage);
+                TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
+                assertEquals(warning, result.getText());
+                app.logic.execute("add n/Cara p/83456789 a/3 St");
+                assertEquals(unreadable, Files.readString(backups.getFirst()));
+                app.stop();
+            } finally {
+                stage.hide();
+            }
+            return null;
+        });
+    }
+
+    @Test
+    public void init_readableData_hasNoStartupWarning() throws Exception {
+        onFxThread(() -> {
+            TutorConnectApp app = app();
+            app.init();
+            assertNull(app.getStartupWarning());
             return null;
         });
     }

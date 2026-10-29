@@ -3,6 +3,7 @@ package tutorconnect;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Clock;
 import java.util.Optional;
 import java.util.logging.Logger;
 
@@ -24,6 +25,7 @@ import tutorconnect.storage.JsonStudentDirectoryStorage;
 import tutorconnect.storage.JsonUserPrefsStorage;
 import tutorconnect.storage.Storage;
 import tutorconnect.storage.StorageManager;
+import tutorconnect.storage.UnreadableDataBackup;
 import tutorconnect.ui.Ui;
 import tutorconnect.ui.UiManager;
 
@@ -44,6 +46,7 @@ public class TutorConnectApp extends Application {
 
     private final Path userPrefsFilePath;
     private final Path studentDirectoryFilePath;
+    private String startupWarning;
 
     /** Uses the existing data locations so upgrading does not hide saved students. */
     public TutorConnectApp() {
@@ -70,7 +73,7 @@ public class TutorConnectApp extends Application {
 
         logic = new LogicManager(model, storage);
 
-        ui = new UiManager(logic, storage.getStudentDirectoryFilePath());
+        ui = new UiManager(logic, storage.getStudentDirectoryFilePath(), startupWarning);
     }
 
     /**
@@ -93,6 +96,7 @@ public class TutorConnectApp extends Application {
         } catch (DataLoadingException e) {
             logger.warning("Data file at " + storage.getStudentDirectoryFilePath() + " could not be loaded."
                     + " Will be starting with an empty StudentDirectory.");
+            startupWarning = backUpUnreadableData(storage.getStudentDirectoryFilePath());
             initialData = new StudentDirectory();
         }
 
@@ -129,6 +133,29 @@ public class TutorConnectApp extends Application {
         }
 
         return initializedPrefs;
+    }
+
+    /**
+     * Copies an unreadable data file aside before any command can replace it, and returns the warning to show.
+     */
+    private String backUpUnreadableData(Path dataFile) {
+        String problem = "Warning: " + dataFile + " could not be read, so TutorConnect started with an empty list.";
+        try {
+            Path backup = UnreadableDataBackup.copyAside(dataFile, Clock.systemDefaultZone());
+            logger.info("Copied the unreadable data file to " + backup);
+            return problem + " A copy was saved as " + backup.getFileName() + " in the same folder."
+                    + " Your next change will replace " + dataFile + "; to recover your students, close"
+                    + " TutorConnect and fix the file or restore the copy.";
+        } catch (IOException e) {
+            logger.warning("Could not back up the unreadable data file: " + StringUtil.getDetails(e));
+            return problem + " A backup copy could not be made. Close TutorConnect and back up or fix " + dataFile
+                    + " before making any change, or it will be replaced.";
+        }
+    }
+
+    /** Returns the warning shown at startup, or {@code null} if the data file loaded normally. */
+    String getStartupWarning() {
+        return startupWarning;
     }
 
     @Override
