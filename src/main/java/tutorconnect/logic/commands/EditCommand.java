@@ -47,7 +47,7 @@ public class EditCommand extends Command {
             + PREFIX_PHONE + "91234567 "
             + PREFIX_EMAIL + "johndoe@example.com";
 
-    public static final String MESSAGE_EDIT_STUDENT_SUCCESS = "Edited student: %1$s";
+    public static final String MESSAGE_EDIT_STUDENT_SUCCESS = "Student updated: %1$s.";
     public static final String MESSAGE_NOT_EDITED = "At least one field to edit must be provided.";
     public static final String MESSAGE_DUPLICATE_STUDENT = AddCommand.MESSAGE_DUPLICATE_STUDENT;
 
@@ -81,7 +81,7 @@ public class EditCommand extends Command {
             model.updateFilteredStudentList(PREDICATE_SHOW_ALL_STUDENTS);
             model.selectStudent(editedStudent.getId());
         }
-        return new CommandResult(String.format(MESSAGE_EDIT_STUDENT_SUCCESS, Messages.format(editedStudent)));
+        return new CommandResult(Messages.formatSentence(MESSAGE_EDIT_STUDENT_SUCCESS, editedStudent.getName()));
     }
 
     /**

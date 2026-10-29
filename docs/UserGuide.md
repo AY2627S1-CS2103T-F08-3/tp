@@ -182,15 +182,14 @@ Format: `edit INDEX [n/NAME] [p/PHONE] [e/EMAIL] [a/ADDRESS] [t/TAG]... `
 * A real edit saves the full profile, preserves its ID and insertion position, shows the **full register**
   (clearing any search filter), and selects the edited student.
 * Identical normalized values do not save or change the filter/selection. The command still reports
-  `Edited student: ...`; there is no separate no-change message. A name or address capitalization change
+  `Student updated: NAME.`; there is no separate no-change message. A name or address capitalization change
   is a real edit. Phone formatting differences alone are not.
 * Changing the name/phone to match both fields of another student is rejected, including students hidden by a filter.
   Sharing only a name or only a phone is accepted; unlike `add`, `edit` does not append a shared-phone warning.
 
-On success, feedback starts with `Edited student: NAME; Phone: PHONE; Email: EMAIL; Address: ADDRESS; Tags: ...`.
-The email part is empty if no email is set. No fields supplied reports `At least one field to edit must be provided.`
+On success, feedback is `Student updated: NAME.`, and the details panel shows the updated values. No fields supplied reports `At least one field to edit must be provided.`
 A repeated single-value prefix reports `Multiple values specified for the following single-valued field(s): ...`.
-A duplicate reports `This student already exists in the address book.` Invalid indices and save failures use the
+A duplicate reports `Error: This student already exists with the same name and phone.` Invalid indices and save failures use the
 standard messages shown in the other command sections.
 
 `edit` rejects control characters and line breaks before trimming values. Unknown whitespace-delimited
