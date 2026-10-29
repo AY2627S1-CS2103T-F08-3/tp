@@ -30,6 +30,13 @@ public class ParserUtil {
             + "Singapore number beginning with 6, 8, or 9, optionally prefixed by +65.";
     public static final String MESSAGE_INVALID_HOURLY_RATE = "Error: Invalid rate. Enter an SGD amount from 1.00 "
             + "to 1000.00 with at most two decimal places and no currency symbol.";
+    public static final int MAX_EMAIL_LENGTH = 254;
+    public static final int MAX_EMAIL_LOCAL_PART_LENGTH = 64;
+    public static final int MAX_TAG_LENGTH = 30;
+    public static final String MESSAGE_EMAIL_TOO_LONG = "Error: Invalid email. Use at most " + MAX_EMAIL_LENGTH
+            + " characters, with at most " + MAX_EMAIL_LOCAL_PART_LENGTH + " before the @.";
+    public static final String MESSAGE_TAG_TOO_LONG = "Error: Invalid tag. Use at most " + MAX_TAG_LENGTH
+            + " letters or digits.";
     private static final Pattern VISIBLE_INDEX_PATTERN = Pattern.compile("[1-9][0-9]*");
     private static final Pattern HOURLY_RATE_INPUT_PATTERN =
             Pattern.compile("(?:0|[1-9][0-9]*)(?:\\.[0-9]{1,2})?");
@@ -133,6 +140,10 @@ public class ParserUtil {
         if (!Email.isValidEmail(trimmedEmail)) {
             throw new ParseException(Email.MESSAGE_CONSTRAINTS);
         }
+        if (trimmedEmail.length() > MAX_EMAIL_LENGTH
+                || trimmedEmail.indexOf('@') > MAX_EMAIL_LOCAL_PART_LENGTH) {
+            throw new ParseException(MESSAGE_EMAIL_TOO_LONG);
+        }
         return new Email(trimmedEmail);
     }
 
@@ -147,6 +158,9 @@ public class ParserUtil {
         String trimmedTag = tag.trim();
         if (!Tag.isValidTagName(trimmedTag)) {
             throw new ParseException(Tag.MESSAGE_CONSTRAINTS);
+        }
+        if (trimmedTag.length() > MAX_TAG_LENGTH) {
+            throw new ParseException(MESSAGE_TAG_TOO_LONG);
         }
         return new Tag(trimmedTag);
     }
