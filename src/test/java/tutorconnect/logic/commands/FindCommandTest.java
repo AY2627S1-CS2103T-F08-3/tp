@@ -2,6 +2,7 @@ package tutorconnect.logic.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static tutorconnect.logic.Messages.MESSAGE_STUDENTS_LISTED_OVERVIEW;
 import static tutorconnect.logic.commands.CommandTestUtil.assertCommandSuccess;
@@ -25,6 +26,11 @@ import tutorconnect.model.student.NameContainsKeywordsPredicate;
 public class FindCommandTest {
     private Model model = new ModelManager(getTypicalStudentDirectory(), new UserPrefs());
     private Model expectedModel = new ModelManager(getTypicalStudentDirectory(), new UserPrefs());
+
+    @Test
+    public void constructor_nullPredicate_rejectsInvalidCommand() {
+        assertThrows(NullPointerException.class, () -> new FindCommand(null));
+    }
 
     @Test
     public void equals() {
