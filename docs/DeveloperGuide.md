@@ -561,84 +561,281 @@ These are product priorities, not release commitments. The initial MVP covers st
 
 ### Use cases
 
-(For all use cases below, the **System** is `TutorConnect` and the **Actor** is the `user`, unless specified otherwise)
+(For all use cases below, the **System** is `TutorConnect` and the **Actor** is the `user`, unless specified otherwise.
+"The list" means the student list currently displayed, and INDEX is a student's number in it.)
 
-**Use case: Add a student**
+The following extensions apply to every use case that changes data, and are not repeated below:
+
+* *a. TutorConnect cannot save the data file.
+    * *a1. TutorConnect shows `Error: Changes could not be saved. No changes were made.` and keeps the previous data,
+      list, filter and selection.
+
+      Use case ends.
+
+* *b. The given INDEX is not a positive whole number, or no student has that number in the list.
+    * *b1. TutorConnect shows an invalid-index or missing-student error and changes nothing.
+
+      Use case resumes at the step where the user gave the index.
+
+**Use case: UC01 - Add a student**
 
 **MSS**
 
-1. User requests to add a student, providing name, student phone and address.
-2. TutorConnect adds the student.
+1. User requests to add a student, providing name, phone and address.
+2. TutorConnect adds the student to the end of the register, selects the new student and shows their details.
 
    Use case ends.
 
 **Extensions**
 
-* 1a. A required field is missing or invalid (e.g. malformed phone number).
+* 1a. A required field is missing, repeated or invalid (e.g. a phone number that is not a Singapore number).
 
-    * 1a1. TutorConnect shows an error message describing the invalid field.
+    * 1a1. TutorConnect shows an error message naming the problem.
 
       Use case resumes at step 1.
 
-* 1b. The student already exists (same normalized name and student phone).
+* 1b. A student with the same name (ignoring case) and phone already exists.
 
     * 1b1. TutorConnect shows a duplicate-student error message.
 
       Use case resumes at step 1.
 
-**Use case: Delete a student**
+* 1c. Another student with a different name already uses the phone number (e.g. a sibling).
+
+    * 1c1. TutorConnect adds the student and adds a shared-phone warning to the success message.
+
+      Use case ends.
+
+**Use case: UC02 - Find or filter students**
 
 **MSS**
 
-1.  User requests to list students
-2.  TutorConnect shows a list of students
-3.  User requests to delete a specific student in the list
-4.  TutorConnect deletes the student
-
-    Use case ends.
-
-**Extensions**
-
-* 2a. The list is empty.
-
-  Use case ends.
-
-* 3a. The given index is invalid.
-
-    * 3a1. TutorConnect shows an error message.
-
-      Use case resumes at step 2.
-
-**Use case: Record a lesson slot**
-
-**MSS**
-
-1. User requests to list students.
-2. TutorConnect shows a list of students.
-3. User requests to record a lesson slot (day, time) for a specific student in the list.
-4. TutorConnect records the lesson slot.
+1. User requests to find students by part of a name, or to filter them by education level and/or subject.
+2. TutorConnect shows the matching students from the whole register, numbered from 1, and the number found.
 
    Use case ends.
 
 **Extensions**
 
-* 2a. The list is empty.
+* 1a. No keyword or criterion is given, or a criterion is invalid.
+
+    * 1a1. TutorConnect shows an error message and keeps the current list.
+
+      Use case resumes at step 1.
+
+* 2a. No student matches.
+
+    * 2a1. TutorConnect shows an empty list and reports that 0 students were found.
+
+      Use case ends.
+
+* 2b. User later wants the full register again and requests to list all students.
+
+    * 2b1. TutorConnect reloads the full register from the data file and clears the filter and selection.
+
+      Use case ends.
+
+**Use case: UC03 - Delete a student**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to delete a specific student in the list.
+3. TutorConnect deletes the student with all their details, slot, note, results and payments, and renumbers the list.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. The list is empty.
 
   Use case ends.
 
-* 3a. The given index is invalid.
+**Use case: UC04 - Record a student's guardian, level, subject or rate**
 
-    * 3a1. TutorConnect shows an error message.
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to set one detail (guardian phone, education level, subject or hourly rate) for a student in the list.
+3. TutorConnect saves the new value, selects the student and shows the value in their details.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The value is invalid (e.g. a level outside Primary 1 to JC 2, or a rate above S$1000.00).
+
+    * 2a1. TutorConnect shows an error message describing the accepted values.
 
       Use case resumes at step 2.
 
-* 3b. The given day/time overlaps with an existing lesson slot for another student.
+* 2b. The value is equivalent to the stored one (e.g. `sec 4` when the level is already Secondary 4).
 
-    * 3b1. TutorConnect shows a double-booking error message, naming the conflicting student.
+    * 2b1. TutorConnect reports that the value is already set and does not save.
+
+      Use case ends.
+
+**Use case: UC05 - Schedule a weekly lesson**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to set a weekly lesson day and start time for a student in the list.
+3. TutorConnect records the slot, replacing any previous slot of that student, and adds it to the timetable.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The day or time is missing or invalid (e.g. `t/24:00` or `d/Mo`).
+
+    * 2a1. TutorConnect shows an error message describing the accepted format.
 
       Use case resumes at step 2.
 
-**Use case: Edit a student's details**
+* 2b. The slot equals the student's current slot.
+
+    * 2b1. TutorConnect reports that the lesson is already at that time and does not save.
+
+      Use case ends.
+
+* 3a. Another student already has a lesson in the same slot.
+
+    * 3a1. TutorConnect records the slot anyway; both lessons appear in the timetable. Clash detection is not provided.
+
+      Use case ends.
+
+**Use case: UC06 - View the timetable**
+
+**MSS**
+
+1. User requests to view the timetable for the whole week or for one day.
+2. TutorConnect shows every scheduled student in the timetable panel, ordered by day and time, regardless of the
+   list's filter. The student list and selection do not change.
+
+   Use case ends.
+
+**Extensions**
+
+* 1a. The day is invalid or given more than once.
+
+    * 1a1. TutorConnect shows an error message and keeps the previous timetable view.
+
+      Use case resumes at step 1.
+
+* 2a. No lessons are scheduled for the chosen day or week.
+
+    * 2a1. TutorConnect shows an empty timetable with a message saying no lessons are scheduled.
+
+      Use case ends.
+
+**Use case: UC07 - Remove a weekly lesson**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to remove the weekly lesson of a student in the list.
+3. TutorConnect removes the slot only, keeps all other details of the student, and updates the timetable.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The student has no weekly lesson.
+
+    * 2a1. TutorConnect reports that no lesson is scheduled and does not save.
+
+      Use case ends.
+
+**Use case: UC08 - Keep a note about a student**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to set a note for a student in the list.
+3. TutorConnect saves the note, replacing any earlier note, and shows it in the student's details.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The note is empty, longer than 500 characters or contains line breaks.
+
+    * 2a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. User requests to clear the student's note instead.
+
+    * 2b1. TutorConnect removes the note, or reports that there is no note to clear.
+
+      Use case ends.
+
+**Use case: UC09 - Record and review assessment results**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to add an assessment result (date, title and grade) for a student in the list.
+3. TutorConnect adds the result to the student's history in date order and shows its number.
+4. User requests to view the student's assessment history.
+5. TutorConnect lists the numbered results.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The date is not a real `yyyy-MM-dd` date, or the title or grade is invalid.
+
+    * 2a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. The student already has a result with the same date and title.
+
+    * 2b1. TutorConnect rejects the duplicate and tells the user to remove the old result first.
+
+      Use case resumes at step 2.
+
+* 5a. User requests to remove a result by its number.
+
+    * 5a1. TutorConnect removes that result and renumbers the rest, or shows an error if the number does not exist.
+
+      Use case ends.
+
+**Use case: UC10 - Track monthly payments**
+
+**MSS**
+
+1. User lists, finds or filters students (UC02).
+2. User requests to mark a month's payment for a student in the list as pending or completed.
+3. TutorConnect records the status for that month.
+4. User requests the payment statuses for a month, optionally only the pending ones.
+5. TutorConnect lists every student with a recorded status for that month, from the whole register.
+
+   Use case ends.
+
+**Extensions**
+
+* 2a. The month is not `YYYY-MM` or the status is not `pending` or `completed`.
+
+    * 2a1. TutorConnect shows an error message.
+
+      Use case resumes at step 2.
+
+* 2b. The status is already recorded for that month.
+
+    * 2b1. TutorConnect reports no change and does not save.
+
+      Use case ends.
+
+* 5a. No student has a recorded status matching the request.
+
+    * 5a1. TutorConnect reports that there are no recorded payments for that month.
+
+      Use case ends.
+
+**Use case: UC11 - Edit a student's details**
 
 **MSS**
 
