@@ -18,6 +18,11 @@
 
 ## Build and launch from a terminal
 
+For a packaged version, download `tutorconnect.jar` from
+[GitHub Releases](https://github.com/AY2627S1-CS2103T-F08-3/tp/releases).
+The v1.5 candidate is under review; use the release page to check which
+version is actually published.
+
 Install **JDK 25 with JavaFX** (the same Zulu JDK+FX distribution used in CI),
 set `JAVA_HOME` to its installation folder, and open a terminal in the repository.
 No separate Gradle installation is needed; use the checked-in wrapper.
@@ -38,5 +43,23 @@ java -jar build/libs/tutorconnect.jar
 On Windows, use `gradlew.bat` instead of `./gradlew`. See the
 [terminal setup guide](docs/SettingUp.md#building-and-running-from-a-terminal)
 for Java selection, desktop test flags and data-directory precautions.
+
+## Check a release candidate
+
+Build with `./gradlew clean check shadowJar`. Copy only
+`build/libs/tutorconnect.jar` into a new, empty, writable folder. Run
+`java -version` there and confirm Java 25, then start the application with
+`java -jar tutorconnect.jar`. The JAR bundles its JavaFX dependencies.
+
+Verify sample loading, commands, the `help` window and its User Guide link.
+Add a disposable student, exit normally, and relaunch from the same folder
+to check saving and reloading. Keep this folder separate from personal data:
+the application stores its data and preferences relative to the launch folder.
+Report reproducible findings using the team's `alpha-bug` issue label.
+
+The Product Website uses MarkBind, configured in `docs/site.json` and
+`docs/_markbind/`. To check it with the CI version, run
+`npx --yes --package markbind-cli@7.2.1 markbind build` from `docs/`.
+Generated pages are placed in `docs/_site/` and should not be committed.
 
 * This project is based on the AddressBook-Level3 project created by the [SE-EDU initiative](https://se-education.org).
