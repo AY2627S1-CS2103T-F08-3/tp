@@ -13,7 +13,9 @@
 
 ## **Acknowledgements**
 
-* _{List the sources of reused or adapted ideas, code, documentation, and third-party libraries here, with links to the originals.}_
+* TutorConnect is based on [AddressBook-Level3](https://se-education.org/addressbook-level3/) (AB3) by the [SE-EDU initiative](https://se-education.org). Its architecture, documentation structure and parts of its code and diagrams are adapted from AB3.
+* Libraries: [JavaFX](https://openjfx.io/) (GUI), [Jackson](https://github.com/FasterXML/jackson) (JSON storage), [JUnit 5](https://junit.org/junit5/) (testing).
+* Tools: [Gradle](https://gradle.org/) with the [Shadow plugin](https://gradleup.com/shadow/), [Checkstyle](https://checkstyle.org/), [JaCoCo](https://www.jacoco.org/), [PlantUML](https://plantuml.com/) and [MarkBind](https://markbind.org/).
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -50,7 +52,7 @@ The bulk of the app's work is done by the following four components:
 
 **How the architecture components interact with each other**
 
-The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues the command `delete 1`.
+The *Sequence Diagram* below shows how the components interact with each other for the scenario where the user issues the command `delete 1`. `Logic` runs every command on a staged copy of the model, saves the staged data, and only then publishes it, so a failed save leaves the live data and the screen unchanged.
 
 <puml src="diagrams/ArchitectureSequenceDiagram.puml" width="574" />
 
@@ -142,18 +144,20 @@ How contact parsing works:
 
 The `Model` component,
 
-* stores the address book data i.e., all `Student` objects (which are contained in a `UniqueStudentList` object).
-* stores the `Student` objects selected by the current filter, such as search results, in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Student>` that the UI can observe and bind to, so the UI updates when the list changes.
+* stores the student register, i.e. all `Student` objects in insertion order, in a `UniqueStudentList` inside `StudentDirectory`.
+* stores the students matched by the current `find`/`filter` predicate in a separate _filtered_ list. It exposes this list as an unmodifiable `ObservableList<Student>` that the UI observes; its order defines the displayed indices that commands use.
+* stores the selected student by UUID (`ModelManager#selectedStudentId`), so selection survives renumbering.
 * stores a `UserPrefs` object that represents the user’s preferences (currently, just the GUI settings). This is exposed to the outside as a `ReadOnlyUserPrefs` object.
+* provides `copyForCommand()` and `publish(Model)` so that `LogicManager` can run a command on a staged copy and only publish it after a successful save.
 * does not depend on any of the other three components (as the `Model` represents data entities of the domain, they should make sense on their own without depending on other components)
 
-
-<box type="info" seamless>
-
-**Note:** The alternative, arguably more object-oriented, design below keeps a unique list of tags in `StudentDirectory`, and each `Student` references tags from that list. This lets `StudentDirectory` maintain one `Tag` object per unique tag instead of each `Student` holding its own `Tag` objects.<br>
-
-<puml src="diagrams/BetterModelClassDiagram.puml" width="450" />
-</box>
+Each `Student` has a stable `UUID`, the required `Name`, `Phone` and `Address`, and one immutable `StudentFields`
+envelope for optional values. Each optional feature owns a `StudentField<T>` codec (for example `EducationLevel.FIELD`
+or `WeeklySlotField.INSTANCE`) that validates, decodes and encodes its value under a stable JSON key. Updating one
+field replaces only that key, so features never overwrite each other's data. `Student` still carries the legacy AB3
+`Email` and `Tag` values so that older data files and `edit e/... t/...` keep working; TutorConnect does not
+collect them in `add`. `WeeklySchedule` is a sorted read-only view of every scheduled student (by day, time, then
+insertion order); it ignores the filtered list, so the timetable always shows the full register.
 
 
 ### Storage component
@@ -163,7 +167,7 @@ The `Model` component,
 <puml src="diagrams/StorageClassDiagram.puml" width="550" />
 
 The `Storage` component,
-* can save both address book data and user preference data in JSON format, and read them back into corresponding objects.
+* can save both the student register and user preference data in JSON format, and read them back into corresponding objects.
 * is implemented by `StorageManager`, which delegates the actual JSON file access to `JsonStudentDirectoryStorage` and `JsonUserPrefsStorage` (one class per data file).
 * depends on some classes in the `Model` component (because the `Storage` component's job is to save/retrieve objects that belong to the `Model`)
 
@@ -205,7 +209,7 @@ owns the reusable Singapore-number contract. `Student.isSameStudent` compares no
 plus canonical phone; full content equality remains separate from UUID identity.
 
 `LogicManager` executes on `Model.copyForCommand()`. `AddCommand` checks duplicates and shared phones against
-the complete address book, then stages the append, full-list predicate and new selected UUID. The logic saves
+the complete register, then stages the append, full-list predicate and new selected UUID. The logic saves
 changed data before `Model.publish()` updates the observable model. `JsonStudentDirectoryStorage` serializes the
 complete state first; `AtomicJsonFile` writes and forces a sibling temporary file and atomically replaces the
 destination. There is no unsafe truncate-in-place fallback. An I/O failure reports the standard save error and
@@ -394,38 +398,86 @@ The level, subject, guardian, rate and schedule commands each replace only their
 * *Strict history decoding.* Refusing to touch an unreadable history trades convenience for never silently
   losing a hand-built list.
 
+### Student discovery (stories 10 and 15)
+
+`find` uses `NameContainsKeywordsPredicate`: NFKC normalization via `StudentText`, followed by
+`Locale.ROOT` lowercase substring comparison. Whitespace-separated keywords are OR alternatives;
+accents are preserved. `filter` uses `StudentCriteriaPredicate` with optional typed `EducationLevel`
+and `Subject` criteria combined with AND. Their existing constructors/equality define alias and label
+normalization. Unset or unreadable requested fields do not match. `StudentParameters.parseOptional`
+reuses structural checks without relaxing any existing command's required parameters.
+
+<puml src="diagrams/StudentDiscoverySequenceDiagram.puml" width="900" />
+
+Both commands replace the model predicate over the full register, retain stored order, clear selection,
+and report the result count (including zero). Queries do not change records, so `LogicManager` does not
+save. `list` remains the reload/reset operation. Parse errors never publish a proposed model.
+`WeeklySchedule` observes the full register independently of the student-list predicate.
+
+Indexed commands resolve the displayed row to its UUID before mutation. If a successful level/subject
+update removes that row from the filter, `StudentFieldUpdate` clears selection and returns no row index;
+otherwise its existing selection policy is retained. This avoids publishing a hidden selected UUID or
+selecting the next student after the row disappears. Existing edit/reset and deletion behavior is retained.
+
+`StudentDiscoveryIntegrationTest` covers query replacement, no-save queries, JSON reload, every indexed
+mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
+rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
+
+### Delete and list (F02/F03)
+
+- `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
+  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
+- Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
+  including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
+  Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
+- List reads and validates saved records into the proposed model, resets the filter, and clears selection.
+  It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
+- The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
+  `StudentListPanel.selectStudent` refreshes cells so row numbering follows the updated positions.
+  The empty register shows a placeholder; clearing selection resets the details panel.
+- Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
+  metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
+
+Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
+first/middle/last and filtered deletion, malformed/oversized indices, failure preservation, and real JavaFX
+selection/details/renumbering. The optional-field envelope fixtures verify preservation without replacing
+field owners' typed validation tests. JavaFX command tests run under `F01_UI_TESTS=true` (Linux CI uses Xvfb).
+
 ### \[Proposed\] Undo/redo feature
+
+TutorConnect v1.5 has no `undo` or `redo` command (the User Guide says so); this section records the planned design,
+adapted from AB3.
 
 #### Proposed Implementation
 
 The proposed undo/redo mechanism is facilitated by `VersionedStudentDirectory`. It extends `StudentDirectory` with an undo/redo history, stored internally as a `studentDirectoryStateList` and `currentStatePointer`. Additionally, it implements the following operations:
 
-* `VersionedStudentDirectory#commit()` -- Saves the current address book state in its history.
-* `VersionedStudentDirectory#undo()` -- Restores the previous address book state from its history.
-* `VersionedStudentDirectory#redo()` -- Restores a previously undone address book state from its history.
+* `VersionedStudentDirectory#commit()` -- Saves the current student directory state in its history.
+* `VersionedStudentDirectory#undo()` -- Restores the previous student directory state from its history.
+* `VersionedStudentDirectory#redo()` -- Restores a previously undone student directory state from its history.
 
 These operations are exposed in the `Model` interface as `Model#commitStudentDirectory()`, `Model#undoStudentDirectory()` and `Model#redoStudentDirectory()` respectively.
 
 Given below is an example usage scenario and how the undo/redo mechanism behaves at each step.
 
-Step 1. The user launches the application for the first time. The `VersionedStudentDirectory` will be initialized with the initial address book state, and the `currentStatePointer` pointing to that single address book state.
+Step 1. The user launches the application for the first time. The `VersionedStudentDirectory` will be initialized with the initial student directory state, and the `currentStatePointer` pointing to that single student directory state.
 
 <puml src="diagrams/UndoRedoState0.puml" alt="UndoRedoState0" />
 
-Step 2. The user executes `delete 5` command to delete the 5th student in the address book. The `delete` command calls `Model#commitStudentDirectory()`, causing the modified state of the address book after the `delete 5` command executes to be saved in the `studentDirectoryStateList`, and the `currentStatePointer` is shifted to the newly inserted address book state.
+Step 2. The user executes `delete 5` command to delete the 5th student in the displayed list. The `delete` command calls `Model#commitStudentDirectory()`, causing the modified state of the student register after the `delete 5` command executes to be saved in the `studentDirectoryStateList`, and the `currentStatePointer` is shifted to the newly inserted student directory state.
 
 <puml src="diagrams/UndoRedoState1.puml" alt="UndoRedoState1" />
 
-Step 3. The user executes `add n/David …​` to add a new student. The `add` command also calls `Model#commitStudentDirectory()`, causing another modified address book state to be saved into the `studentDirectoryStateList`.
+Step 3. The user executes `add n/David …​` to add a new student. The `add` command also calls `Model#commitStudentDirectory()`, causing another modified student directory state to be saved into the `studentDirectoryStateList`.
 
 <puml src="diagrams/UndoRedoState2.puml" alt="UndoRedoState2" />
 
 <box type="info" seamless>
 
-**Note:** If a command fails its execution, it will not call `Model#commitStudentDirectory()`, so the address book state will not be saved into the `studentDirectoryStateList`.
+**Note:** If a command fails its execution, it will not call `Model#commitStudentDirectory()`, so the student directory state will not be saved into the `studentDirectoryStateList`.
 </box>
 
-Step 4. The user now decides that adding the student was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoStudentDirectory()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous address book state, and restores the address book to that state.
+Step 4. The user now decides that adding the student was a mistake, and decides to undo that action by executing the `undo` command. The `undo` command will call `Model#undoStudentDirectory()`, which will shift the `currentStatePointer` once to the left, pointing it to the previous student directory state, and restores the student register to that state.
 
 <puml src="diagrams/UndoRedoState3.puml" alt="UndoRedoState3" />
 
@@ -449,18 +501,18 @@ Similarly, how an undo operation goes through the `Model` component is shown bel
 
 <puml src="diagrams/UndoSequenceDiagram-Model.puml" alt="UndoSequenceDiagram-Model" />
 
-The `redo` command does the opposite — it calls `Model#redoStudentDirectory()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the address book to that state.
+The `redo` command does the opposite — it calls `Model#redoStudentDirectory()`, which shifts the `currentStatePointer` once to the right, pointing to the previously undone state, and restores the student register to that state.
 
 <box type="info" seamless>
 
-**Note:** If the `currentStatePointer` is at index `studentDirectoryStateList.size() - 1`, pointing to the latest address book state, then there are no undone StudentDirectory states to restore. The `redo` command uses `Model#canRedoStudentDirectory()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
+**Note:** If the `currentStatePointer` is at index `studentDirectoryStateList.size() - 1`, pointing to the latest student directory state, then there are no undone StudentDirectory states to restore. The `redo` command uses `Model#canRedoStudentDirectory()` to check if this is the case. If so, it will return an error to the user rather than attempting to perform the redo.
 </box>
 
-Step 5. The user then decides to execute the command `list`. Commands that do not modify the address book, such as `list`, will usually not call `Model#commitStudentDirectory()`, `Model#undoStudentDirectory()` or `Model#redoStudentDirectory()`. Thus, the `studentDirectoryStateList` remains unchanged.
+Step 5. The user then decides to execute the command `list`. Commands that do not modify the student register, such as `list`, will usually not call `Model#commitStudentDirectory()`, `Model#undoStudentDirectory()` or `Model#redoStudentDirectory()`. Thus, the `studentDirectoryStateList` remains unchanged.
 
 <puml src="diagrams/UndoRedoState4.puml" alt="UndoRedoState4" />
 
-Step 6. The user executes `clear`, which calls `Model#commitStudentDirectory()`. Since the `currentStatePointer` is not pointing at the end of the `studentDirectoryStateList`, all address book states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
+Step 6. The user executes `clear`, which calls `Model#commitStudentDirectory()`. Since the `currentStatePointer` is not pointing at the end of the `studentDirectoryStateList`, all student directory states after the `currentStatePointer` will be purged. Reason: It no longer makes sense to redo the `add n/David …` command. This is the behavior that most modern desktop applications follow.
 
 <puml src="diagrams/UndoRedoState5.puml" alt="UndoRedoState5" />
 
@@ -472,7 +524,7 @@ The following activity diagram summarizes what happens when a user executes a ne
 
 **Aspect: How undo & redo execute:**
 
-* **Alternative 1 (current choice):** Saves the entire address book.
+* **Alternative 1 (current choice):** Saves the entire student directory.
   * Pros: Easy to implement.
   * Cons: May have performance issues in terms of memory usage.
 
@@ -481,12 +533,10 @@ The following activity diagram summarizes what happens when a user executes a ne
   * Pros: Will use less memory (e.g. for `delete`, just save the student being deleted).
   * Cons: We must ensure that the implementation of each individual command is correct.
 
-_{more aspects and alternatives to be added}_
+**Aspect: Interaction with the staged command flow:**
 
-### \[Proposed\] Data archiving
-
-_{Explain here how the data archiving feature will be implemented}_
-
+* Commit the history only after `LogicManager` has saved and published the staged model, so a failed save never
+  creates an undo step. Undo and redo themselves must save the restored state atomically before publishing it.
 
 --------------------------------------------------------------------------------------------------------------------
 
@@ -837,49 +887,3 @@ Use a copy of the JAR in an empty folder so that your real data file is not chan
 * **Storage component**: The part of the application that saves and loads data.
 * **UI component**: The part of the application responsible for user interaction and displayed output.
 * **User story**: A requirement written from the user's perspective, commonly in the format “As a..., I can..., so that...”.
-
-
-## Delete/list student integration (F02/F03)
-
-### Student discovery (stories 10 and 15)
-
-`find` uses `NameContainsKeywordsPredicate`: NFKC normalization via `StudentText`, followed by
-`Locale.ROOT` lowercase substring comparison. Whitespace-separated keywords are OR alternatives;
-accents are preserved. `filter` uses `StudentCriteriaPredicate` with optional typed `EducationLevel`
-and `Subject` criteria combined with AND. Their existing constructors/equality define alias and label
-normalization. Unset or unreadable requested fields do not match. `StudentParameters.parseOptional`
-reuses structural checks without relaxing any existing command's required parameters.
-
-<puml src="diagrams/StudentDiscoverySequenceDiagram.puml" width="900" />
-
-Both commands replace the model predicate over the full register, retain stored order, clear selection,
-and report the result count (including zero). Queries do not change records, so `LogicManager` does not
-save. `list` remains the reload/reset operation. Parse errors never publish a proposed model.
-`WeeklySchedule` observes the full register independently of the student-list predicate.
-
-Indexed commands resolve the displayed row to its UUID before mutation. If a successful level/subject
-update removes that row from the filter, `StudentFieldUpdate` clears selection and returns no row index;
-otherwise its existing selection policy is retained. This avoids publishing a hidden selected UUID or
-selecting the next student after the row disappears. Existing edit/reset and deletion behavior is retained.
-
-`StudentDiscoveryIntegrationTest` covers query replacement, no-save queries, JSON reload, every indexed
-mutation's target UUID, error preservation and schedule independence. `StudentDiscoveryUiTest` checks
-rendered numbering, empty results and selection through the actual command box (`F01_UI_TESTS=true`).
-
-- `VisibleIndex.parse` validates decimal syntax and `resolve` targets the current displayed list.
-  Decimal text is compared against list size before integer conversion, safely handling oversized indices.
-- Commands execute on F01's `Model.copyForCommand()` snapshot. Deletion removes the entire student,
-  including the optional-field envelope. The shared logic saves before `Model.publish()` updates the UI.
-  Storage delegates to `AtomicJsonFile`; a failed save preserves data, filter, and selected UUID.
-- List reads and validates saved records into the proposed model, resets the filter, and clears selection.
-  It publishes only after a successful load and never saves. Before the first save it uses the in-memory register.
-- The shared model holds the selected UUID. `MainWindow` synchronizes the list and details after success.
-  `StudentListPanel.selectStudent` refreshes cells so row numbering follows the updated positions.
-  The empty register shows a placeholder; clearing selection resets the details panel.
-- Optional student values render as em dashes when unset in `StudentDetailsPanel`. Legacy empty email
-  metadata remains hidden as specified by F01. Field owners retain responsibility for typed codecs/formatters.
-
-Verification covers duplicate-name targeting, stored order, entire optional envelopes after reload,
-first/middle/last and filtered deletion, malformed/oversized indices, failure preservation, and real JavaFX
-selection/details/renumbering. The optional-field envelope fixtures verify preservation without replacing
-field owners' typed validation tests. JavaFX command tests run under `F01_UI_TESTS=true` (Linux CI uses Xvfb).
