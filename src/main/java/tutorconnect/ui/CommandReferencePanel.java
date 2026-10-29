@@ -11,11 +11,12 @@ public class CommandReferencePanel extends VBox {
     private static final String[][] SHORTCUTS = {
         {"Enter", "run the command"},
         {"Tab", "complete a command word"},
-        {"↑ / ↓", "earlier commands"},
-        {"Esc", "clear the command bar"},
+        {"⇧ Tab", "move to the next panel"},
+        {"↑ / ↓", "earlier commands; scroll a panel"},
+        {"PgUp / PgDn", "page through a panel"},
+        {"Esc", "clear, or back to the command bar"},
         {"Ctrl/⌘ ↑↓", "select another student"},
         {"Ctrl/⌘ L", "jump to the command bar"},
-        {"PgUp / PgDn", "scroll the profile"},
         {"F1", "open help"},
     };
 
@@ -35,6 +36,7 @@ public class CommandReferencePanel extends VBox {
         getChildren().add(styled(new Label("KEYS"), "rail-overline"));
         for (String[] shortcut : SHORTCUTS) {
             Label row = styled(new Label(shortcut[1]), "rail-shortcut");
+            row.setWrapText(true);
             row.setGraphic(styled(new Label(shortcut[0]), "keycap"));
             getChildren().add(row);
         }

@@ -9,5 +9,5 @@
   <Label fx:id="saveLocationStatus" styleClass="status-path" />
   <Region HBox.hgrow="ALWAYS" />
   <Label styleClass="status-keys" minWidth="0"
-         text="Enter run  ·  Tab complete  ·  ↑↓ history  ·  Esc clear  ·  F1 help" />
+         text="Enter run  ·  Tab complete  ·  ⇧Tab next panel  ·  ↑↓ history  ·  Esc clear  ·  F1 help" />
 </HBox>

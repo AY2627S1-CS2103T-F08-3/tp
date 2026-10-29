@@ -40,6 +40,11 @@ public class CommandBox extends UiPart<Region> {
         commandTextField.addEventFilter(KeyEvent.KEY_PRESSED, this::handleKeyPressed);
     }
 
+    /** Returns the command field, the node that receives keyboard focus for the command bar. */
+    TextField getField() {
+        return commandTextField;
+    }
+
     /** Gives the command field keyboard focus, placing the caret at the end. */
     public void focus() {
         commandTextField.requestFocus();

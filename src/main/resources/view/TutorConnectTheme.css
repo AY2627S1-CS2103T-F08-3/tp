@@ -180,10 +180,6 @@
     -fx-text-fill: -tc-green-dark;
 }
 
-.page-subtitle {
-    -fx-text-fill: -tc-muted;
-}
-
 /* ---------- Command bar ---------- */
 
 .command-card {
@@ -654,4 +650,24 @@
 
 .error {
     -fx-text-fill: -tc-error !important; /* The error class should always override the default text-fill style */
+}
+
+/* ---------- Keyboard focus ---------- */
+
+/* The panel holding keyboard focus (moved with Shift+Tab) is outlined in green. */
+.command-card.panel-focused, .list-card.panel-focused, .profile-card.panel-focused,
+.schedule-card.panel-focused {
+    -fx-border-color: -tc-green;
+    -fx-effect: dropshadow(three-pass-box, rgba(46, 94, 70, 0.30), 8, 0.2, 0, 0);
+}
+
+.rail-scroll.panel-focused {
+    -fx-border-color: -tc-green;
+    -fx-border-width: 2;
+    -fx-border-insets: 3;
+}
+
+.list-view:focused, .scroll-pane:focused {
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
 }

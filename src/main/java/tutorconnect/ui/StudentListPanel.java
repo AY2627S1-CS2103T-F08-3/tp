@@ -74,6 +74,11 @@ public class StudentListPanel extends UiPart<Region> {
         selectIndex(target);
     }
 
+    /** Returns the student list view, the node that receives keyboard focus for this panel. */
+    ListView<Student> getListView() {
+        return studentListView;
+    }
+
     /** Selects and scrolls to a zero-based row in the currently displayed list. */
     public void selectIndex(int zeroBasedIndex) {
         studentListView.getSelectionModel().select(zeroBasedIndex);

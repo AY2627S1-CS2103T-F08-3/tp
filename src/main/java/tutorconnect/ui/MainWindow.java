@@ -5,12 +5,16 @@ import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 import java.util.logging.Logger;
 
 import javafx.beans.binding.Bindings;
+import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.Node;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.ScrollPane;
@@ -38,6 +42,9 @@ import tutorconnect.model.student.WeeklySlotField;
  */
 public class MainWindow extends UiPart<Stage> {
 
+    /** Style class that outlines the panel holding keyboard focus. */
+    static final String FOCUSED_PANEL_STYLE_CLASS = "panel-focused";
+
     private static final String FXML = "MainWindow.fxml";
     /** Below this window width the command rail is hidden so the list and profile keep their space. */
     private static final double RAIL_MIN_WINDOW_WIDTH = 1100;
@@ -45,14 +52,18 @@ public class MainWindow extends UiPart<Stage> {
     private static final double STATS_MIN_WINDOW_WIDTH = 900;
     private static final double WIDE_SIDE_WIDTH = 330;
     private static final double NARROW_SIDE_WIDTH = 270;
-    /** Fraction of the profile's scroll range moved by one Page Up/Down. */
-    private static final double PROFILE_SCROLL_STEP = 0.25;
+    /** Fraction of a scroll panel's range moved by one Page Up/Down. */
+    private static final double PAGE_SCROLL_STEP = 0.25;
     private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH);
     private static final KeyCombination FOCUS_COMMAND = new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN);
     private static final KeyCombination SELECT_NEXT = new KeyCodeCombination(KeyCode.DOWN,
             KeyCombination.SHORTCUT_DOWN);
     private static final KeyCombination SELECT_PREVIOUS = new KeyCodeCombination(KeyCode.UP,
             KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination NEXT_PANEL = new KeyCodeCombination(KeyCode.TAB, KeyCombination.SHIFT_DOWN);
+    private static final KeyCombination COMPLETE_OR_RETURN = new KeyCodeCombination(KeyCode.TAB);
+    /** Pixels scrolled by one arrow key in a focused scroll panel. */
+    private static final double ARROW_SCROLL_PIXELS = 48;
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -101,6 +112,12 @@ public class MainWindow extends UiPart<Stage> {
 
     @FXML
     private ScrollPane profileScroll;
+
+    @FXML
+    private VBox profileCard;
+
+    @FXML
+    private VBox studentList;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -210,6 +227,7 @@ public class MainWindow extends UiPart<Stage> {
         showOverview(LocalDate.now());
         adaptToWindowWidth();
         addKeyboardNavigation();
+        outlineFocusedPanel();
         commandBox.focus();
     }
 
@@ -246,22 +264,88 @@ public class MainWindow extends UiPart<Stage> {
         update.run();
     }
 
+    /** A panel that keyboard focus can move to: the node that takes focus and the card that is outlined. */
+    private record Panel(Node focusTarget, Node outline) {}
+
+    /** Returns the panels in Shift+Tab order, skipping the command rail while it is hidden. */
+    private List<Panel> panels() {
+        List<Panel> panels = new ArrayList<>();
+        panels.add(new Panel(commandBox.getField(), commandBoxPlaceholder));
+        if (commandRail.getScene() != null) {
+            panels.add(new Panel(commandRail, commandRail));
+        }
+        panels.add(new Panel(studentListPanel.getListView(), studentList));
+        panels.add(new Panel(profileScroll, profileCard));
+        panels.add(new Panel(weeklySchedulePanel.getRowsView(), weeklySchedulePlaceholder));
+        return panels;
+    }
+
+    /** Moves keyboard focus to the panel after the one that has it, wrapping back to the command bar. */
+    void focusNextPanel() {
+        List<Panel> panels = panels();
+        int current = indexOfFocusedPanel(panels);
+        panels.get((current + 1) % panels.size()).focusTarget().requestFocus();
+    }
+
+    private int indexOfFocusedPanel(List<Panel> panels) {
+        Node owner = primaryStage.getScene().getFocusOwner();
+        for (int i = 0; i < panels.size(); i++) {
+            if (isWithin(owner, panels.get(i).outline())) {
+                return i;
+            }
+        }
+        return 0;
+    }
+
+    private static boolean isWithin(Node node, Node ancestor) {
+        for (Node current = node; current != null; current = current.getParent()) {
+            if (current == ancestor) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Outlines the panel that holds keyboard focus, so it is always clear where keys will go. */
+    private void outlineFocusedPanel() {
+        Runnable update = () -> {
+            // The rail is left out of panels() while hidden, so clear it explicitly.
+            commandRail.getStyleClass().remove(FOCUSED_PANEL_STYLE_CLASS);
+            List<Panel> panels = panels();
+            int focused = indexOfFocusedPanel(panels);
+            for (int i = 0; i < panels.size(); i++) {
+                ObservableList<String> styles = panels.get(i).outline().getStyleClass();
+                styles.remove(FOCUSED_PANEL_STYLE_CLASS);
+                if (i == focused) {
+                    styles.add(FOCUSED_PANEL_STYLE_CLASS);
+                }
+            }
+        };
+        primaryStage.getScene().focusOwnerProperty().addListener((unused1, unused2, unused3) -> update.run());
+        update.run();
+    }
+
     /**
-     * Keeps the window type-first: printable keys typed anywhere go to the command bar, Ctrl/Cmd+L returns to it,
-     * Ctrl/Cmd+Up/Down move the selected student and Page Up/Down scroll the profile, all without the mouse.
+     * Keeps the window type-first. Tab completes command words in the command bar and returns to it from anywhere
+     * else; Shift+Tab moves to the next panel; arrow keys and Page Up/Down scroll or move inside the focused panel;
+     * Esc returns to the command bar; Ctrl/Cmd+L focuses it; Ctrl/Cmd+Up/Down move the selected student; and
+     * printable keys typed outside the command bar go to it.
      */
     private void addKeyboardNavigation() {
         getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            Node owner = primaryStage.getScene().getFocusOwner();
+            boolean isInCommandBar = owner == commandBox.getField();
             if (FOCUS_COMMAND.match(event)) {
+                commandBox.focus();
+            } else if (NEXT_PANEL.match(event)) {
+                focusNextPanel();
+            } else if (!isInCommandBar && (COMPLETE_OR_RETURN.match(event) || event.getCode() == KeyCode.ESCAPE)) {
                 commandBox.focus();
             } else if (SELECT_NEXT.match(event)) {
                 studentListPanel.moveSelection(1);
             } else if (SELECT_PREVIOUS.match(event)) {
                 studentListPanel.moveSelection(-1);
-            } else if (event.getCode() == KeyCode.PAGE_DOWN || event.getCode() == KeyCode.PAGE_UP) {
-                double step = event.getCode() == KeyCode.PAGE_DOWN ? PROFILE_SCROLL_STEP : -PROFILE_SCROLL_STEP;
-                profileScroll.setVvalue(Math.max(0, Math.min(1, profileScroll.getVvalue() + step)));
-            } else {
+            } else if (!scrollFocusedPanel(owner, event.getCode(), isInCommandBar)) {
                 return;
             }
             event.consume();
@@ -275,6 +359,38 @@ public class MainWindow extends UiPart<Stage> {
                 event.consume();
             }
         });
+    }
+
+    /**
+     * Scrolls the focused panel for arrow and Page keys and returns whether the key was used. Page Up/Down from the
+     * command bar scroll the profile; the student list keeps its own arrow-key selection.
+     */
+    private boolean scrollFocusedPanel(Node owner, KeyCode code, boolean isInCommandBar) {
+        boolean isPage = code == KeyCode.PAGE_UP || code == KeyCode.PAGE_DOWN;
+        boolean isArrow = code == KeyCode.UP || code == KeyCode.DOWN;
+        if (!isPage && !isArrow) {
+            return false;
+        }
+        int direction = code == KeyCode.UP || code == KeyCode.PAGE_UP ? -1 : 1;
+        if (owner == weeklySchedulePanel.getRowsView()) {
+            weeklySchedulePanel.scrollBy(direction * (isPage ? 4 : 1));
+        } else if (owner == commandRail || owner == profileScroll) {
+            scroll((ScrollPane) owner, direction, isPage);
+        } else if (isInCommandBar && isPage) {
+            scroll(profileScroll, direction, true);
+        } else {
+            return false;
+        }
+        return true;
+    }
+
+    private static void scroll(ScrollPane pane, int direction, boolean isPage) {
+        double hidden = pane.getContent().getLayoutBounds().getHeight() - pane.getViewportBounds().getHeight();
+        if (hidden <= 0) {
+            return;
+        }
+        double step = isPage ? PAGE_SCROLL_STEP : ARROW_SCROLL_PIXELS / hidden;
+        pane.setVvalue(Math.max(0, Math.min(1, pane.getVvalue() + direction * step)));
     }
 
     /**
