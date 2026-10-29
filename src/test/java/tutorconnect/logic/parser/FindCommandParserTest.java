@@ -1,6 +1,7 @@
 package tutorconnect.logic.parser;
 
 import static tutorconnect.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static tutorconnect.logic.Messages.MESSAGE_UNKNOWN_PARAMETER;
 import static tutorconnect.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static tutorconnect.logic.parser.CommandParserTestUtil.assertParseSuccess;
 
@@ -39,6 +40,21 @@ public class FindCommandParserTest {
 
         // multiple whitespaces between keywords
         assertParseSuccess(parser, " \n Alice \n \t Bob  \t", expectedFindCommand);
+    }
+
+    @Test
+    public void parse_parameterStyleKeyword_throwsParseException() {
+        assertParseFailure(parser, " n/Alex", String.format(MESSAGE_UNKNOWN_PARAMETER, "n/"));
+        assertParseFailure(parser, " Alex n/Bob", String.format(MESSAGE_UNKNOWN_PARAMETER, "n/"));
+        assertParseFailure(parser, " a/b", String.format(MESSAGE_UNKNOWN_PARAMETER, "a/"));
+        assertParseFailure(parser, " name/Alex", String.format(MESSAGE_UNKNOWN_PARAMETER, "name/"));
+        assertParseFailure(parser, " Alex/", String.format(MESSAGE_UNKNOWN_PARAMETER, "Alex/"));
+    }
+
+    @Test
+    public void parse_digitsBeforeSlash_stillTreatedAsKeyword() {
+        assertParseSuccess(parser, " 12/3",
+                new FindCommand(new NameContainsKeywordsPredicate(List.of("12/3"))));
     }
 
 }
