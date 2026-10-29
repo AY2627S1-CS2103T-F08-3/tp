@@ -29,8 +29,10 @@ It combines typed commands with a graphical student register and details panel.
    Double-clicking the JAR might not work on some systems; launch it from the terminal with Java 25 instead.
    On macOS, fullscreen mode can cause unexpected behavior with secondary dialogs such as Help. Exit fullscreen
    before opening Help if you encounter this issue.<br>
-   The application opens with a command box, a feedback area, a student register on the left, and selected-student
-   details and a weekly schedule on the right. Scroll the details panel to see all fields.
+   The application opens with the command bar at the top, already focused, so you can start typing straight away.
+   Below it are the result of your last command, counts of students and lessons, and your student list. The selected
+   student's profile and the weekly schedule are on the right. In a window at least 1100 pixels wide, a read-only
+   command reference also appears on the left.
    If no data file exists, the register initially contains sample students.
 
 1. Type a command in the command box and press Enter to execute it. For example, type **`help`** and press Enter to open the help window.<br>
@@ -75,6 +77,26 @@ It combines typed commands with a graphical student register and details panel.
 
 * If you are using a PDF version of this document, be careful when copying and pasting commands that span multiple lines as space characters surrounding line-breaks may be omitted when copied over to the application.
 </box>
+
+### Working from the keyboard
+
+TutorConnect is designed to be used without a mouse. The command bar always shows the format of the command you are
+typing, e.g. `schedule INDEX d/DAY t/TIME`, and lists the matching command words while you are still typing one.
+
+Key | What it does
+--- | ---
+<kbd>Enter</kbd> | Runs the command in the command bar.
+<kbd>Tab</kbd> | Completes the command word, e.g. `sch` becomes `schedule `. With several matches (`pay`), it completes as far as they agree.
+<kbd>↑</kbd> / <kbd>↓</kbd> | Brings back earlier commands from this session, e.g. to fix a mistyped one. <kbd>↓</kbd> past the newest returns to what you were typing.
+<kbd>Esc</kbd> | Clears the command bar.
+<kbd>Ctrl</kbd>+<kbd>↑</kbd> / <kbd>↓</kbd> (<kbd>⌘</kbd> on macOS) | Selects the previous or next student in the list and shows their profile. This does not change the list or its numbering.
+<kbd>Page Up</kbd> / <kbd>Page Down</kbd> | Scrolls the selected student's profile.
+<kbd>Ctrl</kbd>+<kbd>L</kbd> (<kbd>⌘</kbd>+<kbd>L</kbd> on macOS) | Returns to the command bar. Typing a letter anywhere in the window also goes straight to the command bar.
+<kbd>F1</kbd> | Opens the help window.
+
+Error messages appear in red in the result area, and warnings in amber. Command history is kept only while the app is
+open. Completion and hints never change what a command does; the command is checked only when you press
+<kbd>Enter</kbd>.
 
 ### Viewing help: `help`
 
