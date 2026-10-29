@@ -54,6 +54,7 @@ public class Student {
             StudentFields studentFields) {
         requireAllNonNull(name, phone, email, address, tags);
         requireAllNonNull(id, studentFields);
+        requireAllNonNull(tags);
         this.id = id;
         this.studentFields = canonicalizeContactFields(studentFields);
         this.name = name;

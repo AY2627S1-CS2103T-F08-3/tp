@@ -65,8 +65,7 @@ public class ModelManager implements Model {
     @Override
     public void setStudentDirectory(ReadOnlyStudentDirectory studentDirectory) {
         this.studentDirectory.resetData(studentDirectory);
-        if (selectedStudentId != null
-                && filteredStudents.stream().noneMatch(student -> student.getId().equals(selectedStudentId))) {
+        if (selectedStudentId != null && !isStudentDisplayed(selectedStudentId)) {
             selectedStudentId = null;
         }
     }
@@ -102,7 +101,7 @@ public class ModelManager implements Model {
         requireAllNonNull(target, editedStudent);
 
         studentDirectory.setStudent(target, editedStudent);
-        selectedStudentId = editedStudent.getId();
+        selectedStudentId = isStudentDisplayed(editedStudent.getId()) ? editedStudent.getId() : null;
     }
 
     //=========== Filtered Student List Accessors =============================================================
@@ -136,10 +135,14 @@ public class ModelManager implements Model {
 
     @Override
     public void selectStudent(UUID id) {
-        if (id != null && filteredStudents.stream().noneMatch(student -> student.getId().equals(id))) {
+        if (id != null && !isStudentDisplayed(id)) {
             throw new IllegalArgumentException("Selection must refer to a displayed student");
         }
         selectedStudentId = id;
+    }
+
+    private boolean isStudentDisplayed(UUID id) {
+        return filteredStudents.stream().anyMatch(student -> student.getId().equals(id));
     }
 
     @Override
