@@ -113,6 +113,12 @@ public class EditCommandTest {
     }
 
     @Test
+    public void duplicateMessage_matchesAddCommandWording() {
+        assertEquals(AddCommand.MESSAGE_DUPLICATE_STUDENT, EditCommand.MESSAGE_DUPLICATE_STUDENT);
+        assertTrue(EditCommand.MESSAGE_DUPLICATE_STUDENT.startsWith("Error: "));
+    }
+
+    @Test
     public void execute_duplicateStudentFilteredList_failure() {
         showStudentAtIndex(model, INDEX_FIRST_STUDENT);
 

@@ -159,7 +159,7 @@ public class AddStudentUiTest {
                 assertEquals("Name: Clear Test", ((Label) details.getChildren().getFirst()).getText());
                 failSave.set(false);
                 enter(input, "clear");
-                assertEquals("Address book has been cleared!", status.getText());
+                assertEquals("All students have been cleared!", status.getText());
                 assertTrue(rows.getItems().isEmpty());
                 assertNull(rows.getSelectionModel().getSelectedItem());
                 assertNull(model.getSelectedStudentId());
