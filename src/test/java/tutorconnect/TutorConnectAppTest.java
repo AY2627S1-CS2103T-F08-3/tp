@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +26,10 @@ import javafx.stage.Stage;
 import tutorconnect.commons.core.GuiSettings;
 import tutorconnect.model.ReadOnlyUserPrefs;
 import tutorconnect.model.UserPrefs;
+import tutorconnect.model.student.EducationLevel;
 import tutorconnect.model.student.Phone;
 import tutorconnect.model.student.Student;
+import tutorconnect.model.student.Subject;
 import tutorconnect.storage.JsonStudentDirectoryStorage;
 import tutorconnect.storage.JsonUserPrefsStorage;
 import tutorconnect.storage.StorageManager;
@@ -35,6 +38,8 @@ import tutorconnect.testutil.JavaFxTestUtil;
 /** Exercises renamed startup and FXML wiring without touching a user's saved data. */
 @EnabledIfEnvironmentVariable(named = "F01_UI_TESTS", matches = "true")
 public class TutorConnectAppTest {
+    private static final Set<String> TUTORING_KEYS = Set.of(EducationLevel.FIELD.key(), Subject.FIELD.key());
+
     @TempDir
     private Path directory;
 
@@ -56,9 +61,15 @@ public class TutorConnectAppTest {
             for (Student student : samples) {
                 assertTrue(Phone.isValidPhone(student.getPhone().value));
                 assertTrue(student.getPhone().value.startsWith("+65"));
-                assertTrue(student.getStudentFields().toStorage().isEmpty());
+                // Samples carry only valid tutoring fields; get() throws if a stored value is invalid.
+                assertTrue(TUTORING_KEYS.containsAll(student.getStudentFields().toStorage().keySet()));
+                assertEquals(student.getStudentFields().get(EducationLevel.FIELD).isPresent(),
+                        student.getStudentFields().get(Subject.FIELD).isPresent());
                 assertFalse(student.getTags().isEmpty());
             }
+            assertEquals(List.of("Alex Yeoh", "Bernice Yu", "Charlotte Oliveiro", "David Li", "Irfan Ibrahim"),
+                    samples.stream().filter(student -> student.getStudentFields().get(EducationLevel.FIELD).isPresent())
+                            .map(student -> student.getName().fullName).toList());
             assertTrue(Files.exists(directory.resolve("preferences.json")));
             assertFalse(Files.exists(directory.resolve("addressbook.json")));
             app.stop();
