@@ -17,10 +17,15 @@ Class StudentDetailsPanel
 Class WeeklySchedulePanel
 Class StatusBarFooter
 Class CommandBox
+Class CommandHistory
+Class CommandGuide
+Class CommandReferencePanel
+Class DetailRow
 }
 
 package JavaFX <<Rectangle>> {
 Class VBox #6E6E6E
+Class Label #6E6E6E
 }
 
 package Model <<Rectangle>> {
@@ -45,6 +50,11 @@ MainWindow *-down-> "1" StudentDetailsPanel
 MainWindow *-down-> "1" WeeklySchedulePanel
 MainWindow *-down-> "1" StatusBarFooter
 MainWindow --> "0..1" HelpWindow
+MainWindow *-down-> "1" CommandReferencePanel
+CommandBox *-down-> "1" CommandHistory
+CommandBox ..> CommandGuide : completion,\nhints
+CommandReferencePanel ..> CommandGuide : lists formats
+StudentDetailsPanel *-down-> "*" DetailRow
 
 StudentListPanel -down-> "*" StudentCard
 
@@ -57,6 +67,8 @@ StatusBarFooter --|> UiPart
 HelpWindow --|> UiPart
 StudentDetailsPanel --|> VBox
 WeeklySchedulePanel --|> VBox
+CommandReferencePanel --|> VBox
+DetailRow --|> Label
 
 StudentCard ..> Model
 StudentDetailsPanel ..> Model

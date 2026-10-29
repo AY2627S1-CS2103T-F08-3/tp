@@ -73,7 +73,14 @@ The **API** of this component is specified in [`Ui.java`](https://github.com/AY2
 
 <puml src="diagrams/UiClassDiagram.puml" alt="Structure of the UI Component"/>
 
-The UI consists of a `MainWindow` and its parts: `CommandBox`, `ResultDisplay`, `StudentListPanel` (with one `StudentCard` per row), `StudentDetailsPanel`, `WeeklySchedulePanel` and `StatusBarFooter`. `MainWindow` and the FXML-backed parts inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts. `StudentDetailsPanel` and `WeeklySchedulePanel` are code-built JavaFX `VBox` subclasses without FXML, so they do not extend `UiPart`.
+The UI consists of a `MainWindow` and its parts: `CommandBox`, `ResultDisplay`, `StudentListPanel` (with one `StudentCard` per row), `StudentDetailsPanel`, `WeeklySchedulePanel`, `CommandReferencePanel` and `StatusBarFooter`. `MainWindow` and the FXML-backed parts inherit from the abstract `UiPart` class, which captures common behavior among classes that represent visible GUI parts. `StudentDetailsPanel`, `WeeklySchedulePanel` and `CommandReferencePanel` are code-built JavaFX `VBox` subclasses without FXML, so they do not extend `UiPart`.
+
+TutorConnect is type-first, so the UI adds no mouse-only controls:
+
+* `CommandBox` keeps a `CommandHistory` for <kbd>↑</kbd>/<kbd>↓</kbd>, completes command words with <kbd>Tab</kbd> and shows the typed command's format below the field. Both use `CommandGuide`, a read-only table of command words and formats. `CommandGuide` never parses or validates input, so `TutorConnectParser` remains the only authority; a command missing from the guide simply gets no hint. `CommandReferencePanel` renders the same table as the window's left rail.
+* `MainWindow` adds window-wide key filters. Printable keys typed outside the command field move focus to it, <kbd>Ctrl/⌘</kbd>+<kbd>L</kbd> returns to it, <kbd>Ctrl/⌘</kbd>+<kbd>↑</kbd>/<kbd>↓</kbd> move the list selection through `StudentListPanel#moveSelection`, and <kbd>Page Up</kbd>/<kbd>Page Down</kbd> scroll the profile. It also hides the rail and the count cards in narrow windows.
+* Each profile line is a `DetailRow`, a `Label` whose text stays the plain `Key: value` line that tests and owners rely on, while its own skin draws the styled key, value and section caption. On `StudentCard`, the prefixed labels (`Level: ...`, `Weekly lesson: ...`) likewise keep their text but display only the value through a `Text` graphic.
+* Styling lives in `TutorConnectTheme.css`, whose colours are defined once as looked-up colours on `.root`.
 
 `MainWindow` wires three views of the same register. `StudentListPanel` shows `Logic#getFilteredStudentList()`, which `find`/`filter` narrow and whose order defines visible indices. `StudentDetailsPanel` shows the student whose UUID is `Logic#getSelectedStudentId()`. `WeeklySchedulePanel` shows `Logic#getWeeklySchedule()`, the separately sorted list of every scheduled student. After each command, `MainWindow` passes any `TimetableView` carried by the `CommandResult` to `WeeklySchedulePanel#showDay`, then refreshes selection and details.
 

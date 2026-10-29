@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TextField?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
 
-<StackPane styleClass="stack-pane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <TextField fx:id="commandTextField" onAction="#handleCommandEntered" promptText="Enter command here..."/>
-</StackPane>
-
+<VBox styleClass="command-bar" spacing="6" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <HBox styleClass="command-input-row" alignment="CENTER_LEFT" spacing="10">
+    <Label styleClass="command-prompt" text="›" />
+    <TextField fx:id="commandTextField" HBox.hgrow="ALWAYS" onAction="#handleCommandEntered"
+               promptText="Type a command, e.g. find alex   (Tab completes, ↑ recalls)" />
+  </HBox>
+  <Label fx:id="commandHint" styleClass="command-hint" text="Start typing a command. The format appears here." />
+</VBox>

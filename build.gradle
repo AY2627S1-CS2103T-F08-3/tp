@@ -117,7 +117,7 @@ tasks.register('verifyShadowJar') {
                 throw new GradleException('The executable JAR has incorrect release version metadata.')
             }
             [launcher.replace('.', '/') + '.class', 'view/MainWindow.fxml',
-             'view/StudentListPanel.fxml', 'view/DarkTheme.css'].each { entry ->
+             'view/StudentListPanel.fxml', 'view/TutorConnectTheme.css'].each { entry ->
                 if (jar.getJarEntry(entry) == null) {
                     throw new GradleException("The executable JAR is missing ${entry}.")
                 }

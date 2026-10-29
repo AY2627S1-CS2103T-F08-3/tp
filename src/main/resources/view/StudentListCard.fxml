@@ -2,39 +2,49 @@
 
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
-<?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.FlowPane?>
-<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Text?>
 
-<HBox id="cardPane" fx:id="cardPane" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
-  <GridPane HBox.hgrow="ALWAYS">
-    <columnConstraints>
-      <ColumnConstraints hgrow="SOMETIMES" minWidth="10" prefWidth="150" />
-    </columnConstraints>
-    <VBox alignment="CENTER_LEFT" minHeight="105" GridPane.columnIndex="0">
-      <padding>
-        <Insets top="5" right="5" bottom="5" left="15" />
-      </padding>
-      <HBox spacing="0.5" alignment="CENTER_LEFT">
-        <Label fx:id="id" styleClass="cell_big_label">
-          <minWidth>
-            <!-- Ensures that the label text is never truncated -->
-            <Region fx:constant="USE_PREF_SIZE" />
-          </minWidth>
-        </Label>
-        <Label fx:id="name" text="\$first" styleClass="cell_big_label" />
-      </HBox>
-      <FlowPane fx:id="tags" />
-      <Label fx:id="phone" styleClass="cell_small_label" text="\$phone" />
-      <Label fx:id="address" styleClass="cell_small_label" text="\$address" />
-      <Label fx:id="subject" styleClass="cell_small_label" text="\$subject" />
-      <Label fx:id="email" styleClass="cell_small_label" text="\$email" />
-      <Label fx:id="weeklySlot" styleClass="cell_small_label" text="Weekly lesson: —" />
-      <Label fx:id="educationLevel" styleClass="cell_small_label" text="\$educationLevel" />
-      <Label fx:id="hourlyRate" styleClass="cell_small_label" text="Hourly rate: —" />
-    </VBox>
-  </GridPane>
+<HBox id="cardPane" fx:id="cardPane" styleClass="student-row" alignment="CENTER_LEFT" spacing="14"
+      xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1">
+  <padding>
+    <Insets top="9" right="14" bottom="9" left="10" />
+  </padding>
+  <Label fx:id="id" styleClass="card-index">
+    <minWidth>
+      <!-- Ensures that the label text is never truncated -->
+      <Region fx:constant="USE_PREF_SIZE" />
+    </minWidth>
+  </Label>
+  <StackPane fx:id="avatar" styleClass="avatar">
+    <Label fx:id="avatarText" styleClass="avatar-text" />
+  </StackPane>
+  <VBox HBox.hgrow="ALWAYS" minWidth="0" spacing="2">
+    <HBox spacing="8" alignment="CENTER_LEFT">
+      <Label fx:id="name" text="\$first" styleClass="card-name" minWidth="-Infinity" />
+      <FlowPane fx:id="tags" hgap="6" vgap="4" HBox.hgrow="ALWAYS" />
+    </HBox>
+    <HBox spacing="6" alignment="CENTER_LEFT">
+      <Label fx:id="educationLevel" text="\$educationLevel" />
+      <Text styleClass="card-separator" text="·" />
+      <Label fx:id="subject" text="\$subject" />
+    </HBox>
+    <HBox spacing="12" alignment="CENTER_LEFT">
+      <Label fx:id="phone" styleClass="card-detail" text="\$phone" minWidth="-Infinity" />
+      <Label fx:id="email" styleClass="card-detail" text="\$email" />
+      <Label fx:id="address" styleClass="card-detail" text="\$address" />
+    </HBox>
+  </VBox>
+  <VBox fx:id="lessonColumn" styleClass="card-column" spacing="2" minWidth="120" prefWidth="130">
+    <Text styleClass="card-caption" text="WEEKLY LESSON" />
+    <Label fx:id="weeklySlot" text="Weekly lesson: —" />
+  </VBox>
+  <VBox fx:id="rateColumn" styleClass="card-column" spacing="2" minWidth="70" prefWidth="80">
+    <Text styleClass="card-caption" text="RATE" />
+    <Label fx:id="hourlyRate" text="Hourly rate: —" />
+  </VBox>
 </HBox>

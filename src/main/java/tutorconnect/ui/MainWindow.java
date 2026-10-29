@@ -1,15 +1,28 @@
 package tutorconnect.ui;
 
 import java.nio.file.Path;
+import java.time.DayOfWeek;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.TextStyle;
+import java.util.Locale;
 import java.util.logging.Logger;
 
+import javafx.beans.binding.Bindings;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
+import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
+import javafx.scene.control.ScrollPane;
 import javafx.scene.control.TextInputControl;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyCodeCombination;
 import javafx.scene.input.KeyCombination;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import tutorconnect.commons.core.GuiSettings;
 import tutorconnect.commons.core.LogsCenter;
@@ -17,6 +30,7 @@ import tutorconnect.logic.Logic;
 import tutorconnect.logic.commands.CommandResult;
 import tutorconnect.logic.commands.exceptions.CommandException;
 import tutorconnect.logic.parser.exceptions.ParseException;
+import tutorconnect.model.student.WeeklySlotField;
 
 /**
  * The main window. Provides the basic application layout containing
@@ -25,6 +39,20 @@ import tutorconnect.logic.parser.exceptions.ParseException;
 public class MainWindow extends UiPart<Stage> {
 
     private static final String FXML = "MainWindow.fxml";
+    /** Below this window width the command rail is hidden so the list and profile keep their space. */
+    private static final double RAIL_MIN_WINDOW_WIDTH = 1100;
+    /** Below this window width the summary counts are hidden; the list header still shows the count. */
+    private static final double STATS_MIN_WINDOW_WIDTH = 900;
+    private static final double WIDE_SIDE_WIDTH = 330;
+    private static final double NARROW_SIDE_WIDTH = 270;
+    /** Fraction of the profile's scroll range moved by one Page Up/Down. */
+    private static final double PROFILE_SCROLL_STEP = 0.25;
+    private static final DateTimeFormatter DATE_FORMAT = DateTimeFormatter.ofPattern("EEEE, d MMMM", Locale.ENGLISH);
+    private static final KeyCombination FOCUS_COMMAND = new KeyCodeCombination(KeyCode.L, KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination SELECT_NEXT = new KeyCodeCombination(KeyCode.DOWN,
+            KeyCombination.SHORTCUT_DOWN);
+    private static final KeyCombination SELECT_PREVIOUS = new KeyCodeCombination(KeyCode.UP,
+            KeyCombination.SHORTCUT_DOWN);
 
     private final Logger logger = LogsCenter.getLogger(getClass());
 
@@ -38,7 +66,41 @@ public class MainWindow extends UiPart<Stage> {
     private HelpWindow helpWindow;
     private StudentDetailsPanel studentDetailsPanel;
     private WeeklySchedulePanel weeklySchedulePanel;
+    private CommandBox commandBox;
     private boolean executingCommand;
+
+    @FXML
+    private ScrollPane commandRail;
+
+    @FXML
+    private StackPane commandReferencePlaceholder;
+
+    @FXML
+    private Label todayLabel;
+
+    @FXML
+    private Label shownCount;
+
+    @FXML
+    private Label lessonCount;
+
+    @FXML
+    private Label todayLessonCount;
+
+    @FXML
+    private Label todayLessonNote;
+
+    @FXML
+    private Label listCountLabel;
+
+    @FXML
+    private HBox statsRow;
+
+    @FXML
+    private VBox sideArea;
+
+    @FXML
+    private ScrollPane profileScroll;
 
     @FXML
     private StackPane commandBoxPlaceholder;
@@ -141,8 +203,78 @@ public class MainWindow extends UiPart<Stage> {
         StatusBarFooter statusBarFooter = new StatusBarFooter(dataFilePath);
         statusbarPlaceholder.getChildren().add(statusBarFooter.getRoot());
 
-        CommandBox commandBox = new CommandBox(this::executeCommand);
+        commandBox = new CommandBox(this::executeCommand);
         commandBoxPlaceholder.getChildren().add(commandBox.getRoot());
+
+        commandReferencePlaceholder.getChildren().add(new CommandReferencePanel());
+        showOverview(LocalDate.now());
+        adaptToWindowWidth();
+        addKeyboardNavigation();
+        commandBox.focus();
+    }
+
+    /** Shows the date and live counts that sit above the student list; they follow the observed lists. */
+    private void showOverview(LocalDate today) {
+        todayLabel.setText(today.format(DATE_FORMAT));
+        DayOfWeek day = today.getDayOfWeek();
+        var students = logic.getFilteredStudentList();
+        var lessons = logic.getWeeklySchedule();
+        shownCount.textProperty().bind(Bindings.size(students).asString("%02d"));
+        listCountLabel.textProperty().bind(Bindings.size(students).asString("(%d)"));
+        lessonCount.textProperty().bind(Bindings.size(lessons).asString("%02d"));
+        todayLessonCount.textProperty().bind(Bindings.createStringBinding(() -> String.format("%02d",
+                lessons.stream().filter(student -> WeeklySlotField.get(student).orElseThrow().getDay() == day)
+                        .count()), lessons));
+        todayLessonNote.setText("on " + day.getDisplayName(TextStyle.FULL, Locale.ENGLISH)
+                + "  ·  timetable d/" + day.getDisplayName(TextStyle.SHORT, Locale.ENGLISH));
+    }
+
+    /**
+     * Gives narrow windows to the list and profile: the read-only command rail and the summary counts are hidden and
+     * the profile column narrows. Every command still works from the command bar.
+     */
+    private void adaptToWindowWidth() {
+        BorderPane root = (BorderPane) primaryStage.getScene().getRoot();
+        Runnable update = () -> {
+            double width = primaryStage.getWidth();
+            root.setLeft(width >= RAIL_MIN_WINDOW_WIDTH ? commandRail : null);
+            statsRow.setVisible(width >= STATS_MIN_WINDOW_WIDTH);
+            statsRow.setManaged(statsRow.isVisible());
+            sideArea.setPrefWidth(width >= RAIL_MIN_WINDOW_WIDTH ? WIDE_SIDE_WIDTH : NARROW_SIDE_WIDTH);
+        };
+        primaryStage.widthProperty().addListener((unused1, unused2, unused3) -> update.run());
+        update.run();
+    }
+
+    /**
+     * Keeps the window type-first: printable keys typed anywhere go to the command bar, Ctrl/Cmd+L returns to it,
+     * Ctrl/Cmd+Up/Down move the selected student and Page Up/Down scroll the profile, all without the mouse.
+     */
+    private void addKeyboardNavigation() {
+        getRoot().addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+            if (FOCUS_COMMAND.match(event)) {
+                commandBox.focus();
+            } else if (SELECT_NEXT.match(event)) {
+                studentListPanel.moveSelection(1);
+            } else if (SELECT_PREVIOUS.match(event)) {
+                studentListPanel.moveSelection(-1);
+            } else if (event.getCode() == KeyCode.PAGE_DOWN || event.getCode() == KeyCode.PAGE_UP) {
+                double step = event.getCode() == KeyCode.PAGE_DOWN ? PROFILE_SCROLL_STEP : -PROFILE_SCROLL_STEP;
+                profileScroll.setVvalue(Math.max(0, Math.min(1, profileScroll.getVvalue() + step)));
+            } else {
+                return;
+            }
+            event.consume();
+        });
+        getRoot().addEventFilter(KeyEvent.KEY_TYPED, event -> {
+            boolean isPrintable = !event.getCharacter().isEmpty() && !Character.isISOControl(event.getCharacter()
+                    .charAt(0));
+            boolean isInTextField = event.getTarget() instanceof TextInputControl input && input.isEditable();
+            if (isPrintable && !isInTextField && !event.isShortcutDown() && !event.isAltDown()) {
+                commandBox.focusAndType(event.getCharacter());
+                event.consume();
+            }
+        });
     }
 
     /**

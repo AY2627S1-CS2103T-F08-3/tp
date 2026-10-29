@@ -18,6 +18,7 @@ import tutorconnect.model.student.Student;
  */
 public class StudentListPanel extends UiPart<Region> {
     private static final String FXML = "StudentListPanel.fxml";
+    private static final double CARD_INSET = 18;
     private final Logger logger = LogsCenter.getLogger(StudentListPanel.class);
 
     @FXML
@@ -59,6 +60,20 @@ public class StudentListPanel extends UiPart<Region> {
         }
     }
 
+    /**
+     * Moves the selection {@code delta} rows (clamped to the list), selecting the first or last row when nothing is
+     * selected. Used for keyboard selection; it never changes the displayed list or its numbering.
+     */
+    public void moveSelection(int delta) {
+        int size = studentListView.getItems().size();
+        if (size == 0) {
+            return;
+        }
+        int current = studentListView.getSelectionModel().getSelectedIndex();
+        int target = current < 0 ? (delta > 0 ? 0 : size - 1) : Math.max(0, Math.min(size - 1, current + delta));
+        selectIndex(target);
+    }
+
     /** Selects and scrolls to a zero-based row in the currently displayed list. */
     public void selectIndex(int zeroBasedIndex) {
         studentListView.getSelectionModel().select(zeroBasedIndex);
@@ -77,7 +92,11 @@ public class StudentListPanel extends UiPart<Region> {
                 setGraphic(null);
                 setText(null);
             } else {
-                setGraphic(new StudentCard(student, getIndex() + 1).getRoot());
+                Region card = new StudentCard(student, getIndex() + 1).getRoot();
+                // Fit the card to the list (minus the scroll bar) so its columns never run past the edge.
+                card.setMinWidth(0);
+                card.prefWidthProperty().bind(studentListView.widthProperty().subtract(CARD_INSET));
+                setGraphic(card);
             }
         }
     }

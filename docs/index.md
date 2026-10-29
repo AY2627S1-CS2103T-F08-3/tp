@@ -8,7 +8,7 @@
 [![CI Status](https://github.com/AY2627S1-CS2103T-F08-3/tp/actions/workflows/gradle.yml/badge.svg)](https://github.com/AY2627S1-CS2103T-F08-3/tp/actions/workflows/gradle.yml)
 [![codecov](https://codecov.io/gh/AY2627S1-CS2103T-F08-3/tp/graph/badge.svg)](https://codecov.io/gh/AY2627S1-CS2103T-F08-3/tp)
 
-![TutorConnect showing the Monday timetable, student register, and selected student details](images/Ui.png)
+![TutorConnect showing the command bar with a format hint, the student list, and the selected student's profile](images/Ui.png)
 
 **TutorConnect helps freelance tutors organise student contacts, manage lesson details, and track recurring weekly schedules.** Enter commands in the command box, then review students and timetable entries in the graphical workspace.
 
