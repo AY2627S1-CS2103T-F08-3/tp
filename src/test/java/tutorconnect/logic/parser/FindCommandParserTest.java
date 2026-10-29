@@ -1,6 +1,6 @@
 package tutorconnect.logic.parser;
 
-import static tutorconnect.logic.Messages.MESSAGE_INVALID_COMMAND_FORMAT;
+import static tutorconnect.logic.Messages.MESSAGE_MISSING_REQUIRED_PARAMETER;
 import static tutorconnect.logic.Messages.MESSAGE_UNKNOWN_PARAMETER;
 import static tutorconnect.logic.parser.CommandParserTestUtil.assertParseFailure;
 import static tutorconnect.logic.parser.CommandParserTestUtil.assertParseSuccess;
@@ -18,17 +18,16 @@ public class FindCommandParserTest {
 
     @Test
     public void parse_emptyArg_throwsParseException() {
-        assertParseFailure(parser, "     ", String.format(MESSAGE_INVALID_COMMAND_FORMAT, FindCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "     ", String.format(MESSAGE_MISSING_REQUIRED_PARAMETER, "KEYWORD"));
+        assertParseFailure(parser, "", "Error: Missing required parameter: KEYWORD.");
     }
 
     @Test
     public void parse_unicodeSpaceAndCompatibilityCharacters_normalizesKeywords() {
         assertParseSuccess(parser, "\u00a0ＡＬＩ\u2003Ｂｏ\u00a0",
                 new FindCommand(new NameContainsKeywordsPredicate(List.of("ali", "bo"))));
-        assertParseFailure(parser, "\u00a0\u2003", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                FindCommand.MESSAGE_USAGE));
-        assertParseFailure(parser, "Ali\u200bce", String.format(MESSAGE_INVALID_COMMAND_FORMAT,
-                FindCommand.MESSAGE_USAGE));
+        assertParseFailure(parser, "\u00a0\u2003", String.format(MESSAGE_MISSING_REQUIRED_PARAMETER, "KEYWORD"));
+        assertParseFailure(parser, "Ali\u200bce", StudentParameters.UNEXPECTED_TEXT);
     }
 
     @Test
