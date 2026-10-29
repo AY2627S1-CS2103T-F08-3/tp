@@ -712,108 +712,200 @@ Given below are instructions to test the app manually.
 <box type="info" seamless>
 
 **Note:** These instructions only provide a starting point for testers to work on;
-testers are expected to do more *exploratory* testing.
+testers are expected to do more *exploratory* testing. Never test with your real data file: use a new empty folder.
 </box>
 
 ### Launch and shutdown
 
 1. Initial launch
 
-   1. Download the JAR file and copy it into an empty folder.
+   1. Run `java -version` and check that it reports Java 25.
 
-   1. Double-click the JAR file.<br>
-      Expected: The GUI opens with a set of sample contacts. The window size may not be optimal.
+   1. Copy `tutorconnect.jar` into a new empty folder that you can write to (not a write-protected or synced folder).
+
+   1. Open a terminal in that folder and run `java -jar "tutorconnect.jar"`.<br>
+      Expected: The `TutorConnect` window opens with six sample students. The folder now contains `preferences.json`
+      and a log file; `data/addressbook.json` is created on the first change. Double-clicking the JAR may also work,
+      but is not the supported way to launch.
 
 1. Saving window preferences
 
-   1. Resize the window to an optimal size. Move the window to a different location. Close the window.
+   1. Resize the window and move it. Close it with the window's close button.
 
-   1. Relaunch the app by double-clicking the JAR file.<br>
-       Expected: The most recent window size and location are retained.
+   1. Launch again with `java -jar "tutorconnect.jar"` from the same folder.<br>
+      Expected: The window reopens at the last size and position.
 
-1. _{ more test cases … }_
+1. Shutdown
 
-### Contact editing and failure preservation
+   1. Enter `exit`, or press <kbd>F1</kbd> to open the help window and then enter `exit`.<br>
+      Expected: The main window and the help window both close.
 
-Use a disposable data directory with an empty `persons` array in `data/addressbook.json`.
+### Setting up test data
 
-1. Add `add n/Alex Tan p/81234567 a/21 Clementi Ave` and
-   `add n/Nur Aisyah p/92345678 a/8 Jalan Besar`. Set `guardian 2 g/91234567`.
-2. Run `find Nur`, then `edit 1 a/12/3 New Street`. Nur is the displayed target even though she was
-   second in the full register. The full register reappears, Nur stays selected and her guardian is retained.
-3. Run `find Nur`, select Nur's row, then `edit 1 a/21 Clementi x/accidental`.
-   Expect `Error: Unknown parameter: x/.` with the saved address, filtered list and selection unchanged.
-   `edit 1 extra n/Nur` reports `Error: Unexpected text after command.` with the same preservation.
-4. Run `edit 1 a/12/3 New Street`. This equivalent edit retains the filtered view and selection without
-   saving. `edit 1 n/Alex Tan p/81234567` is rejected as a duplicate of the hidden Alex record.
-   `edit 999999999999999999999 n/Nur` reports a missing row without crashing or changing state.
-5. Exit and reopen from the same directory. Verify both students, Nur's updated address and her guardian.
-   Run `find Nur`, `delete 1`, then `list`. Only Alex remains, numbered 1; Nur's complete profile is removed.
-6. For storage failures, use the automated failure-injection tests rather than changing a real data
-   folder's permissions. `ContactExtensionIntegrationTest` verifies nested unknown fields across updates,
-   reload and deletion, and unchanged bytes/filter/selection when atomic replacement fails.
-   `EditStudentUiTest` verifies rejected and successful edits through the real JavaFX command box.
+1. With the app closed, replace the contents of `data/addressbook.json` with `{"persons":[]}` (create the
+   `data` folder if needed) and launch the app. The list is empty.
 
-### Deleting a student
+1. Enter, in order:
+   `add n/Alex Tan p/81234567 a/21 Clementi Ave`,
+   `add n/Nur Aisyah p/92345678 a/8 Jalan Besar`,
+   `add n/Ben Lim p/81234567 a/3 Bishan St`.<br>
+   Expected: Each is added and selected. The third reports `Student added: Ben Lim. Warning: Another student uses
+   this phone number.` because Alex has the same phone.
 
-1. Deleting a student while all students are being shown
+The remaining sections start from these three students, numbered 1-3, unless stated otherwise.
 
-   1. Prerequisites: List all students using the `list` command, with multiple students in the list.
+### Adding a student
 
-   1. Test case: `delete 1`<br>
-      Expected: The first contact is deleted from the list. The status message shows the deleted contact's details.
+1. Test case: `add n/alex tan p/+65 8123 4567 a/1 Road`<br>
+   Expected: `Error: This student already exists with the same name and phone.` Name case and phone formatting
+   do not matter for duplicates. Nothing is added.
 
-   1. Test case: `delete 0`<br>
-      Expected: No student is deleted. The status message shows error details.
+1. Test case: `add n/Alex Tan p/12345678 a/1 Road`<br>
+   Expected: `Error: Invalid phone. ...` (phones must be Singapore numbers starting with 6, 8 or 9).
 
-   1. Other incorrect delete commands to try: `delete`, `delete x`, `...` (where x is larger than the list size)<br>
-      Expected: Similar to previous.
+1. Test case: `add n/Alex Tan p/91234567`<br>
+   Expected: `Error: Missing required parameter: a/ADDRESS.`
 
-1. _{ more test cases … }_
+### Setting guardian, level, subject and rate
+
+1. Test case: `guardian 1 g/91234567`, `level 1 l/Sec4`, `subject 1 s/H2 Math`, `rate 1 r/80`<br>
+   Expected: Each succeeds and selects Alex. The details panel shows `Guardian phone: +6591234567`,
+   `Education level: Secondary 4`, `Subject: H2 Math` and `Hourly rate: S$80.00`.
+
+1. Test case: `rate 1 r/80.00`<br>
+   Expected: `Hourly rate for Alex Tan is already S$80.00.` The data file is not rewritten.
+
+1. Test case: `level 2 l/P7`, `rate 1 r/1000.01`<br>
+   Expected: Invalid-level and invalid-rate errors; nothing changes.
+
+### Finding and filtering students
+
+1. Prerequisite: `level 2 l/sec 3` and `subject 2 s/Chemistry`.
+
+1. Test case: `find nur`<br>
+   Expected: Only Nur Aisyah is listed, as number 1, with `1 student(s) listed!`.
+
+1. Test case: `find xyz`<br>
+   Expected: `0 student(s) listed!` and an empty list with `No students found.`.
+
+1. Test case: `filter l/sec4`, then `filter s/chemistry`<br>
+   Expected: Only Alex, then only Nur. `filter` alone reports that at least one criterion is needed.
+
+1. Test case: `list`<br>
+   Expected: `Listed 3 students.` with the full register and no selection.
 
 ### Weekly scheduling and timetable
 
-Use a copy of the JAR in an empty folder so that your real data file is not changed.
+1. Prerequisite: `list`, then `schedule 1 d/Mon t/09:00`, `schedule 2 d/mon t/09:00` and `schedule 3 d/Sunday t/23:59`.<br>
+   Expected: All three succeed; Alex and Nur may share the same slot.
 
-1. Viewing the weekly and daily timetable
+1. Test case: `schedule 1 d/Mon t/09:00`<br>
+   Expected: `Weekly lesson for Alex Tan is already Monday 09:00.` (no save).
 
-   1. Prerequisites: three students (Zoe, Amy, Ben in that order), scheduled with `schedule 1 d/Sun t/23:59`,
-      `schedule 2 d/Mon t/09:00` and `schedule 3 d/Mon t/09:00`.
+1. Test case: `schedule 1 d/Mon t/9am`<br>
+   Expected: `Error: Invalid time. Use 24-hour HH:mm, for example 09:00 or 18:30.`
 
-   1. Test case: `timetable d/mon`<br>
-      Expected: The schedule panel heading reads `Monday schedule` and lists Amy then Ben (insertion order for the
-      tie). The student list, its numbering and the selection do not change.
+1. Test case: `timetable`, then `timetable d/sun`<br>
+   Expected: The schedule panel lists Alex and Nur (Monday 09:00, in the order they were added), then Ben
+   (Sunday 23:59); with `d/sun` its heading is `Sunday schedule` and it lists only Ben. The student list does not change.
 
-   1. Test case: `find Zoe`, then `timetable`<br>
-      Expected: The student list shows only Zoe, but the timetable shows all three Monday–Sunday.
+1. Test case: `find ben`, then `timetable`<br>
+   Expected: The student list shows only Ben, but the timetable still shows all three lessons.
 
-   1. Test case: `timetable d/Funday`, `timetable d/Mon d/Tue`, `timetable x`<br>
-      Expected: An error is shown and the previous timetable view remains.
+1. Test case: `timetable d/Wed`, then `timetable d/Funday`<br>
+   Expected: An empty panel saying `No lessons scheduled for Wednesday.`, then
+   `Error: Invalid day. Use Monday-Sunday or Mon-Sun.` with the Wednesday view kept.
 
-   1. Test case: `timetable d/Wed`<br>
-      Expected: `No lessons scheduled for Wednesday.` appears in the panel.
+1. Test case: `list`, then `unschedule 2`<br>
+   Expected: `Weekly lesson removed for Nur Aisyah: Monday 09:00.` Nur's details show `Weekly slot: —` and she
+   leaves the timetable; Alex keeps the Monday slot. Repeating it reports `No weekly lesson is scheduled for Nur Aisyah.`
 
-1. Removing a weekly slot
+### Notes and assessment results
 
-   1. Prerequisites: as above, with all students listed.
+1. Test case: `note 1 m/Weak in calculus`<br>
+   Expected: `Note set for Alex Tan.` Repeating it reports `Note for Alex Tan is already up to date.`
 
-   1. Test case: `unschedule 2`<br>
-      Expected: Amy is selected, her details show `Weekly slot: —`, and she disappears from the timetable.
-      Ben keeps the shared Monday 09:00 slot. Close and relaunch: the removal persists.
+1. Test case: `clearnote 1` twice<br>
+   Expected: `Note cleared for Alex Tan.`, then `Alex Tan has no note to clear.`
 
-   1. Test case: `unschedule 2` again<br>
-      Expected: `No weekly lesson is scheduled for Amy.` and the data file is not rewritten.
+1. Test case: `assess 1 d/2026-10-01 t/Mid-year g/B+`, then `assess 1 d/2026-09-15 t/Quiz 1 g/72%`, then `assessments 1`<br>
+   Expected: Results are kept in date order: `1. 2026-09-15 Quiz 1: 72%` and `2. 2026-10-01 Mid-year: B+`.
 
-   1. Test case: `unschedule 0`, `unschedule 99999999999999999999`<br>
-      Expected: Invalid-index and missing-student errors respectively; nothing changes.
+1. Test case: `assess 1 d/2026-10-01 t/mid-year g/A`, then `assess 1 d/2026-02-30 t/Quiz g/A`<br>
+   Expected: A duplicate error (same date and title, ignoring case), then `Error: Invalid date. ...`.
+
+1. Test case: `unassess 1 i/1`, then `unassess 1 i/5`<br>
+   Expected: The quiz is removed and the mid-year result becomes number 1; then `Error: No assessment record 5 for Alex Tan.`
+
+### Monthly payments
+
+1. Test case: `payment 1 m/2026-10 s/pending`, then `payment 2 m/2026-10 s/completed`<br>
+   Expected: Both are recorded. Repeating the first reports that the status is already pending.
+
+1. Test case: `payments m/2026-10`, then `payments m/2026-10 s/pending`<br>
+   Expected: Both students with their status, then only Alex. Run `find nur` first: the list is still from the whole register.
+
+1. Test case: `payment 1 m/2026-13 s/pending`<br>
+   Expected: `Error: Invalid month. Enter a valid month in YYYY-MM format.`
+
+### Deleting a student
+
+1. Test case: `list`, then `delete 3`<br>
+   Expected: `Student deleted: Ben Lim.` Ben and his Sunday lesson disappear from the list and the timetable.
+
+1. Test case: `delete 3` (now beyond the list), `delete 0`, `delete x`, `delete`<br>
+   Expected: `Error: No student exists at index 3.`, then `Error: Invalid index. Enter a positive whole number
+   without leading zeroes.` (for `0` and `x`), then `Error: Missing required parameter: INDEX.` Nothing is deleted.
+
+1. Test case: `find nur`, then `delete 1`<br>
+   Expected: Nur (number 1 in the filtered list) is deleted, not Alex.
 
 ### Saving data
 
-1. Dealing with missing/corrupted data files
+1. Data persists after restart
 
-   1. _{Explain how to simulate missing or corrupted data files and state the expected behavior.}_
+   1. Close the app and launch it again from the same folder.<br>
+      Expected: The same students, fields, lessons, results and payments are shown.
 
-1. _{ more test cases … }_
+1. Missing data file
+
+   1. With the app closed, delete `data/addressbook.json` and launch.<br>
+      Expected: The six sample students appear again.
+
+1. Corrupted data file
+
+   1. With the app closed, copy `data/addressbook.json` to a backup, then change one student's `"phone"` value to
+      `"12"` and launch.<br>
+      Expected: The app starts with an empty list; `list` reports `Error: Student list could not be loaded.`
+
+   1. Do **not** add anything now. Any data-changing command replaces the file and the other students are lost
+      (issue #191). Close the app and restore the backup instead.
+
+### Clearing all data
+
+1. Test case: `clear`<br>
+   Expected: Every student and the whole timetable are removed, and the change is saved.
+
+## **Appendix: Planned Enhancements**
+
+Team size: 5. These are fixes for known feature flaws that we plan to make after v1.5.
+
+1. **Warn before overwriting an unreadable data file.** Currently, if the data file cannot be read at startup the app
+   silently starts empty, and the next change replaces the file, losing every record (#191). We plan to show
+   `Warning: data/addressbook.json could not be read; TutorConnect started with an empty list. The file will be
+   kept as addressbook.json.bak before the next save.` in the result box, and to copy the unreadable file to
+   `addressbook.json.bak` before the first save.
+1. **Make `edit` messages consistent.** `edit` currently reports `Edited student: NAME; Phone: ...; Email: ;
+   Address: ...; Tags: ` with empty AB3 fields (#192), and a duplicate edit reports `This student already exists in
+   the address book.` (#193). We plan to report `Student updated: NAME.` and the same duplicate error as `add`:
+   `Error: This student already exists with the same name and phone.`
+1. **Give `find` a one-line error.** `find` with no keyword currently prints a multi-line usage block (#194). We plan
+   to show `Error: Missing required parameter: KEYWORD.`, matching the other commands.
+1. **Remove remaining AB3 wording.** `clear` and `exit` currently report `Address book has been cleared!` and
+   `Exiting Address Book as requested ...` (#195). We plan to show `All students have been cleared.` and
+   `Exiting TutorConnect.`
+1. **Avoid a double full stop after names ending in `.`.** For example `Student added: O'Brien-Smith Jr..` (#196).
+   We plan to omit the closing full stop when the name already ends with one.
 
 --------------------------------------------------------------------------------------------------------------------
 
