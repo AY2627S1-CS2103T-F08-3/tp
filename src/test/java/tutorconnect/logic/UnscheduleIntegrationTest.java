@@ -20,6 +20,7 @@ import org.junit.jupiter.api.io.TempDir;
 import com.fasterxml.jackson.databind.node.TextNode;
 
 import tutorconnect.logic.commands.exceptions.CommandException;
+import tutorconnect.logic.parser.ParserUtil;
 import tutorconnect.logic.parser.VisibleIndex;
 import tutorconnect.logic.parser.exceptions.ParseException;
 import tutorconnect.model.ModelManager;
@@ -125,7 +126,9 @@ public class UnscheduleIntegrationTest {
         var before = List.copyOf(model.getFilteredStudentList());
         var selection = model.getSelectedStudentId();
         var logic = logic(model, storage);
-        for (String invalid : List.of("", "0", "01", "-1", "1.0", "one")) {
+        assertEquals(ParserUtil.MESSAGE_MISSING_INDEX,
+                assertThrows(ParseException.class, () -> logic.execute("unschedule ")).getMessage());
+        for (String invalid : List.of("0", "01", "-1", "1.0", "one")) {
             assertEquals(VisibleIndex.MESSAGE_INVALID,
                     assertThrows(ParseException.class, () -> logic.execute("unschedule " + invalid)).getMessage());
         }

@@ -40,7 +40,10 @@ public class RateCommandParserTest {
         for (String input : List.of("", " 1", " 1   ")) {
             assertParseFailure(parser, input, "Error: Missing required parameter: r/RATE.");
         }
-        for (String input : List.of("r/40", " r/", " 0 r/40", " -1 r/40", " 01 r/40",
+        for (String input : List.of("r/40", " r/")) {
+            assertParseFailure(parser, input, ParserUtil.MESSAGE_MISSING_INDEX);
+        }
+        for (String input : List.of(" 0 r/40", " -1 r/40", " 01 r/40",
                 " +1 r/40", " 1.5 r/40", " abc r/40")) {
             assertParseFailure(parser, input, ParserUtil.MESSAGE_INVALID_INDEX);
         }

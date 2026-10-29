@@ -89,8 +89,8 @@ public class NoteCommandParserTest {
 
     @Test
     public void parse_missingOrInvalidIndex_failure() {
-        assertParseFailure(parser, " m/note", INVALID_INDEX);
-        assertParseFailure(parser, "m/note", INVALID_INDEX);
+        assertParseFailure(parser, " m/note", ParserUtil.MESSAGE_MISSING_INDEX);
+        assertParseFailure(parser, "m/note", ParserUtil.MESSAGE_MISSING_INDEX);
         for (String index : new String[] {"0", "-1", "01", "00", "abc", "1.5", "+1", "1e2", "1/2"}) {
             assertParseFailure(parser, " " + index + " m/note", INVALID_INDEX);
         }

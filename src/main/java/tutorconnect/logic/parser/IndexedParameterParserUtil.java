@@ -67,7 +67,10 @@ public final class IndexedParameterParserUtil {
 
         PrefixToken prefix = prefixes.getFirst();
         int indexEnd = firstWhitespace < 0 ? normalized.length() : firstWhitespace;
-        // A prefix inside the first token means the index is missing; parseIndex then reports it.
+        // A prefix inside the first token means the index is missing.
+        if (prefix.startPosition() < indexEnd) {
+            throw new ParseException(ParserUtil.MESSAGE_MISSING_INDEX);
+        }
         if (prefix.startPosition() >= indexEnd
                 && !normalized.substring(indexEnd, prefix.startPosition()).trim().isEmpty()) {
             throw new ParseException(MESSAGE_UNEXPECTED_TEXT);

@@ -43,6 +43,12 @@ public class PaymentCommandParserTest {
     }
 
     @Test
+    public void parse_omittedIndex_reportsMissingIndex() {
+        assertFailure("m/2026-10 s/pending", ParserUtil.MESSAGE_MISSING_INDEX);
+        assertFailure(" s/pending m/2026-10", ParserUtil.MESSAGE_MISSING_INDEX);
+    }
+
+    @Test
     public void parse_checksIndexThenMonthThenStatus() {
         assertFailure("01 m/2026-13 s/unknown", VisibleIndex.MESSAGE_INVALID);
         assertFailure("999999999999999999999999 m/2026-13 s/unknown", PaymentHistory.MESSAGE_INVALID_MONTH);

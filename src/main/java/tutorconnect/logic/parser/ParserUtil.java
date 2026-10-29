@@ -26,6 +26,7 @@ public class ParserUtil {
 
     public static final String MESSAGE_INVALID_INDEX =
             "Error: Invalid index. Enter a positive whole number without leading zeroes.";
+    public static final String MESSAGE_MISSING_INDEX = "Error: Missing required parameter: INDEX.";
     public static final String MESSAGE_INVALID_GUARDIAN_PHONE = "Error: Invalid guardian phone. Use an 8-digit "
             + "Singapore number beginning with 6, 8, or 9, optionally prefixed by +65.";
     public static final String MESSAGE_INVALID_HOURLY_RATE = "Error: Invalid rate. Enter an SGD amount from 1.00 "
@@ -37,11 +38,14 @@ public class ParserUtil {
     /**
      * Parses {@code oneBasedIndex} into an {@code Index} and returns it. Leading and trailing whitespaces will be
      * trimmed.
-     * @throws ParseException if the specified index is invalid (not a non-zero unsigned integer).
+     * @throws ParseException if the index is missing or invalid (not a non-zero unsigned integer).
      */
     public static Index parseIndex(String oneBasedIndex) throws ParseException {
         requireNonNull(oneBasedIndex);
         String trimmedIndex = oneBasedIndex.trim();
+        if (oneBasedIndex.isBlank()) {
+            throw new ParseException(MESSAGE_MISSING_INDEX);
+        }
         if (!VISIBLE_INDEX_PATTERN.matcher(trimmedIndex).matches()) {
             throw new ParseException(MESSAGE_INVALID_INDEX);
         }

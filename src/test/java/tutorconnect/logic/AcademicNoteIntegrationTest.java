@@ -21,6 +21,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import tutorconnect.logic.commands.exceptions.CommandException;
+import tutorconnect.logic.parser.ParserUtil;
 import tutorconnect.logic.parser.exceptions.ParseException;
 import tutorconnect.model.ModelManager;
 import tutorconnect.model.UserPrefs;
@@ -311,7 +312,7 @@ public class AcademicNoteIntegrationTest {
         assertParseError(app, "note 1 foo m/x", "Error: Unexpected text after command.");
         assertParseError(app, "note 1 x/y m/x", "Error: Unknown parameter: x/.");
         assertParseError(app, "note 0 m/x", INVALID_INDEX);
-        assertParseError(app, "note m/x", INVALID_INDEX);
+        assertParseError(app, "note m/x", ParserUtil.MESSAGE_MISSING_INDEX);
         assertParseError(app, "clearnote", "Error: Missing required parameter: INDEX.");
         assertParseError(app, "clearnote 1 2", "Error: Unexpected text after command.");
         assertParseError(app, "clearnote 0", INVALID_INDEX);

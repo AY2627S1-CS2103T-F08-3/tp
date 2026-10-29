@@ -52,7 +52,7 @@ public class UnassessCommandParserTest {
 
     @Test
     public void parse_missingOrInvalidIndex_failure() {
-        assertParseFailure(parser, " i/1", INVALID_INDEX);
+        assertParseFailure(parser, " i/1", ParserUtil.MESSAGE_MISSING_INDEX);
         for (String index : new String[] {"0", "-1", "01", "abc", "1.5", "+1", "1e2"}) {
             assertParseFailure(parser, " " + index + " i/1", INVALID_INDEX);
         }

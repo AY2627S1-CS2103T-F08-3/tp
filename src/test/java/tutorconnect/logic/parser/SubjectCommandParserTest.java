@@ -57,8 +57,8 @@ public class SubjectCommandParserTest {
 
     @Test
     public void parse_missingIndex_failure() {
-        assertParseFailure(parser, " s/Math", INVALID_INDEX);
-        assertParseFailure(parser, "s/Math", INVALID_INDEX);
+        assertParseFailure(parser, " s/Math", ParserUtil.MESSAGE_MISSING_INDEX);
+        assertParseFailure(parser, "s/Math", ParserUtil.MESSAGE_MISSING_INDEX);
     }
 
     @Test
