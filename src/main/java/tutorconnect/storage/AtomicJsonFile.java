@@ -2,6 +2,7 @@ package tutorconnect.storage;
 
 import java.io.IOException;
 import java.nio.ByteBuffer;
+import java.nio.CharBuffer;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -40,7 +41,7 @@ public class AtomicJsonFile {
 
     protected void writeTemporary(Path temporary, String json) throws IOException {
         try (FileChannel channel = FileChannel.open(temporary, StandardOpenOption.WRITE)) {
-            ByteBuffer bytes = StandardCharsets.UTF_8.encode(json);
+            ByteBuffer bytes = StandardCharsets.UTF_8.newEncoder().encode(CharBuffer.wrap(json));
             while (bytes.hasRemaining()) {
                 channel.write(bytes);
             }

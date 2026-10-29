@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.nio.file.Path;
 import java.util.Optional;
 
+import tutorconnect.commons.core.GuiSettings;
 import tutorconnect.commons.exceptions.DataLoadingException;
 import tutorconnect.commons.util.JsonUtil;
 import tutorconnect.model.ReadOnlyUserPrefs;
@@ -40,7 +41,16 @@ public class JsonUserPrefsStorage {
      * @throws DataLoadingException if the file format is not as expected.
      */
     public Optional<UserPrefs> readUserPrefs(Path prefsFilePath) throws DataLoadingException {
-        return JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
+        Optional<UserPrefs> prefs = JsonUtil.readJsonFile(prefsFilePath, UserPrefs.class);
+        if (prefs.isPresent()) {
+            GuiSettings settings = prefs.get().getGuiSettings();
+            if (settings == null || !Double.isFinite(settings.getWindowWidth())
+                    || !Double.isFinite(settings.getWindowHeight())
+                    || settings.getWindowWidth() <= 0 || settings.getWindowHeight() <= 0) {
+                throw new DataLoadingException(new IOException("Invalid window settings in preference file"));
+            }
+        }
+        return prefs;
     }
 
     /**
