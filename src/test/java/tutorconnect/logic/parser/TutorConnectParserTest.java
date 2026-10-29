@@ -41,7 +41,8 @@ public class TutorConnectParserTest {
     @Test
     public void parseCommand_clear() throws Exception {
         assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD) instanceof ClearCommand);
-        assertTrue(parser.parseCommand(ClearCommand.COMMAND_WORD + " 3") instanceof ClearCommand);
+        String mistyped = ClearCommand.COMMAND_WORD + " 3";
+        assertThrows(ParseException.class, ClearCommandParser.MESSAGE_PARAMETERS, () -> parser.parseCommand(mistyped));
     }
 
     @Test
