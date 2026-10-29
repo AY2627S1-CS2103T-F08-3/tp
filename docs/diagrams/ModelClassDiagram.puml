@@ -9,17 +9,27 @@ Class "<<interface>>\nReadOnlyStudentDirectory" as ReadOnlyStudentDirectory
 Class "<<interface>>\nReadOnlyUserPrefs" as ReadOnlyUserPrefs
 Class "<<interface>>\nModel" as Model
 Class StudentDirectory
-Class ModelManager
+Class ModelManager {
+  selectedStudentId: UUID
+  studentPredicate
+}
 Class UserPrefs
-
 Class UniqueStudentList
-Class Student
-Class Address
-Class Email
+Class WeeklySchedule
+Class Student {
+  id: UUID
+}
 Class Name
 Class Phone
-Class Tag
-
+Class Address
+Class StudentFields
+Class "<<interface>>\nStudentField<T>" as StudentField
+Class "Optional field types" as OptionalTypes
+note bottom of OptionalTypes
+  GuardianPhone, EducationLevel, Subject,
+  HourlyRate, WeeklySlot, AcademicNote,
+  AssessmentHistory, PaymentHistory
+end note
 Class I #FFFFFF
 }
 
@@ -37,18 +47,16 @@ UserPrefs .up.|> ReadOnlyUserPrefs
 
 StudentDirectory *--> "1" UniqueStudentList
 UniqueStudentList --> "~* all" Student
+ModelManager --> "~* filtered" Student
+WeeklySchedule ..> "~* scheduled" Student : sorts all students\nby day, time, order
+
 Student *--> Name
 Student *--> Phone
-Student *--> Email
 Student *--> Address
-Student *--> "*" Tag
-
-Student -[hidden]up--> I
-UniqueStudentList -[hidden]right-> I
+Student *--> "1" StudentFields
+StudentFields ..> StudentField : get / with / without
+StudentField ..> OptionalTypes : decodes and encodes
 
 Name -[hidden]right-> Phone
 Phone -[hidden]right-> Address
-Address -[hidden]right-> Email
-
-ModelManager --> "~* filtered" Student
 @enduml
