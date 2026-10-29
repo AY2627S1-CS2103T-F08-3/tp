@@ -11,6 +11,8 @@ import javafx.scene.layout.Region;
  */
 public class ResultDisplay extends UiPart<Region> {
 
+    static final String ERROR_STYLE_CLASS = "result-error";
+    static final String WARNING_STYLE_CLASS = "result-warning";
     private static final String FXML = "ResultDisplay.fxml";
 
     @FXML
@@ -20,9 +22,16 @@ public class ResultDisplay extends UiPart<Region> {
         super(FXML);
     }
 
+    /** Shows {@code feedbackToUser}, tinting the box for messages that start with "Error:" or "Warning:". */
     public void setFeedbackToUser(String feedbackToUser) {
         requireNonNull(feedbackToUser);
         resultDisplay.setText(feedbackToUser);
+        resultDisplay.getStyleClass().removeAll(ERROR_STYLE_CLASS, WARNING_STYLE_CLASS);
+        if (feedbackToUser.startsWith("Error")) {
+            resultDisplay.getStyleClass().add(ERROR_STYLE_CLASS);
+        } else if (feedbackToUser.contains("Warning:")) {
+            resultDisplay.getStyleClass().add(WARNING_STYLE_CLASS);
+        }
     }
 
 }

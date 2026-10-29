@@ -1,0 +1,657 @@
+/*
+ * TutorConnect light theme: warm paper background, deep green accent and serif headings.
+ * Colours are defined once on .root and reused through looked-up colours.
+ */
+.root {
+    -tc-bg: #faf8f3;
+    -tc-rail: #f3f1ea;
+    -tc-card: #ffffff;
+    -tc-border: #e7e2d7;
+    -tc-border-strong: #d8d2c4;
+    -tc-text: #1e2b24;
+    -tc-muted: #737970;
+    -tc-faint: #a2a69e;
+    -tc-green: #2e5e46;
+    -tc-green-dark: #234a37;
+    -tc-green-soft: #e6efe8;
+    -tc-selected: #eef4ef;
+    -tc-amber-soft: #fbf4e8;
+    -tc-amber: #94652b;
+    -tc-rose-soft: #f9efeb;
+    -tc-rose: #a0563f;
+    -tc-error: #b4493a;
+    -tc-error-soft: #fbece9;
+    -tc-warning-soft: #fdf3dc;
+    -fx-font-family: "System";
+    -fx-font-size: 13px;
+    -fx-text-fill: -tc-text;
+    -fx-background-color: -tc-bg;
+    -fx-focus-color: -tc-green;
+    -fx-faint-focus-color: transparent;
+    -fx-accent: -tc-green;
+}
+
+.app-root {
+    -fx-background-color: -tc-bg;
+}
+
+.label {
+    -fx-text-fill: -tc-text;
+}
+
+/* ---------- Menu bar ---------- */
+
+.menu-bar {
+    -fx-background-color: -tc-rail;
+    -fx-border-color: transparent transparent -tc-border transparent;
+    -fx-padding: 2 8;
+}
+
+.menu-bar .label {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 12px;
+}
+
+.context-menu {
+    -fx-background-color: -tc-card;
+    -fx-border-color: -tc-border;
+}
+
+.context-menu .label {
+    -fx-text-fill: -tc-text;
+}
+
+.menu-item:focused {
+    -fx-background-color: -tc-green-soft;
+}
+
+/* ---------- Command rail ---------- */
+
+.rail-scroll, .rail-scroll > .viewport {
+    -fx-background-color: -tc-rail;
+    -fx-background-insets: 0;
+}
+
+.rail-scroll {
+    -fx-border-color: transparent -tc-border transparent transparent;
+    -fx-padding: 0;
+}
+
+.rail {
+    -fx-padding: 22 18 22 22;
+}
+
+.brand-mark {
+    -fx-background-color: -tc-green;
+    -fx-background-radius: 9;
+    -fx-min-width: 34;
+    -fx-min-height: 34;
+    -fx-max-width: 34;
+    -fx-max-height: 34;
+}
+
+.brand-mark-text {
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.brand-name {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 22px;
+    -fx-text-fill: -tc-green-dark;
+}
+
+.rail-overline {
+    -fx-text-fill: -tc-faint;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 12 0 2 0;
+}
+
+.rail-entry {
+    -fx-padding: 3 0;
+}
+
+.rail-command {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -tc-green;
+}
+
+.rail-format {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -tc-muted;
+}
+
+.rail-shortcut {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 11.5px;
+    -fx-graphic-text-gap: 8;
+    -fx-padding: 2 0;
+}
+
+.keycap {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 10.5px;
+    -fx-text-fill: -tc-text;
+    -fx-background-color: -tc-card;
+    -fx-border-color: -tc-border-strong;
+    -fx-border-radius: 4;
+    -fx-background-radius: 4;
+    -fx-padding: 1 5;
+}
+
+/* ---------- Main area ---------- */
+
+.main-area {
+    -fx-padding: 18 24 16 28;
+}
+
+.top-bar {
+    -fx-padding: 0 0 6 0;
+    -fx-border-color: transparent transparent -tc-border transparent;
+}
+
+.crumb, .crumb-separator {
+    -fx-text-fill: -tc-faint;
+}
+
+.crumb-current {
+    -fx-text-fill: -tc-text;
+    -fx-font-weight: bold;
+}
+
+.today-label {
+    -fx-text-fill: -tc-muted;
+}
+
+.overline {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 10.5px;
+    -fx-font-weight: bold;
+}
+
+.page-title {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 34px;
+    -fx-text-fill: -tc-green-dark;
+}
+
+.page-subtitle {
+    -fx-text-fill: -tc-muted;
+}
+
+/* ---------- Command bar ---------- */
+
+.command-card {
+    -fx-background-color: -tc-card;
+    -fx-background-radius: 12;
+    -fx-border-color: -tc-border-strong;
+    -fx-border-radius: 12;
+    -fx-padding: 10 14 8 14;
+    -fx-effect: dropshadow(gaussian, rgba(46, 94, 70, 0.08), 12, 0, 0, 2);
+}
+
+.command-prompt {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -tc-green;
+}
+
+.command-bar .text-field {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 4 0;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 15px;
+    -fx-text-fill: -tc-text;
+    -fx-prompt-text-fill: -tc-faint;
+    -fx-highlight-fill: -tc-green-soft;
+    -fx-highlight-text-fill: -tc-text;
+}
+
+.command-bar .text-field.error {
+    -fx-text-fill: -tc-error;
+}
+
+.command-hint {
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 11.5px;
+    -fx-text-fill: -tc-muted;
+    -fx-padding: 0 0 0 26;
+}
+
+.result-card {
+    -fx-background-color: transparent;
+}
+
+.result-display {
+    -fx-control-inner-background: -tc-green-soft;
+    -fx-background-color: -tc-green-soft;
+    -fx-background-radius: 10;
+    -fx-background-insets: 0;
+    -fx-border-color: transparent;
+    -fx-font-size: 13px;
+    -fx-text-fill: -tc-green-dark;
+    -fx-prompt-text-fill: -tc-faint;
+}
+
+.result-display .scroll-pane, .result-display .scroll-pane > .viewport {
+    -fx-background-color: transparent;
+}
+
+.result-display .content {
+    -fx-background-color: -tc-green-soft;
+    -fx-background-radius: 10;
+    -fx-padding: 6 10;
+}
+
+.result-display.result-error, .result-display.result-error .content {
+    -fx-control-inner-background: -tc-error-soft;
+    -fx-background-color: -tc-error-soft;
+    -fx-text-fill: -tc-error;
+}
+
+.result-display.result-warning, .result-display.result-warning .content {
+    -fx-control-inner-background: -tc-warning-soft;
+    -fx-background-color: -tc-warning-soft;
+    -fx-text-fill: -tc-amber;
+}
+
+/* ---------- Stat cards ---------- */
+
+.stat-card {
+    -fx-background-radius: 12;
+    -fx-border-radius: 12;
+    -fx-border-color: -tc-border;
+    -fx-padding: 10 16 10 16;
+}
+
+.stat-green {
+    -fx-background-color: #f2f6f1;
+}
+
+.stat-amber {
+    -fx-background-color: -tc-amber-soft;
+}
+
+.stat-rose {
+    -fx-background-color: -tc-rose-soft;
+}
+
+.stat-caption {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 12px;
+    -fx-font-weight: bold;
+}
+
+.stat-number {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 30px;
+}
+
+.stat-green .stat-number {
+    -fx-text-fill: -tc-green;
+}
+
+.stat-amber .stat-number {
+    -fx-text-fill: -tc-amber;
+}
+
+.stat-rose .stat-number {
+    -fx-text-fill: -tc-rose;
+}
+
+.stat-note {
+    -fx-text-fill: -tc-faint;
+    -fx-font-size: 11px;
+}
+
+/* ---------- Student list ---------- */
+
+.list-card {
+    -fx-background-color: -tc-card;
+    -fx-background-radius: 14;
+    -fx-border-color: -tc-border;
+    -fx-border-radius: 14;
+    -fx-padding: 14 10 10 10;
+}
+
+.list-header {
+    -fx-padding: 0 8 4 8;
+}
+
+.section-title {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 21px;
+    -fx-text-fill: -tc-green-dark;
+}
+
+.section-count, .key-hint {
+    -fx-text-fill: -tc-faint;
+}
+
+.key-hint {
+    -fx-font-size: 11px;
+}
+
+.list-view {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.list-view .placeholder .label {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 14px;
+}
+
+.list-cell {
+    -fx-background-color: transparent;
+    -fx-padding: 0;
+    -fx-text-fill: -tc-text;
+}
+
+.list-cell:filled {
+    -fx-border-color: transparent transparent -tc-border transparent;
+}
+
+.list-cell:filled:selected {
+    -fx-background-color: -tc-selected;
+    -fx-background-radius: 10;
+    -fx-border-color: transparent;
+}
+
+.list-view:focused .list-cell:filled:selected {
+    -fx-background-color: -tc-green-soft;
+}
+
+.card-index {
+    -fx-text-fill: -tc-faint;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 12px;
+}
+
+.avatar {
+    -fx-background-radius: 50%;
+    -fx-min-width: 40;
+    -fx-min-height: 40;
+    -fx-max-width: 40;
+    -fx-max-height: 40;
+}
+
+.avatar-text {
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+}
+
+.avatar-large {
+    -fx-min-width: 76;
+    -fx-min-height: 76;
+    -fx-max-width: 76;
+    -fx-max-height: 76;
+}
+
+.avatar-large-text {
+    -fx-font-size: 24px;
+}
+
+.avatar-0 { -fx-background-color: #ece6f6; }
+.avatar-0 .avatar-text { -fx-text-fill: #5b4b8a; }
+.avatar-1 { -fx-background-color: #f8e7dc; }
+.avatar-1 .avatar-text { -fx-text-fill: #a0563f; }
+.avatar-2 { -fx-background-color: #e3efe6; }
+.avatar-2 .avatar-text { -fx-text-fill: #2e5e46; }
+.avatar-3 { -fx-background-color: #e2ebf4; }
+.avatar-3 .avatar-text { -fx-text-fill: #3d5d7e; }
+.avatar-4 { -fx-background-color: #f8efd9; }
+.avatar-4 .avatar-text { -fx-text-fill: #94652b; }
+.avatar-5 { -fx-background-color: #f4e3e8; }
+.avatar-5 .avatar-text { -fx-text-fill: #8c4560; }
+
+.card-name {
+    -fx-font-size: 14.5px;
+    -fx-font-weight: bold;
+}
+
+.card-meta {
+    -fx-fill: -tc-green;
+    -fx-font-size: 12.5px;
+}
+
+.card-separator {
+    -fx-fill: -tc-faint;
+}
+
+.card-detail {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 12px;
+}
+
+.card-caption {
+    -fx-fill: -tc-faint;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.card-value {
+    -fx-fill: -tc-text;
+    -fx-font-size: 13px;
+}
+
+.card-unset {
+    -fx-fill: -tc-faint;
+}
+
+#tags .label {
+    -fx-text-fill: -tc-green;
+    -fx-background-color: -tc-green-soft;
+    -fx-background-radius: 10;
+    -fx-padding: 1 8;
+    -fx-font-size: 11px;
+}
+
+/* ---------- Profile and timetable ---------- */
+
+.side-area {
+    -fx-padding: 18 20 16 4;
+}
+
+.profile-card, .schedule-card {
+    -fx-background-color: -tc-card;
+    -fx-background-radius: 14;
+    -fx-border-color: -tc-border;
+    -fx-border-radius: 14;
+}
+
+.profile-card {
+    -fx-padding: 16 6 6 18;
+    -fx-spacing: 10;
+}
+
+.profile-scroll, .profile-scroll > .viewport {
+    -fx-background-color: transparent;
+    -fx-background-insets: 0;
+    -fx-padding: 0;
+}
+
+.student-details {
+    -fx-padding: 0 12 8 0;
+}
+
+.profile-header {
+    -fx-alignment: center;
+    -fx-padding: 6 0 6 0;
+}
+
+.profile-name {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 23px;
+    -fx-text-fill: -tc-green-dark;
+    -fx-text-alignment: center;
+}
+
+.profile-meta {
+    -fx-text-fill: -tc-green;
+    -fx-background-color: -tc-green-soft;
+    -fx-background-radius: 12;
+    -fx-padding: 3 12;
+    -fx-font-size: 12px;
+}
+
+.detail-section {
+    -fx-text-fill: -tc-faint;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+    -fx-padding: 8 0 4 0;
+}
+
+.detail-key {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 11.5px;
+}
+
+.detail-value {
+    -fx-text-fill: -tc-text;
+    -fx-font-size: 13.5px;
+}
+
+.detail-value-unset {
+    -fx-text-fill: -tc-faint;
+    -fx-font-size: 13.5px;
+}
+
+.detail-item {
+    -fx-text-fill: -tc-text;
+    -fx-font-size: 12.5px;
+    -fx-padding: 0 0 0 10;
+    -fx-border-color: transparent transparent transparent -tc-green-soft;
+    -fx-border-width: 0 0 0 3;
+}
+
+.empty-state {
+    -fx-padding: 24 6;
+}
+
+.empty-title {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 17px;
+    -fx-text-fill: -tc-green-dark;
+}
+
+.empty-hint {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 12px;
+}
+
+.weekly-schedule {
+    -fx-background-color: transparent;
+}
+
+.weekly-schedule .timetable-heading {
+    -fx-font-family: "Georgia";
+    -fx-font-size: 17px;
+    -fx-text-fill: -tc-green-dark;
+}
+
+.weekly-schedule .timetable-empty {
+    -fx-text-fill: -tc-muted;
+}
+
+.weekly-schedule .list-cell:filled {
+    -fx-padding: 6 2;
+}
+
+.slot-block {
+    -fx-background-color: -tc-green-soft;
+    -fx-background-radius: 8;
+    -fx-padding: 3 8;
+    -fx-alignment: center;
+    -fx-min-width: 70;
+}
+
+.slot-day {
+    -fx-text-fill: -tc-green;
+    -fx-font-size: 10px;
+    -fx-font-weight: bold;
+}
+
+.slot-time {
+    -fx-text-fill: -tc-green-dark;
+    -fx-font-family: "Monospaced";
+    -fx-font-size: 13px;
+    -fx-font-weight: bold;
+}
+
+.slot-name {
+    -fx-text-fill: -tc-text;
+    -fx-font-size: 13px;
+}
+
+/* ---------- Status bar ---------- */
+
+.status-bar {
+    -fx-background-color: -tc-rail;
+    -fx-border-color: -tc-border transparent transparent transparent;
+    -fx-padding: 6 16;
+}
+
+.status-path, .status-keys {
+    -fx-text-fill: -tc-muted;
+    -fx-font-size: 11px;
+}
+
+.status-keys {
+    -fx-font-family: "Monospaced";
+}
+
+/* ---------- Shared controls ---------- */
+
+.scroll-bar {
+    -fx-background-color: transparent;
+    -fx-pref-width: 8;
+}
+
+.scroll-bar .thumb {
+    -fx-background-color: -tc-border-strong;
+    -fx-background-radius: 4;
+    -fx-background-insets: 1;
+}
+
+.scroll-bar .increment-button, .scroll-bar .decrement-button {
+    -fx-padding: 0;
+    -fx-background-color: transparent;
+}
+
+.scroll-bar .increment-arrow, .scroll-bar .decrement-arrow {
+    -fx-shape: " ";
+    -fx-padding: 0;
+}
+
+.button {
+    -fx-background-color: -tc-green;
+    -fx-background-radius: 8;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-padding: 6 14;
+}
+
+.button:hover, .button:focused {
+    -fx-background-color: -tc-green-dark;
+}
+
+.dialog-pane {
+    -fx-background-color: -tc-bg;
+}
+
+.dialog-pane > *.label.content {
+    -fx-text-fill: -tc-text;
+}
+
+.error {
+    -fx-text-fill: -tc-error !important; /* The error class should always override the default text-fill style */
+}

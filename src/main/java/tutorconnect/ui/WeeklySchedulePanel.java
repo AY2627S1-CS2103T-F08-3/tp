@@ -1,6 +1,7 @@
 package tutorconnect.ui;
 
 import java.time.DayOfWeek;
+import java.time.format.DateTimeFormatter;
 import java.time.format.TextStyle;
 import java.util.Locale;
 import java.util.Optional;
@@ -9,13 +10,17 @@ import java.util.logging.Logger;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
 import javafx.scene.control.ListView;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
 import javafx.scene.layout.VBox;
 import tutorconnect.commons.core.LogsCenter;
 import tutorconnect.model.student.Student;
+import tutorconnect.model.student.WeeklySlot;
 import tutorconnect.model.student.WeeklySlotField;
 
 /**
@@ -23,6 +28,9 @@ import tutorconnect.model.student.WeeklySlotField;
  */
 public class WeeklySchedulePanel extends VBox {
     private static final Logger logger = LogsCenter.getLogger(WeeklySchedulePanel.class);
+    /** Width taken by the day/time block and spacing beside each name. */
+    private static final double SLOT_BLOCK_WIDTH = 96;
+    private static final DateTimeFormatter TIME_FORMAT = DateTimeFormatter.ofPattern("HH:mm");
     private final FilteredList<Student> visibleSchedule;
     private final Label heading = new Label("Weekly schedule");
     private final Label emptyMessage = new Label("No weekly lessons scheduled.");
@@ -68,16 +76,41 @@ public class WeeklySchedulePanel extends VBox {
     }
 
     private static class ScheduleCell extends ListCell<Student> {
+        private final Label day = new Label();
+        private final Label time = new Label();
+        private final Label name = new Label();
+        private final HBox row;
+
         ScheduleCell() {
             setWrapText(true);
             // Let the virtualized list size rows to its viewport, not the unwrapped text.
             setPrefWidth(0);
+            day.getStyleClass().add("slot-day");
+            time.getStyleClass().add("slot-time");
+            name.getStyleClass().add("slot-name");
+            name.setWrapText(true);
+            VBox slot = new VBox(day, time);
+            slot.getStyleClass().add("slot-block");
+            slot.setMinWidth(Region.USE_PREF_SIZE);
+            row = new HBox(12, slot, name);
+            row.setAlignment(Pos.CENTER_LEFT);
+            name.maxWidthProperty().bind(widthProperty().subtract(SLOT_BLOCK_WIDTH));
         }
 
         @Override
         protected void updateItem(Student student, boolean empty) {
             super.updateItem(student, empty);
-            setText(empty || student == null ? null : formatEntry(student));
+            setText(null);
+            if (empty || student == null) {
+                setGraphic(null);
+                return;
+            }
+            WeeklySlot slot = WeeklySlotField.get(student).orElseThrow();
+            day.setText(slot.getDay().getDisplayName(TextStyle.SHORT, Locale.ENGLISH).toUpperCase(Locale.ROOT));
+            time.setText(slot.getTime().format(TIME_FORMAT));
+            name.setText(student.getName().toString());
+            setAccessibleText(formatEntry(student));
+            setGraphic(row);
         }
     }
 }
