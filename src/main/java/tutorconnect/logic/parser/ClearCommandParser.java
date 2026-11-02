@@ -1,5 +1,6 @@
 package tutorconnect.logic.parser;
 
+import tutorconnect.commons.util.StudentText;
 import tutorconnect.logic.commands.ClearCommand;
 import tutorconnect.logic.parser.exceptions.ParseException;
 
@@ -9,7 +10,7 @@ public class ClearCommandParser implements Parser<ClearCommand> {
 
     @Override
     public ClearCommand parse(String args) throws ParseException {
-        if (!args.matches("(?U)\\s*")) {
+        if (StudentText.hasProhibitedCharacters(args) || !args.matches("(?U)\\s*")) {
             throw new ParseException(MESSAGE_PARAMETERS);
         }
         return new ClearCommand();

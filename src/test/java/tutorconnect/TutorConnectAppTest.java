@@ -130,6 +130,28 @@ public class TutorConnectAppTest {
     }
 
     @Test
+    public void init_deeplyNestedData_recoversAndBacksUpOriginal() throws Exception {
+        String invalid = "{\"persons\":[{\"name\":\"Alice Tan\",\"phone\":\"91234567\","
+                + "\"address\":\"Block 1\",\"future\":" + "[".repeat(10000) + "0" + "]".repeat(10000) + "}]}";
+        Path data = directory.resolve("addressbook.json");
+        Files.writeString(data, invalid);
+        onFxThread(() -> {
+            TutorConnectApp app = app();
+            app.init();
+            assertTrue(app.model.getStudentDirectory().getStudentList().isEmpty());
+            assertNotNull(app.getStartupWarning());
+            try (var files = Files.list(directory)) {
+                List<Path> backups = files.filter(file -> file.getFileName().toString().endsWith(".bak")).toList();
+                assertEquals(1, backups.size());
+                assertEquals(invalid, Files.readString(backups.getFirst()));
+            }
+            app.stop();
+            assertEquals(invalid, Files.readString(data));
+            return null;
+        });
+    }
+
+    @Test
     public void start_unreadableData_warnsAndKeepsCopyAfterNextSave() throws Exception {
         String unreadable = "{\"persons\":[{\"name\":\"Amy\",\"phone\":\"+6581234567\",\"address\":\"1 St\"},"
                 + "{\"name\":\"Ben\",\"phone\":\"12\",\"address\":\"2 St\"}]}";
