@@ -103,6 +103,13 @@ public class AssessCommandParserTest {
     }
 
     @Test
+    public void parse_hiddenOrControlCharacterInIndex_reportsInvalidIndex() {
+        for (String index : new String[] {"1\u200b", "\u200b1", "1\u0000", "1\u0007"}) {
+            assertParseFailure(parser, " " + index + " d/2026-10-01 t/Quiz g/A", INVALID_INDEX);
+        }
+    }
+
+    @Test
     public void parse_invalidValues_reportTheDateThenTheTitleThenTheGrade() {
         assertParseFailure(parser, " 1 d/2026-02-30 t/Quiz g/A", AssessmentRecord.MESSAGE_INVALID_DATE);
         assertParseFailure(parser, " 1 d/2026-2-3 t/Quiz g/A", AssessmentRecord.MESSAGE_INVALID_DATE);
