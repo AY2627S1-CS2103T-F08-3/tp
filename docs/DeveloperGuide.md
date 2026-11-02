@@ -1173,8 +1173,40 @@ The remaining sections start from these three students, numbered 1-3, unless sta
 
 Team size: 5.
 
-There are no planned enhancements at present. The feature flaws found in alpha testing (#191 to #196), such as the
-silent replacement of an unreadable data file and the remaining AB3 messages, were fixed in v1.5.
+The feature flaws found in alpha testing (#191 to #196), such as the silent replacement of an unreadable data file and
+the remaining AB3 messages, were fixed in v1.5. The following known limitations remain and are planned for a future
+version. Each is also listed in the User Guide under _Features not included in this release_.
+
+1. **Allow `s/o` and `d/o` in names.** Currently `add n/Ravi s/o Kumar p/81234567 a/Blk 1` reports
+   `Error: Unknown parameter: s/.`, because `s/` is read as a parameter. We plan to treat `s/o` and `d/o` inside a
+   name as name text, so the command succeeds and stores `Ravi s/o Kumar`.
+1. **Accept international phone numbers.** Currently student and guardian phones must be 8-digit Singapore numbers,
+   so `guardian 1 g/+60 12 345 6789` is rejected. We plan to also accept a `+` country code followed by 7 to 15 digits
+   for both fields, while Singapore numbers keep their current canonical form, e.g. `+6591234567`.
+1. **Clear an optional field.** Currently there is no way to remove a guardian phone, education level, subject or
+   hourly rate once set; a blank value such as `level 1 l/` is rejected as invalid. We plan an
+   `unset INDEX f/FIELD` command, e.g. `unset 1 f/guardian`, that reports `Guardian phone cleared for NAME.` and
+   shows the field as an em dash (`—`).
+1. **Accept email and tags in `add`.** Currently `add n/Bob p/81234567 a/Blk 1 e/bob@example.com` reports
+   `Error: Unknown parameter: e/.`, so email and tags need a separate `edit`. We plan to accept optional `e/EMAIL`
+   and `t/TAG`... in `add`, validated exactly as in `edit`.
+1. **Match subject words in `filter`.** Currently `filter s/Math` matches only a subject that is exactly `Math`, not
+   `H2 Math`. We plan to match a whole word of the subject, ignoring case, so `filter s/Math` lists `Math` and
+   `H2 Math` but not `Mathematics`.
+1. **Find students by phone number.** Currently `find` searches names only, so `find 87438807` lists no one. We plan
+   to also match keywords made only of digits against the student's phone, so `find 8743` lists the student with
+   `+6587438807`.
+1. **Limit payment months to plausible years.** Currently `payment 1 m/0000-01 s/pending` and `m/9999-12` are
+   accepted. We plan to accept only months from `2000-01` to `2099-12` and otherwise report
+   `Error: Invalid month. Enter a month from 2000-01 to 2099-12 in YYYY-MM format.`
+1. **Shorten very long indices in error messages.** Currently `delete` followed by a 60-digit number repeats all 60
+   digits in `Error: No student exists at index INDEX.` We plan to show at most the first 10 digits followed by `…`.
+1. **Schedule more than one weekly lesson per student.** Currently each student has one weekly slot, and `schedule`
+   replaces it. We plan to let `schedule` add further slots and `unschedule INDEX i/SLOT` remove one of them, with the
+   timetable listing every slot.
+1. **Support more education levels.** Currently `level` accepts only Primary 1-6, Secondary 1-5 and JC 1-2, so
+   `level 1 l/Poly Year 1` is rejected. We plan to add polytechnic (`Poly 1` to `Poly 3`) and IB (`IB 1`, `IB 2`)
+   levels, with matching `filter l/` support.
 
 --------------------------------------------------------------------------------------------------------------------
 
