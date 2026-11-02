@@ -27,6 +27,18 @@ class ClearCommandParserTest {
     }
 
     @Test
+    void parse_hiddenLineBreaks_rejectedBeforeClearing() {
+        for (String separator : List.of("\n", "\r", "\t", "\u0085", "\u2028", "\u2029")) {
+            assertParseFailure(new ClearCommandParser(), separator, ClearCommandParser.MESSAGE_PARAMETERS);
+            assertThrows(ParseException.class, ClearCommandParser.MESSAGE_PARAMETERS, () ->
+                    new TutorConnectParser().parseCommand("clear" + separator));
+            for (String input : List.of(separator + "clear", " " + separator + "clear ")) {
+                assertThrows(ParseException.class, () -> new TutorConnectParser().parseCommand(input));
+            }
+        }
+    }
+
+    @Test
     void parseCommand_mistypedDelete_isRefusedBeforeAnythingIsCleared() {
         TutorConnectParser parser = new TutorConnectParser();
         assertThrows(ParseException.class, ClearCommandParser.MESSAGE_PARAMETERS, () -> parser.parseCommand("clear 1"));

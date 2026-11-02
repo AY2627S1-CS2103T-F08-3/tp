@@ -61,6 +61,10 @@ public class TutorConnectParser {
 
         final String commandWord = matcher.group("commandWord");
         final String arguments = matcher.group("arguments");
+        // Leading whitespace was stripped for routing; clear must still validate the original input.
+        if (commandWord.equals(ClearCommand.COMMAND_WORD) && StudentText.hasProhibitedCharacters(userInput)) {
+            throw new ParseException(ClearCommandParser.MESSAGE_PARAMETERS);
+        }
         if ((commandWord.equals(ScheduleCommand.COMMAND_WORD)
                 || commandWord.equals(TimetableCommand.COMMAND_WORD)
                 || commandWord.equals(UnscheduleCommand.COMMAND_WORD))

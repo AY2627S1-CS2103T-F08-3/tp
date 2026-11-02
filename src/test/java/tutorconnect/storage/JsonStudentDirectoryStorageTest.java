@@ -9,6 +9,7 @@ import static tutorconnect.testutil.TypicalStudents.IDA;
 import static tutorconnect.testutil.TypicalStudents.getTypicalStudentDirectory;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -49,6 +50,31 @@ public class JsonStudentDirectoryStorageTest {
     @Test
     public void read_notJsonFormat_exceptionThrown() {
         assertThrows(DataLoadingException.class, () -> readStudentDirectory("notJsonFormatStudentDirectory.json"));
+    }
+
+    @Test
+    public void read_deeplyNestedOptionalField_rejectedWithoutStackOverflow() throws Exception {
+        Path file = testFolder.resolve("nested.json");
+        for (String[] brackets : new String[][] {{"[", "]"}, {"{\"child\":", "}"}}) {
+            String nested = brackets[0].repeat(10000) + "0" + brackets[1].repeat(10000);
+            Files.writeString(file, "{\"persons\":[{\"name\":\"Alice Tan\",\"phone\":\"91234567\","
+                    + "\"address\":\"Block 1\",\"future\":" + nested + "}]}");
+            assertThrows(DataLoadingException.class, () ->
+                    new JsonStudentDirectoryStorage(file).readStudentDirectory());
+        }
+    }
+
+    @Test
+    public void read_shallowUnknownField_preservedAfterSaving() throws Exception {
+        Path file = testFolder.resolve("future.json");
+        Files.writeString(file, "{\"persons\":[{\"name\":\"Alice Tan\",\"phone\":\"91234567\","
+                + "\"address\":\"Block 1\",\"future\":{\"items\":[{\"text\":\"[{}]\"}]}}]}");
+        JsonStudentDirectoryStorage storage = new JsonStudentDirectoryStorage(file);
+        ReadOnlyStudentDirectory loaded = storage.readStudentDirectory().orElseThrow();
+        storage.saveStudentDirectory(loaded);
+        assertEquals(loaded, storage.readStudentDirectory().orElseThrow());
+        assertEquals("[{}]", loaded.getStudentList().getFirst().getStudentFields().toStorage()
+                .get("future").get("items").get(0).get("text").asText());
     }
 
     @Test

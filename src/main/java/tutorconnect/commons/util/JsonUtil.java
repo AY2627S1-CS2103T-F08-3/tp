@@ -12,6 +12,7 @@ import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -24,6 +25,8 @@ import tutorconnect.commons.exceptions.DataLoadingException;
  */
 public class JsonUtil {
 
+    // Includes unknown fields, which must also be safe to decode, copy and preserve on later saves.
+    static final int MAX_NESTING_DEPTH = 100;
     private static final Logger logger = LogsCenter.getLogger(JsonUtil.class);
 
     private static ObjectMapper objectMapper = new ObjectMapper().findAndRegisterModules()
@@ -95,12 +98,31 @@ public class JsonUtil {
      * @return The instance of T with the specified values in the JSON string
      */
     public static <T> T fromJsonString(String json, Class<T> instanceClass) throws IOException {
+        validateNestingDepth(json);
         try (JsonParser parser = objectMapper.getFactory().createParser(json)) {
             T value = objectMapper.readValue(parser, instanceClass);
             if (parser.nextToken() != null) {
                 throw new IOException("Expected exactly one JSON value");
             }
             return value;
+        }
+    }
+
+    /** Checks depth iteratively before recursive tree deserialization or copying can exhaust the stack. */
+    private static void validateNestingDepth(String json) throws IOException {
+        try (JsonParser parser = objectMapper.getFactory().createParser(json)) {
+            int depth = 0;
+            JsonToken token;
+            while ((token = parser.nextToken()) != null) {
+                if (token == JsonToken.START_OBJECT || token == JsonToken.START_ARRAY) {
+                    depth++;
+                    if (depth > MAX_NESTING_DEPTH) {
+                        throw new IOException("JSON nesting exceeds the limit of " + MAX_NESTING_DEPTH + ".");
+                    }
+                } else if (token == JsonToken.END_OBJECT || token == JsonToken.END_ARRAY) {
+                    depth--;
+                }
+            }
         }
     }
 

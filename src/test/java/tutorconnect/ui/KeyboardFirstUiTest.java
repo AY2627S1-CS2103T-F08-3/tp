@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.FutureTask;
@@ -83,6 +84,28 @@ public class KeyboardFirstUiTest {
             assertEquals("", input.getText());
             enter(input, "list");
             assertFalse(result.getStyleClass().contains(ResultDisplay.ERROR_STYLE_CLASS));
+        });
+    }
+
+    @Test
+    public void commandBar_clearWithUnicodeLineSeparator_keepsStudentsAndSavedFile() throws Exception {
+        onFxThread(stage -> {
+            TextField input = (TextField) stage.getScene().lookup("#commandTextField");
+            @SuppressWarnings("unchecked")
+            ListView<Student> rows = (ListView<Student>) stage.getScene().lookup("#studentListView");
+            enter(input, "note 1 m/Keep this record");
+            Path data = directory.resolve("students.json");
+            String saved = Files.readString(data);
+            for (String separator : List.of("\u2028", "\u2029")) {
+                String command = "clear" + separator;
+                input.setText(command);
+                assertEquals(command, input.getText());
+                input.fireEvent(new ActionEvent());
+                assertEquals(6, rows.getItems().size());
+                assertEquals(saved, Files.readString(data));
+                TextArea result = (TextArea) stage.getScene().lookup("#resultDisplay");
+                assertEquals("Error: Clear does not accept parameters.", result.getText());
+            }
         });
     }
 
