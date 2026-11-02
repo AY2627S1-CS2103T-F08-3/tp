@@ -910,6 +910,20 @@ automatic recovery of corrupted data. Only edit values you understand and verify
 TutorConnect does not provide automatic backups, archiving, or undo. These capabilities are not promised
 for a future release. With the app closed, copy `data/addressbook.json` to a safe location yourself.
 
+The following are **not supported in this version** and are planned for a future version:
+
+* Names containing `s/o` or `d/o` (for example `Ravi s/o Kumar`), because `s/` and `d/` are read as parameters,
+  and names containing digits.
+* Phone numbers outside Singapore, for students and guardians.
+* Removing a guardian phone, education level, subject or hourly rate once it is set. You can replace each value.
+* Setting an email or tags in `add`. Add the student first, then use `edit`.
+* Filtering by part of a subject. `filter s/Math` matches only the subject `Math`, not `H2 Math`.
+* Finding students by phone number. `find` searches names only.
+* Restricting payment months to plausible years. Any month from `0000-01` to `9999-12` is accepted.
+* Shortening very long indices in error messages. An index with many digits is repeated in full.
+* More than one weekly lesson per student.
+* Education levels other than Primary 1-6, Secondary 1-5 and JC 1-2, such as polytechnic or IB.
+
 --------------------------------------------------------------------------------------------------------------------
 
 ## FAQ
